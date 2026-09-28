@@ -49,9 +49,19 @@ CREATE INDEX IF NOT EXISTS idx_luck_vector_document_vector
     USING hnsw (vector vector_cosine_ops);
 
 -- =============================================
--- 增量迁移：为已有表添加 content 字段
--- 如果是全新部署，上面的建表语句已包含 content，此段可跳过
--- 如果是从旧版升级，执行以下 ALTER 语句
+-- 增量迁移：旧表升级（全新部署可跳过，上面建表已包含）
 -- =============================================
--- ALTER TABLE luck_report_vector.luck_vector_document ADD COLUMN IF NOT EXISTS content TEXT DEFAULT NULL;
--- COMMENT ON COLUMN luck_report_vector.luck_vector_document.content IS '文档内容（分块文本），用于检索结果直接返回';
+ALTER TABLE luck_report_vector.luck_vector_document
+    ADD COLUMN IF NOT EXISTS content TEXT DEFAULT NULL;
+COMMENT ON COLUMN luck_report_vector.luck_vector_document.content IS '文档内容（分块文本），用于检索结果直接返回';
+
+ALTER TABLE luck_report_vector.luck_vector_document
+    ADD COLUMN IF NOT EXISTS content_tsv tsvector;
+COMMENT ON COLUMN luck_report_vector.luck_vector_document.content_tsv IS '全文倒排（tsvector）';
+
+-- 存量数据回填全文倒排（仅 content_tsv 为空的行）
+UPDATE luck_report_vector.luck_vector_document
+SET content_tsv = to_tsvector('simple', coalesce(content, ''))
+WHERE content_tsv IS NULL;
+
+-- GIN 索引见上文 CREATE INDEX IF NOT EXISTS idx_luck_vector_document_content_tsv
