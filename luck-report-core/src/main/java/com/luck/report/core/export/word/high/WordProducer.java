@@ -173,6 +173,38 @@ public class WordProducer implements Producer {
         return new int[]{count, totalWidth};
     }
 
+    /**
+     * 合并单元格总宽度（pt）
+     */
+    private int buildWholeWidthPt(Cell cell) {
+        int width = cell.getColumn().getWidth();
+        int colSpan = cell.getColSpan();
+        if (colSpan > 1) {
+            Column col = cell.getColumn().getNext();
+            for (int i = 1; i < colSpan && col != null; i++) {
+                width += Math.max(0, col.getWidth());
+                col = col.getNext();
+            }
+        }
+        return width;
+    }
+
+    /**
+     * 合并单元格总高度（pt）
+     */
+    private int buildWholeHeightPt(Cell cell) {
+        int height = cell.getRow().getRealHeight();
+        int rowSpan = cell.getPageRowSpan();
+        if (rowSpan > 1) {
+            Row row = cell.getRow().getNext();
+            for (int i = 1; i < rowSpan && row != null; i++) {
+                height += row.getRealHeight();
+                row = row.getNext();
+            }
+        }
+        return height;
+    }
+
     private void buildTableCellStyle(XWPFTable table, XWPFTableCell tableCell, Cell cell, int rowNumber, int columnNumber) {
         CellStyle style = cell.getCellStyle();
         CellStyle customStyle = cell.getCustomCellStyle();
@@ -321,8 +353,9 @@ public class WordProducer implements Producer {
                     int height = bufferedImage.getHeight();
                     boolean isChart = value instanceof ChartData;
                     if (isChart) {
-                        width = cell.getColumn().getWidth();
-                        height = cell.getRow().getRealHeight();
+                        ChartData chartData = (ChartData) value;
+                        width = chartData.getWidth() > 0 ? chartData.getWidth() : buildWholeWidthPt(cell);
+                        height = chartData.getHeight() > 0 ? chartData.getHeight() : buildWholeHeightPt(cell);
                     } else {
                         width = UnitUtils.pixelToPoint(width);
                         height = UnitUtils.pixelToPoint(height);

@@ -234,6 +234,22 @@ public class PdfProducer implements Producer {
         return height;
     }
 
+    /**
+     * 合并单元格总宽度（pt）
+     */
+    private int buildCellWidth(Cell cell) {
+        int width = cell.getColumn().getWidth();
+        int colSpan = cell.getColSpan();
+        if (colSpan > 1) {
+            Column col = cell.getColumn().getNext();
+            for (int i = 1; i < colSpan && col != null; i++) {
+                width += Math.max(0, col.getWidth());
+                col = col.getNext();
+            }
+        }
+        return width;
+    }
+
     private PdfPCell buildPdfPCell(Cell cellInfo, int cellHeight) throws Exception {
         CellStyle style = cellInfo.getCellStyle();
         CellStyle customStyle = cellInfo.getCustomCellStyle();
@@ -331,9 +347,12 @@ public class PdfProducer implements Producer {
             ChartData chartData = (ChartData) cellData;
             String base64Data = chartData.retriveBase64Data();
             if (base64Data != null) {
-                int widthPx = UnitUtils.pointToPixel(cellInfo.getColumn().getWidth());
-                int heightPx = UnitUtils.pointToPixel(cellHeight);
+                int widthPt = chartData.getWidth() > 0 ? chartData.getWidth() : buildCellWidth(cellInfo);
+                int heightPt = chartData.getHeight() > 0 ? chartData.getHeight() : cellHeight;
+                int widthPx = UnitUtils.pointToPixel(widthPt);
+                int heightPx = UnitUtils.pointToPixel(heightPt);
                 cell = new PdfPCell(buildPdfImage(base64Data, widthPx, heightPx));
+                cell.setFixedHeight(cellHeight);
             } else {
                 cell = new PdfPCell();
                 CellPhrase pargraph = new CellPhrase(cellInfo, "");

@@ -56,10 +56,17 @@ public class ChartData implements Serializable {
             return base64Data;
         }
         ChartData data = ChartScopeCache.getChartData(id);
-        boolean cacheHit = data != null && data != this;
-        String cachedBase64 = cacheHit ? data.base64Data : null;
-        if (cacheHit) {
-            return cachedBase64;
+        if (data != null && data != this) {
+            if (data.base64Data != null) {
+                this.base64Data = data.base64Data;
+            }
+            if (data.width > 0) {
+                this.width = data.width;
+            }
+            if (data.height > 0) {
+                this.height = data.height;
+            }
+            return this.base64Data;
         }
         return base64Data;
     }
