@@ -99,7 +99,7 @@ public class HtmlProducer {
             bgStyle = ";background:url(" + bgImage + ") no-repeat";
         }
         if (breakPage) {
-            // collapse：与 PDF/导出边框合并观感一致；行高靠 td line-height 钳制（见 buildCustomStyle）
+            // collapse：与 PDF/导出边框合并观感一致；行高靠 td height + 封顶 line-height 钳制（见 buildCustomStyle）
             sb.append("<table class='page-break' border='0' style='margin:auto;border-collapse:collapse;table-layout:fixed;width:" + tableWidth + "px" + bgStyle + "'>");
         } else {
             sb.append("<table border='0' style='margin:auto;border-collapse:collapse;table-layout:fixed;width:" + tableWidth + "px" + bgStyle + "'>");
@@ -480,10 +480,17 @@ public class HtmlProducer {
         int widthPx = (colSpan > 1)
                 ? buildWidthPx(columns, colIndex, colSpan)
                 : UnitUtils.pointToPixel(cell.getColumn().getWidth());
-        int lineHeightPx = HtmlRowHeightUtils.contentBoxLineHeightPx(heightPx, topBorder, bottomBorder);
+        int effectiveFontSize = fontSize;
+        if (effectiveFontSize <= 0 && cell.getCellStyle() != null) {
+            effectiveFontSize = cell.getCellStyle().getFontSize();
+        }
+        int lineHeightPx = HtmlRowHeightUtils.lockedTextLineHeightPx(
+                heightPx, topBorder, bottomBorder, effectiveFontSize);
         sb.append("box-sizing:border-box;");
         sb.append("padding:0;");
         sb.append("overflow:hidden;");
+        sb.append("white-space:nowrap;");
+        sb.append("word-break:keep-all;");
         sb.append("line-height:" + lineHeightPx + "px;");
         sb.append("height:" + heightPx + "px;");
         sb.append("max-height:" + heightPx + "px;");
