@@ -85,6 +85,7 @@
         <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
         <protobuf-java.version>3.25.5</protobuf-java.version>
         <milvus-sdk-java.version>2.6.18</milvus-sdk-java.version>
+        <okhttp.version>4.12.0</okhttp.version>
     </properties>
 
 
@@ -214,6 +215,11 @@
                 <artifactId>commons-collections4</artifactId>
                 <version>${commons-collections4.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.squareup.okhttp3</groupId>
+                <artifactId>okhttp</artifactId>
+                <version>${okhttp.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -262,7 +268,6 @@
         </plugins>
     </build>
 
-    <!-- CNB 公开 Maven 制品库；id 须与本机 ~/.m2/settings.xml 中 server.id 一致 -->
     <distributionManagement>
         <repository>
             <id>lucky.pools-luck-product</id>

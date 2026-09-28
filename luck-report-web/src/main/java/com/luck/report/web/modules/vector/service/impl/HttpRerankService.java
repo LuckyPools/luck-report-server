@@ -138,7 +138,7 @@ public class HttpRerankService implements RerankService {
                 .url(url)
                 .addHeader("Authorization", "Bearer " + SensitiveConfigCipher.decrypt(config.getApiKey()))
                 .addHeader("Content-Type", "application/json")
-                .post(RequestBody.create(objectMapper.writeValueAsString(body), JSON))
+                .post(RequestBody.create(JSON, objectMapper.writeValueAsString(body)))
                 .build();
 
         OkHttpClient client = clientFor(config);

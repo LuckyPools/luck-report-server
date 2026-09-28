@@ -3,7 +3,9 @@ package com.luck.report.web.modules.chat.controller;
 import com.luck.report.web.modules.chat.domain.vo.ChatRequest;
 import com.luck.report.web.modules.chat.service.ChatService;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,7 +36,11 @@ public class ChatController {
      * @return SSE事件流，包含 message / tool_use / done / error 事件
      */
     @PostMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter chatStream(@RequestBody ChatRequest request) {
-        return chatService.chatStream(request);
+    public ResponseEntity<SseEmitter> chatStream(@RequestBody ChatRequest request) {
+        SseEmitter emitter = chatService.chatStream(request);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CACHE_CONTROL, "no-cache, no-transform")
+                .header("X-Accel-Buffering", "no")
+                .body(emitter);
     }
 }

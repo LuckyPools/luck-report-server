@@ -102,7 +102,7 @@ public class ChatUtils {
                 .url(request.getChatConfig().getBaseUrl() + resolveApiPath(request.getChatConfig(), "/v1/chat/completions"))
                 .addHeader("Authorization", "Bearer " + resolveApiKey(request.getChatConfig()))
                 .addHeader("Content-Type", "application/json")
-                .post(okhttp3.RequestBody.create(requestBody, okhttp3.MediaType.parse("application/json")))
+                .post(jsonRequestBody(requestBody))
                 .build();
 
         try (Response response = client.newCall(httpRequest).execute()) {
@@ -131,10 +131,14 @@ public class ChatUtils {
                 .url(request.getChatConfig().getBaseUrl() + resolveApiPath(request.getChatConfig(), "/v1/chat/completions"))
                 .addHeader("Authorization", "Bearer " + resolveApiKey(request.getChatConfig()))
                 .addHeader("Content-Type", "application/json")
-                .post(okhttp3.RequestBody.create(requestBody, okhttp3.MediaType.parse("application/json")))
+                .post(jsonRequestBody(requestBody))
                 .build();
 
         return client.newCall(httpRequest);
+    }
+
+    public static RequestBody jsonRequestBody(String json) {
+        return RequestBody.create(MediaType.parse("application/json"), json);
     }
 
     private static String resolveApiPath(ModelConfig config, String defaultPath) {

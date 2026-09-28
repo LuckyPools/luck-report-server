@@ -211,7 +211,7 @@ public class EmbeddingService {
                 .url(baseUrl + apiPath)
                 .addHeader("Authorization", "Bearer " + apiKey)
                 .addHeader("Content-Type", "application/json")
-                .post(RequestBody.create(jsonBody, MediaType.parse("application/json")))
+                .post(RequestBody.create(MediaType.parse("application/json"), jsonBody))
                 .build();
 
         try (Response response = getOrCreateClient(embeddingConfig).newCall(httpRequest).execute()) {

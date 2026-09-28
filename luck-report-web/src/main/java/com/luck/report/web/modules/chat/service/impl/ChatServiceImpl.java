@@ -24,10 +24,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * 聊天对话服务实现
- * 处理流式对话转发和对话压缩的核心业务逻辑
- *
- * @author luck
+ * 聊天对话服务：流式转发与对话压缩。
  */
 @Service("bean.chatService")
 @AllArgsConstructor
@@ -36,10 +33,8 @@ public class ChatServiceImpl implements ChatService {
     private static final Logger log = LoggerFactory.getLogger(ChatServiceImpl.class);
 
     /**
-     * 模型能力协商缓存：modelName → 该模型不支持 required/object 形态的 tool_choice
-     * （典型为思考型模型如 deepseek，"Thinking mode does not support this tool_choice"）
-     * 首次协商（400 后降级重试成功）后缓存，后续请求构建时直接降级，消除稳态 400 往返。
-     * ConcurrentHashMap 保证多用户并发读写安全；写幂等，并发首发竞态无害（各自降级一次）。
+     * 不支持 required/object 形态 tool_choice 的模型缓存（如思考型 deepseek）。
+     * 首次 400 降级成功后写入，后续构建时直接降级，避免稳态 400 往返。
      */
     private static final java.util.concurrent.ConcurrentHashMap<String, Boolean> TOOL_CHOICE_INCOMPATIBLE_MODELS =
             new java.util.concurrent.ConcurrentHashMap<>();
@@ -48,39 +43,33 @@ public class ChatServiceImpl implements ChatService {
     private final ExecutorService executorService = Executors.newCachedThreadPool();
 
     /**
-     * 流式对话
-     * 通过 ChatUtils 构建流式请求，以 SSE 方式推送响应
-     * 支持 Function Calling：当请求携带 tools 参数时，将工具定义传给大模型，
-     * 大模型可通过 tool_calls 返回工具调用指令，后端解析后以 tool_use 事件推送
-     *
-     * @param request 聊天请求 DTO，包含消息内容、历史上下文、附件、工具定义、模型ID等
-     * @return SSE事件流，包含 message / tool_use / done / error 事件
+     * SSE 流式对话；支持 tools / tool_calls → tool_use 事件。
      */
     @Override
     public SseEmitter chatStream(ChatRequest request) {
         SseEmitter emitter = new SseEmitter(300000L);
 
-        // 此刻仍在 Tomcat 线程上，Filter 注入的 MDC 有效；提前捕获 traceId 供异步线程恢复。
-        // executor/OkHttp 线程切换不携带 ThreadLocal，不恢复的话本请求所有日志的 traceId 列均为空
+        // Tomcat 线程上 Filter 已注入 MDC；异步线程不携带 ThreadLocal，需提前捕获
         final String traceId = MDC.get(TraceIdHandler.MDC_TRACE_ID);
+
+        try {
+            emitter.send(SseEmitter.event().comment("connected"));
+        } catch (Exception e) {
+            log.warn("Failed to send SSE connected comment: {}", e.getMessage());
+        }
 
         executorService.submit(withContext(traceId, () -> {
             try {
-                // 根据modelId获取模型配置，如果未传则使用默认激活的第一个对话模型
                 ModelConfig chatConfig = modelConfigDataService.getChatConfig(request.getModelId());
                 List<Map<String, Object>> messages = buildMessages(request);
-
-                // 构建工具定义列表（OpenAI Function Calling 格式）
                 List<Map<String, Object>> openaiTools = buildOpenAiTools(request.getTools());
 
-                // 确定工具调用策略：优先使用前端指定的 toolChoice，否则根据是否有工具自动决定
                 Object effectiveToolChoice = request.getToolChoice();
                 if (effectiveToolChoice == null && openaiTools != null) {
                     effectiveToolChoice = "auto";
                 }
 
-                // 能力缓存命中：该模型已协商确认不支持 required/object tool_choice，构建时直接降级 auto
-                // （避免每次请求都经历一次 400 失败往返）
+                // 能力缓存命中：直接降级 auto，跳过 400 往返
                 if (effectiveToolChoice != null
                         && isRequiredOrObjectToolChoice(effectiveToolChoice)
                         && Boolean.TRUE.equals(TOOL_CHOICE_INCOMPATIBLE_MODELS.get(chatConfig.getModelName()))) {
@@ -94,7 +83,6 @@ public class ChatServiceImpl implements ChatService {
                         request.getTools() != null ? request.getTools().size() : 0,
                         request.getToolChoice(), effectiveToolChoice);
 
-                // 流式选项：请求 API 在最后一个 chunk 返回 token 用量
                 Map<String, Object> streamOptions = new LinkedHashMap<>(1);
                 streamOptions.put("include_usage", true);
 
@@ -105,7 +93,6 @@ public class ChatServiceImpl implements ChatService {
                         .streamOptions(streamOptions)
                         .deepThink(request.getDeepThink());
 
-                // 计算输入消息的文本总长度，用于 token 估算
                 int inputTextLength = 0;
                 for (Map<String, Object> msg : messages) {
                     Object msgContent = msg.get("content");
@@ -116,12 +103,8 @@ public class ChatServiceImpl implements ChatService {
                 final int finalInputTextLength = inputTextLength;
 
                 Call call = ChatUtils.buildStreamCall(askRequest);
-
-                // 使用 AtomicBoolean 标记 emitter 是否已完成（超时/完成/错误），
-                // 避免向已关闭的 emitter 写入数据
                 java.util.concurrent.atomic.AtomicBoolean emitterCompleted = new java.util.concurrent.atomic.AtomicBoolean(false);
 
-                // Callback 在 OkHttp 线程执行，同样需要恢复 traceId 才能让响应日志带上链路标识
                 call.enqueue(withContext(traceId, new Callback() {
                     @Override
                     public void onFailure(Call call, IOException e) {
@@ -137,19 +120,16 @@ public class ChatServiceImpl implements ChatService {
 
                     @Override
                     public void onResponse(Call call, Response response) throws IOException {
-                        // 成功路径不打流水账；失败由下方 error 承接
                         if (!response.isSuccessful()) {
                             String errorMsg = response.body() != null ? response.body().string() : "Unknown error";
                             log.error("大模型API返回错误: status={}, body={}", response.code(), errorMsg);
 
-                            // thinking 模式下 tool_choice=required/object 触发 400 时，自动降级为 auto 重试
-                            // 注意大小写不敏感匹配：不同网关返回 "Thinking mode..."（deepseek）或 "thinking mode..."（百炼），
-                            // 此前按小写精确 contains 匹配导致 deepseek 的大写 T 消息漏判
+                            // thinking + tool_choice=required/object → 400 时降级 auto 重试
+                            // 大小写不敏感：deepseek 为 "Thinking mode..."，百炼为 "thinking mode..."
                             String lowerMsg = errorMsg.toLowerCase();
                             if (response.code() == 400 && lowerMsg.contains("tool_choice")
                                     && lowerMsg.contains("thinking mode")
                                     && isRequiredOrObjectToolChoice(askRequest.getToolChoice())) {
-                                // 协商结果写入能力缓存：该模型后续请求在构建时直接降级，不再付出 400 往返
                                 TOOL_CHOICE_INCOMPATIBLE_MODELS.putIfAbsent(chatConfig.getModelName(), Boolean.TRUE);
                                 log.info("[ChatService] 检测到模型 {} thinking mode 与指定型 tool_choice 冲突，降级为 auto 重试（已写入能力缓存）",
                                         chatConfig.getModelName());
@@ -160,7 +140,6 @@ public class ChatServiceImpl implements ChatService {
                                         .streamOptions(streamOptions)
                                         .deepThink(request.getDeepThink());
                                 Call retryCall = ChatUtils.buildStreamCall(retryRequest);
-                                // 重试 Callback 与首次 Callback 一样运行在 OkHttp 线程，需恢复 traceId
                                 retryCall.enqueue(withContext(traceId, new Callback() {
                                     @Override
                                     public void onFailure(Call c, IOException e) {
@@ -188,7 +167,6 @@ public class ChatServiceImpl implements ChatService {
                                             }
                                             return;
                                         }
-                                        // 重试成功，复用原有的流处理逻辑
                                         ChatServiceImpl.this.handleSuccessfulResponse(r, emitter, finalInputTextLength, emitterCompleted);
                                     }
                                 }));
@@ -205,19 +183,17 @@ public class ChatServiceImpl implements ChatService {
                             return;
                         }
 
-                        // 成功响应处理
                         handleSuccessfulResponse(response, emitter, finalInputTextLength, emitterCompleted);
                     }
                 }));
 
-                // emitter 超时或完成时，取消 OkHttp Call 以停止接收 LLM 数据
                 emitter.onCompletion(() -> {
                     emitterCompleted.set(true);
                     if (!call.isCanceled()) {
                         call.cancel();
                     }
                 });
-                // onTimeout 回调由容器超时线程触发（非调用线程），需恢复 traceId 才能带上链路标识
+                // onTimeout 在容器超时线程触发，需恢复 traceId
                 emitter.onTimeout(withContext(traceId, () -> {
                     log.warn("SseEmitter超时，取消LLM请求");
                     emitterCompleted.set(true);
@@ -227,7 +203,7 @@ public class ChatServiceImpl implements ChatService {
                     emitter.complete();
                 }));
 
-            } catch (Exception e) {
+            } catch (Exception | LinkageError e) {
                 log.error("Failed to build request: {}", e.getMessage(), e);
                 try {
                     emitter.send(SseEmitter.event().name("error").data("Failed to build request: " + e.getMessage()));
@@ -241,14 +217,13 @@ public class ChatServiceImpl implements ChatService {
         return emitter;
     }
 
-    // ==================== 请求上下文传播（traceId + 语言） ====================
-
-    /** 包装 Runnable 传播 traceId 与语言，解决线程池线程不携带 ThreadLocal 的问题 */
+    /**
+     * 包装 Runnable，向线程池任务传播 traceId 与语言。
+     */
     private Runnable withContext(String traceId, Runnable task) {
         final ReportLocale locale = ReportLocaleContext.get();
         Runnable localeAware = ReportLocaleContext.wrap(locale, task);
         return () -> {
-            // 无 traceId 的请求不做 MDC 包装，保持原有行为
             if (traceId == null) {
                 localeAware.run();
                 return;
@@ -257,7 +232,7 @@ public class ChatServiceImpl implements ChatService {
             try {
                 localeAware.run();
             } finally {
-                // 线程池线程会被复用，不清理会导致下一个任务串到上一个请求的 traceId
+                // 线程池复用，必须清理以免串 traceId
                 MDC.remove(TraceIdHandler.MDC_TRACE_ID);
             }
         };
@@ -265,7 +240,7 @@ public class ChatServiceImpl implements ChatService {
 
     /**
      * 包装 OkHttp Callback 传播 traceId 与语言。
-     * 此处内联语言恢复而非复用 wrap：onResponse 抛受检异常 IOException，无法用 Runnable 表达。
+     * 内联语言恢复（onResponse 抛 IOException，无法用 Runnable 表达）。
      */
     private Callback withContext(String traceId, Callback callback) {
         final ReportLocale locale = ReportLocaleContext.get();
@@ -306,12 +281,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     /**
-     * 对话压缩
-     * 接收早期对话消息，通过 ChatUtils.askModel() 调用 LLM 生成结构化摘要，
-     * 替代原始消息以减少上下文 token 消耗
-     *
-     * @param request 压缩请求，包含 messages、existingSummary、reportSnapshot、compactPrompt、modelId 等
-     * @return ResultVO<CompactResult> 压缩结果，包含 summary 和 keyOperations
+     * LLM 生成结构化摘要，失败时规则兜底。
      */
     @Override
     public ResultVO<CompactResult> compact(CompactRequest request) {
@@ -324,7 +294,6 @@ public class ChatServiceImpl implements ChatService {
         }
 
         try {
-            // 根据modelId获取模型配置，如果未传则使用默认激活的第一个对话模型
             ModelConfig chatConfig = modelConfigDataService.getChatConfig(request.getModelId());
             List<Map<String, Object>> messages = buildCompactMessages(request);
 
@@ -358,18 +327,8 @@ public class ChatServiceImpl implements ChatService {
         }
     }
 
-    // ==================== 流式对话相关私有方法 ====================
-
     /**
-     * 处理大模型流式响应
-     * 逐行解析 SSE 数据，提取文本增量和 tool_calls 事件
-     * 文本内容以 message 事件推送，tool_calls 以 tool_use 事件推送
-     * 流结束时估算 token 用量并以 token_usage 事件推送
-     *
-     * @param source 响应流的 BufferedSource
-     * @param emitter SSE 发射器
-     * @param inputTextLength 输入消息的文本总长度，用于 token 估算
-     * @throws IOException 读取异常
+     * 解析 SSE：文本 → message，思考 → reasoning_content，tool_calls → tool_use，结束时推 token_usage。
      */
     @SuppressWarnings("unchecked")
     private void processStreamResponse(BufferedSource source, SseEmitter emitter, int inputTextLength,
@@ -382,7 +341,6 @@ public class ChatServiceImpl implements ChatService {
         int totalTokens = 0;
 
         while (!source.exhausted()) {
-            // 如果 emitter 已完成（超时/客户端断开），停止处理
             if (emitterCompleted.get()) {
                 return;
             }
@@ -392,7 +350,6 @@ public class ChatServiceImpl implements ChatService {
                 continue;
             }
 
-            // 临时排查：打印所有非空行，确认 API 返回的 SSE 格式
             log.debug("[ChatService] SSE行: {}", line.length() > 300 ? line.substring(0, 300) + "..." : line);
 
             if (!line.startsWith("data: ")) {
@@ -430,7 +387,6 @@ public class ChatServiceImpl implements ChatService {
                     continue;
                 }
 
-                // 检查 API 返回的错误响应（如 max_tokens 超限等参数错误）
                 Map<String, Object> errorInfo = (Map<String, Object>) response.get("error");
                 if (errorInfo != null) {
                     String errorMsg = errorInfo.getOrDefault("message", "Unknown API error").toString();
@@ -451,10 +407,7 @@ public class ChatServiceImpl implements ChatService {
                     continue;
                 }
 
-                // 提取文本增量内容
-                // 关键：data 用 JSON 编码（writeValueAsString），把换行符/首尾空格转义为单行字符串，
-                // 避免 Spring SseEmitter 把 \n 拆成多行 data: 字段、前端 .trim() 误删空格。
-                // 与 tool_use / token_usage 事件保持一致；前端 dispatchSseEvent 用 JSON.parse 还原。
+                // JSON 编码 data：避免 SseEmitter 按 \n 拆行、前端 trim 误删空格；与 tool_use 一致
                 Object content = delta.get("content");
                 if (content != null && !content.toString().isEmpty()) {
                     String contentStr = content.toString();
@@ -463,8 +416,6 @@ public class ChatServiceImpl implements ChatService {
                             .data(ChatUtils.getObjectMapper().writeValueAsString(contentStr)));
                 }
 
-                // 提取思考内容（qwen3.6-plus 等模型的 reasoning_content 字段）
-                // 同 message：JSON 编码保留换行/空格
                 Object reasoningContent = delta.get("reasoning_content");
                 if (reasoningContent != null && !reasoningContent.toString().isEmpty()) {
                     String reasoningStr = reasoningContent.toString();
@@ -473,7 +424,6 @@ public class ChatServiceImpl implements ChatService {
                             .data(ChatUtils.getObjectMapper().writeValueAsString(reasoningStr)));
                 }
 
-                // 累积 tool_calls 片段
                 List<Map<String, Object>> toolCalls = (List<Map<String, Object>>) delta.get("tool_calls");
                 if (toolCalls != null) {
                     for (Map<String, Object> tc : toolCalls) {
@@ -481,7 +431,7 @@ public class ChatServiceImpl implements ChatService {
                         int index = indexObj != null ? ((Number) indexObj).intValue() : 0;
                         Map<String, Object> accumulated = accumulatedToolCalls.computeIfAbsent(index, k -> new LinkedHashMap<>());
 
-                        // 流式返回时，后续 chunk 可能包含空字符串的 id/type，只在非空时覆盖
+                        // 后续 chunk 可能带空 id/type/name，仅非空时覆盖
                         if (tc.containsKey("id")) {
                             Object id = tc.get("id");
                             if (id != null && !id.toString().isEmpty()) {
@@ -497,7 +447,6 @@ public class ChatServiceImpl implements ChatService {
                         Map<String, Object> function = (Map<String, Object>) tc.get("function");
                         if (function != null) {
                             Map<String, Object> accFunction = (Map<String, Object>) accumulated.computeIfAbsent("function", k -> new LinkedHashMap<>());
-                            // 流式返回时，后续 chunk 可能包含空字符串的 name，只在非空时覆盖
                             if (function.containsKey("name")) {
                                 Object name = function.get("name");
                                 if (name != null && !name.toString().isEmpty()) {
@@ -505,7 +454,6 @@ public class ChatServiceImpl implements ChatService {
                                 }
                             }
                             if (function.containsKey("arguments")) {
-                                // 流式返回时，第一个 chunk 的 arguments 可能为 null，需判断
                                 Object argsObj = function.get("arguments");
                                 if (argsObj != null) {
                                     String prevArgs = (String) accFunction.getOrDefault("arguments", "");
@@ -516,20 +464,18 @@ public class ChatServiceImpl implements ChatService {
                     }
                 }
 
-                // 检查 finish_reason
                 String finishReason = (String) choice.get("finish_reason");
                 if ("tool_calls".equals(finishReason)) {
                     flushAccumulatedToolCalls(accumulatedToolCalls, emitter);
                     accumulatedToolCalls.clear();
                 }
 
-                // 提取 usage 字段，部分 API 提供商在流式最后一个 chunk 中返回
                 Map<String, Object> usage = (Map<String, Object>) response.get("usage");
                 if (usage != null) {
                     Object promptTokens = usage.get("prompt_tokens");
                     Object completionTokens = usage.get("completion_tokens");
                     Object totalTokensObj = usage.get("total_tokens");
-                    // usage 可能存在但值为 null（如阿里百炼），需判断实际值
+                    // usage 可能存在但值为 null（如百炼）
                     if (promptTokens != null && completionTokens != null) {
                         hasRealUsage = true;
                         inputTokens = ((Number) promptTokens).intValue();
@@ -543,17 +489,11 @@ public class ChatServiceImpl implements ChatService {
             }
         }
 
-        // 兜底：流耗尽后刷新剩余的 tool_calls
         flushAccumulatedToolCalls(accumulatedToolCalls, emitter);
     }
 
     /**
-     * 基于文本长度估算 token 数
-     * Qwen 模型的 token 估算规则：中文约 1.5 字符/token，英文约 4 字符/token
-     * 混合内容取中间值约 2 字符/token，加上工具定义等额外开销的 20% 系数
-     *
-     * @param textLength 文本字符数
-     * @return 估算的 token 数
+     * 约 2 字符/token，再加 20% 开销系数。
      */
     private int estimateTokens(int textLength) {
         if (textLength <= 0) return 0;
@@ -561,13 +501,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     /**
-     * 将累积的 tool_calls 刷新为 tool_use SSE 事件推送给前端
-     * 每个 tool_call 转换为前端 Agent 期望的 SseToolCall 格式：
-     * { toolCallId, toolName, input }
-     *
-     * @param accumulatedToolCalls 累积的 tool_calls 映射
-     * @param emitter SSE 发射器
-     * @throws IOException SSE 发送异常
+     * 将累积 tool_calls 推为 tool_use 事件（toolCallId / toolName / input）。
      */
     @SuppressWarnings("unchecked")
     private void flushAccumulatedToolCalls(Map<Integer, Map<String, Object>> accumulatedToolCalls, SseEmitter emitter) throws IOException {
@@ -583,12 +517,11 @@ public class ChatServiceImpl implements ChatService {
             String toolName = (String) function.get("name");
             String argumentsStr = (String) function.getOrDefault("arguments", "{}");
 
-            // 解析 arguments JSON 字符串为 Map
             Map<String, Object> input;
             try {
                 input = ChatUtils.getObjectMapper().readValue(argumentsStr, Map.class);
             } catch (Exception e) {
-                // 解析失败时把原始 arguments 和解析错误带回前端，让 LLM 在错误反馈中识别问题
+                // 解析失败带回原始串与错误，供 LLM 错误反馈识别
                 log.warn("解析tool_call arguments失败: toolName={}, length={}, 完整内容=[{}], error={}",
                         toolName,
                         argumentsStr != null ? argumentsStr.length() : 0,
@@ -599,8 +532,6 @@ public class ChatServiceImpl implements ChatService {
                 input.put("_parseError", e.getMessage() != null ? e.getMessage() : "unknown parse error");
             }
 
-            // 构建前端 Agent 期望的 tool_use 事件格式
-            // toolCallId 不能为空，否则前端无法关联 tool_result
             Map<String, Object> toolUseEvent = new LinkedHashMap<>(3);
             String effectiveToolCallId = (toolCallId != null && !toolCallId.isEmpty())
                 ? toolCallId
@@ -610,23 +541,16 @@ public class ChatServiceImpl implements ChatService {
             toolUseEvent.put("input", input);
 
             String eventJson = ChatUtils.getObjectMapper().writeValueAsString(toolUseEvent);
-            // 生产只打摘要：保留 toolName + 关键信号，避免 write_cells 等大入参刷屏
             log.info("[ChatService] 发送tool_use事件: {}", summarizeToolUseForLog(effectiveToolCallId, toolName, input));
             log.debug("[ChatService] tool_use完整事件: {}", eventJson);
             emitter.send(SseEmitter.event().name("tool_use").data(eventJson));
         }
     }
 
-    /** tool_use 日志摘要最大长度（小工具完整 JSON、大工具 preview） */
     private static final int TOOL_USE_LOG_MAX = 800;
 
     /**
-     * 将 tool_use 压缩为排障摘要，避免完整 input 写入生产 info 日志
-     *
-     * @param toolCallId 工具调用 ID，String，可为空
-     * @param toolName 工具名，String，可为空
-     * @param input 解析后的入参，Map，可为空
-     * @return 摘要 JSON 文本
+     * 压缩 tool_use 日志，避免大入参刷屏。
      */
     private String summarizeToolUseForLog(String toolCallId, String toolName, Map<String, Object> input) {
         Map<String, Object> summary = new LinkedHashMap<>(6);
@@ -637,7 +561,6 @@ public class ChatServiceImpl implements ChatService {
             return toJsonQuietly(summary);
         }
 
-        // 规划/意图/追问：入参小且是关键决策，尽量保留完整（超长再截断）
         if ("plan_tasks".equals(toolName) || "analyze_intent".equals(toolName) || "ask_user".equals(toolName)) {
             String full = toJsonQuietly(input);
             if (full.length() <= TOOL_USE_LOG_MAX) {
@@ -649,7 +572,6 @@ public class ChatServiceImpl implements ChatService {
             return toJsonQuietly(summary);
         }
 
-        // 写单元格：只保留规模信号
         if ("write_cells".equals(toolName)) {
             Object cells = input.get("cells");
             int cellCount = -1;
@@ -663,7 +585,6 @@ public class ChatServiceImpl implements ChatService {
             return toJsonQuietly(summary);
         }
 
-        // 其它工具：keys + 短 preview
         summary.put("inputKeys", input.keySet());
         String full = toJsonQuietly(input);
         summary.put("inputLength", full.length());
@@ -675,7 +596,6 @@ public class ChatServiceImpl implements ChatService {
         return toJsonQuietly(summary);
     }
 
-    /** JSON 序列化失败时降级 toString，保证日志本身不抛错 */
     private String toJsonQuietly(Object value) {
         try {
             return ChatUtils.getObjectMapper().writeValueAsString(value);
@@ -685,39 +605,24 @@ public class ChatServiceImpl implements ChatService {
     }
 
     /**
-     * 根据请求参数构建 OpenAI API 消息列表
-     * 将前端传入的 contextMessages 转换为 OpenAI 格式的消息对象，
-     * 支持 user / assistant / system / tool 四种角色，
-     * 并在末尾追加当前用户消息（仅当 message 非空时），实现多轮对话上下文传递
-     *
-     * OpenAI Function Calling 协议要求：
-     * - assistant 消息携带 tool_calls 时，必须包含完整的 tool_calls 数组
-     * - tool_result 角色映射为 OpenAI 的 tool 角色，必须携带 tool_call_id
-     *
-     * @param request 聊天请求
-     * @return OpenAI 格式的消息列表
+     * 将 contextMessages + 当前 message 转为 OpenAI 消息。
+     * tool_result → tool（需 tool_call_id）；assistant 带 tool_calls 时需完整回传，思考模式还需 reasoning_content。
      */
     private List<Map<String, Object>> buildMessages(ChatRequest request) {
         List<Map<String, Object>> messages = new ArrayList<>();
 
-        // 追加历史上下文消息
         if (request.getContextMessages() != null) {
             for (ContextMessage ctx : request.getContextMessages()) {
-                // tool_result 角色映射为 OpenAI 的 tool 角色
                 if ("tool_result".equals(ctx.getRole())) {
                     Map<String, Object> toolMsg = new LinkedHashMap<>(3);
                     toolMsg.put("role", "tool");
                     toolMsg.put("content", ctx.getContent());
-                    // OpenAI 要求 tool 消息必须携带 tool_call_id
                     toolMsg.put("tool_call_id", ctx.getToolCallId() != null ? ctx.getToolCallId() : "");
                     messages.add(toolMsg);
                 } else if ("assistant".equals(ctx.getRole()) && ctx.getToolCalls() != null && !ctx.getToolCalls().isEmpty()) {
-                    // assistant 消息携带 tool_calls 时，必须包含完整的 tool_calls 数组
-                    // OpenAI 协议要求：回传 assistant 消息时保留 tool_calls 信息
                     Map<String, Object> assistantMsg = new LinkedHashMap<>(4);
                     assistantMsg.put("role", "assistant");
                     assistantMsg.put("content", ctx.getContent() != null ? ctx.getContent() : "");
-                    // 将前端传入的 toolCalls 转换为 OpenAI 格式
                     List<Map<String, Object>> toolCallsList = new ArrayList<>();
                     for (ToolCallMessage tc : ctx.getToolCalls()) {
                         Map<String, Object> tcMap = new LinkedHashMap<>(3);
@@ -730,8 +635,7 @@ public class ChatServiceImpl implements ChatService {
                         toolCallsList.add(tcMap);
                     }
                     assistantMsg.put("tool_calls", toolCallsList);
-                    // 思考模式工具调用续接协议：回放 assistant(tool_calls) 必须同时传回该轮
-                    // reasoning_content，缺失时思考型模型网关返回 400（对普通模型该字段缺省不影响）
+                    // 思考模式续接：回放 assistant(tool_calls) 须带 reasoning_content，否则网关 400
                     if (ctx.getReasoningContent() != null && !ctx.getReasoningContent().isEmpty()) {
                         assistantMsg.put("reasoning_content", ctx.getReasoningContent());
                     }
@@ -745,8 +649,7 @@ public class ChatServiceImpl implements ChatService {
             }
         }
 
-        // 仅当 message 非空时追加当前用户消息
-        // Agent 循环中 message 可能为空（用户消息已包含在 contextMessages 中）
+        // Agent 循环中 message 可能为空（已在 contextMessages 中）
         if (request.getMessage() != null && !request.getMessage().isEmpty()) {
             Map<String, Object> userMsg = new LinkedHashMap<>(2);
             userMsg.put("role", "user");
@@ -758,11 +661,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     /**
-     * 将前端传入的工具定义转换为 OpenAI Function Calling 格式
-     * 前端 ToolDefinition 格式：{ type: "function", function: { name, description, parameters, outputSchema? } }
-     *
-     * @param tools 前端传入的工具定义列表，可为 null
-     * @return OpenAI 格式的工具定义列表，无工具时返回 null
+     * 前端 ToolDefinition → OpenAI Function Calling；无工具返回 null。
      */
     private List<Map<String, Object>> buildOpenAiTools(List<ToolDefinition> tools) {
         if (tools == null || tools.isEmpty()) {
@@ -777,9 +676,7 @@ public class ChatServiceImpl implements ChatService {
             Map<String, Object> function = new LinkedHashMap<>(4);
             function.put("name", td.getFunction().getName());
             function.put("description", td.getFunction().getDescription());
-            // 前端传入的 inputSchema 映射为 OpenAI 的 parameters
             function.put("parameters", td.getFunction().getParameters());
-            // 透传 outputSchema（未声明时不发送，避免 LLM 收到无意义的空 schema）
             if (td.getFunction().getOutputSchema() != null) {
                 function.put("outputSchema", td.getFunction().getOutputSchema());
             }
@@ -790,25 +687,14 @@ public class ChatServiceImpl implements ChatService {
         return openaiTools;
     }
 
-    // ==================== 对话压缩相关私有方法 ====================
-
-    /**
-     * 构建压缩请求的消息列表
-     * 组装 system prompt + 用户消息，供 ChatUtils.askModel() 使用
-     *
-     * @param request 压缩请求
-     * @return OpenAI 格式的消息列表
-     */
     private List<Map<String, Object>> buildCompactMessages(CompactRequest request) {
         List<Map<String, Object>> messages = new ArrayList<>();
 
-        // 系统提示词：由前端管理并传入
         Map<String, Object> systemMsg = new LinkedHashMap<>(2);
         systemMsg.put("role", "system");
         systemMsg.put("content", request.getCompactPrompt());
         messages.add(systemMsg);
 
-        // 构建用户消息：已有摘要 + 报表快照 + 待压缩的对话历史
         StringBuilder userContent = new StringBuilder();
 
         if (request.getExistingSummary() != null && !request.getExistingSummary().isEmpty()) {
@@ -840,7 +726,6 @@ public class ChatServiceImpl implements ChatService {
                 roleLabel = ctx.getRole();
             }
             String content = ctx.getContent();
-            // 工具结果过长时截断，避免压缩请求本身 token 过多
             if (content != null && content.length() > 500) {
                 content = content.substring(0, 300) + "\n...[truncated]...\n" + content.substring(content.length() - 100);
             }
@@ -858,11 +743,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     /**
-     * 解析 LLM 压缩结果
-     * 从 OpenAI 格式的非流式响应中提取 JSON 摘要
-     *
-     * @param responseBody API 响应体
-     * @return CompactResult 或 null（解析失败时）
+     * 从非流式响应 content 中提取 JSON 摘要；失败返回 null。
      */
     @SuppressWarnings("unchecked")
     private CompactResult parseCompactResult(String responseBody) {
@@ -879,11 +760,10 @@ public class ChatServiceImpl implements ChatService {
             String content = (String) message.get("content");
             if (content == null || content.isEmpty()) return null;
 
-            // 替换中文引号为英文引号，防止 LLM 输出中文引号导致 JSON 解析失败
+            // 中文引号会导致 JSON 解析失败
             content = content.replace('\u201C', '"').replace('\u201D', '"')
                              .replace('\u2018', '\'').replace('\u2019', '\'');
 
-            // 尝试从 content 中提取 JSON（LLM 可能在 JSON 前后加 markdown 标记）
             String jsonStr = extractJson(content);
             if (jsonStr == null) return null;
 
@@ -902,7 +782,6 @@ public class ChatServiceImpl implements ChatService {
             }
             compactResult.setKeyOperations(keyOps);
 
-            // 校验摘要不为空
             if (compactResult.getSummary() == null || compactResult.getSummary().isEmpty()) {
                 return null;
             }
@@ -915,14 +794,9 @@ public class ChatServiceImpl implements ChatService {
     }
 
     /**
-     * 从 LLM 输出中提取 JSON 字符串
-     * LLM 可能返回 ```json ... ``` 包裹的内容，需要提取纯 JSON
-     *
-     * @param content LLM 输出内容
-     * @return 提取的 JSON 字符串，提取失败返回 null
+     * 从 LLM 输出提取 JSON（支持 ```json / ``` 包裹或裸对象）。
      */
     private String extractJson(String content) {
-        // 尝试提取 ```json ... ``` 包裹的内容
         int jsonStart = content.indexOf("```json");
         if (jsonStart >= 0) {
             int jsonEnd = content.indexOf("```", jsonStart + 7);
@@ -931,13 +805,11 @@ public class ChatServiceImpl implements ChatService {
             }
         }
 
-        // 尝试提取 ``` ... ``` 包裹的内容
         int codeStart = content.indexOf("```");
         if (codeStart >= 0) {
             int codeEnd = content.indexOf("```", codeStart + 3);
             if (codeEnd > codeStart) {
                 String inner = content.substring(codeStart + 3, codeEnd).trim();
-                // 跳过可能的语言标记行
                 int braceStart = inner.indexOf('{');
                 if (braceStart >= 0) {
                     return inner.substring(braceStart);
@@ -945,7 +817,6 @@ public class ChatServiceImpl implements ChatService {
             }
         }
 
-        // 尝试直接找 JSON 对象
         int braceStart = content.indexOf('{');
         int braceEnd = content.lastIndexOf('}');
         if (braceStart >= 0 && braceEnd > braceStart) {
@@ -956,11 +827,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     /**
-     * 规则压缩兜底方案
-     * 当 LLM 压缩失败时，使用简单的规则提取关键信息
-     *
-     * @param request 压缩请求
-     * @return 规则压缩的结果
+     * LLM 压缩失败时的规则兜底。
      */
     private CompactResult fallbackCompact(CompactRequest request) {
         StringBuilder summary = new StringBuilder();
@@ -991,15 +858,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     /**
-     * 处理成功的 API 响应（流式 SSE）
-     * 从 response body 中读取 SSE 流并推送给前端
-     * 提取为独立方法，供原始请求和 toolChoice 降级重试共用
-     *
-     * @param response OkHttp 响应（已确认 successful）
-     * @param emitter SSE 发射器
-     * @param inputTextLength 输入文本长度，用于 token 估算
-     * @param emitterCompleted emitter 完成标记
-     * @throws IOException 读取异常
+     * 读取 SSE 流并推送；原始请求与 toolChoice 降级重试共用。
      */
     private void handleSuccessfulResponse(Response response, SseEmitter emitter, int inputTextLength,
                                             java.util.concurrent.atomic.AtomicBoolean emitterCompleted) throws IOException {
@@ -1036,16 +895,11 @@ public class ChatServiceImpl implements ChatService {
     }
 
     /**
-     * 判断 toolChoice 是否为 required 或 object 类型
-     * 这些类型在 thinking mode 下不被部分模型（如阿里百炼 Qwen3）支持
-     *
-     * @param toolChoice 工具调用策略
-     * @return true 表示是 required 或 object 类型
+     * required 或指定函数对象（Map）在部分 thinking 模型下不被支持。
      */
     private boolean isRequiredOrObjectToolChoice(Object toolChoice) {
         if (toolChoice == null) return false;
         if ("required".equals(toolChoice)) return true;
-        // 前端传 { type: "function", function: { name: "xxx" } } 经 Jackson 反序列化为 Map
         return toolChoice instanceof Map;
     }
 }
