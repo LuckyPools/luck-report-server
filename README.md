@@ -8,6 +8,9 @@
 	<a href="https://gitee.com/LuckyPools/luck-report-server/stargazers"><img src="https://gitee.com/LuckyPools/luck-report-server/badge/star.svg"></a>
 	<a href="https://gitee.com/LuckyPools/luck-report-server/members"><img src="https://img.shields.io/badge/Fork%20on%20Gitee-Click%20Here-blue"></a>
 </p>
+<p align="center">
+	[<a href="./README.md">中文</a>] | [<a href="./README_EN.md">English</a>]
+</p>
 
 ## 📖 项目简介
 

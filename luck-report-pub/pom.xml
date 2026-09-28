@@ -18,12 +18,6 @@
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>com.luck.product</groupId>
-            <artifactId>luck-report-web</artifactId>
-            <version>${revision}</version>
-        </dependency>
-
         <!-- luck-report-web 的 spring-boot-starter-web 为 provided, 需要在此显式引入 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -42,17 +36,17 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- Thymeleaf: luck-report-web 的 ViewController 需要, 适配器模块中为 provided 需显式引入 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+
         <!-- Spring Boot2 Servlet 适配器, SPI 自动发现 -->
         <dependency>
             <groupId>com.luck.product</groupId>
             <artifactId>luck-report-spring-boot2-starter</artifactId>
             <version>${revision}</version>
-        </dependency>
-
-        <!-- Thymeleaf: luck-report-web 的 ViewController 需要, 适配器模块中为 provided 需显式引入 -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
 
         <dependency>
