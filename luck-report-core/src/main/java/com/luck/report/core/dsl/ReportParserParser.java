@@ -1,5 +1,3 @@
-// Generated from D:/TestCode/luck-report-v2-dev/luck-report-plus/luck-report-server/luck-report-core/dsl/ReportParser.g4 by ANTLR 4.13.1
-
 package com.luck.report.core.dsl;
 
 import org.antlr.v4.runtime.atn.*;
@@ -19,31 +17,31 @@ public class ReportParserParser extends Parser {
 	protected static final PredictionContextCache _sharedContextCache =
 		new PredictionContextCache();
 	public static final int
-		T__0=1, T__1=2, T__2=3, T__3=4, T__4=5, T__5=6, T__6=7, T__7=8, T__8=9, 
-		T__9=10, T__10=11, T__11=12, T__12=13, T__13=14, T__14=15, T__15=16, T__16=17, 
-		T__17=18, T__18=19, Cell=20, Operator=21, OP=22, ORDER=23, BOOLEAN=24, 
-		COLON=25, COMMA=26, NULL=27, LeftParen=28, RightParen=29, STRING=30, AND=31, 
-		OR=32, INTEGER=33, NUMBER=34, EXCLAMATION=35, EXP=36, Identifier=37, LETTER=38, 
+		T__0=1, T__1=2, T__2=3, T__3=4, T__4=5, T__5=6, T__6=7, T__7=8, T__8=9,
+		T__9=10, T__10=11, T__11=12, T__12=13, T__13=14, T__14=15, T__15=16, T__16=17,
+		T__17=18, T__18=19, Cell=20, Operator=21, OP=22, ORDER=23, BOOLEAN=24,
+		COLON=25, COMMA=26, NULL=27, LeftParen=28, RightParen=29, STRING=30, AND=31,
+		OR=32, INTEGER=33, NUMBER=34, EXCLAMATION=35, EXP=36, Identifier=37, LETTER=38,
 		Char=39, DIGIT=40, WS=41, NL=42;
 	public static final int
-		RULE_entry = 0, RULE_expression = 1, RULE_exprComposite = 2, RULE_ternaryExpr = 3, 
-		RULE_caseExpr = 4, RULE_casePart = 5, RULE_ifExpr = 6, RULE_ifPart = 7, 
-		RULE_elseIfPart = 8, RULE_elsePart = 9, RULE_block = 10, RULE_exprBlock = 11, 
-		RULE_returnExpr = 12, RULE_expr = 13, RULE_ifCondition = 14, RULE_variableAssign = 15, 
-		RULE_item = 16, RULE_unit = 17, RULE_variable = 18, RULE_cellPosition = 19, 
-		RULE_relativeCell = 20, RULE_currentCellValue = 21, RULE_currentCellData = 22, 
-		RULE_cell = 23, RULE_dataset = 24, RULE_function = 25, RULE_functionParameter = 26, 
-		RULE_set = 27, RULE_cellCoordinate = 28, RULE_coordinate = 29, RULE_cellIndicator = 30, 
-		RULE_conditions = 31, RULE_condition = 32, RULE_property = 33, RULE_currentValue = 34, 
+		RULE_entry = 0, RULE_expression = 1, RULE_exprComposite = 2, RULE_ternaryExpr = 3,
+		RULE_caseExpr = 4, RULE_casePart = 5, RULE_ifExpr = 6, RULE_ifPart = 7,
+		RULE_elseIfPart = 8, RULE_elsePart = 9, RULE_block = 10, RULE_exprBlock = 11,
+		RULE_returnExpr = 12, RULE_expr = 13, RULE_ifCondition = 14, RULE_variableAssign = 15,
+		RULE_item = 16, RULE_unit = 17, RULE_variable = 18, RULE_cellPosition = 19,
+		RULE_relativeCell = 20, RULE_currentCellValue = 21, RULE_currentCellData = 22,
+		RULE_cell = 23, RULE_dataset = 24, RULE_function = 25, RULE_functionParameter = 26,
+		RULE_set = 27, RULE_cellCoordinate = 28, RULE_coordinate = 29, RULE_cellIndicator = 30,
+		RULE_conditions = 31, RULE_condition = 32, RULE_property = 33, RULE_currentValue = 34,
 		RULE_simpleValue = 35, RULE_join = 36, RULE_aggregate = 37;
 	private static String[] makeRuleNames() {
 		return new String[] {
-			"entry", "expression", "exprComposite", "ternaryExpr", "caseExpr", "casePart", 
-			"ifExpr", "ifPart", "elseIfPart", "elsePart", "block", "exprBlock", "returnExpr", 
-			"expr", "ifCondition", "variableAssign", "item", "unit", "variable", 
-			"cellPosition", "relativeCell", "currentCellValue", "currentCellData", 
-			"cell", "dataset", "function", "functionParameter", "set", "cellCoordinate", 
-			"coordinate", "cellIndicator", "conditions", "condition", "property", 
+			"entry", "expression", "exprComposite", "ternaryExpr", "caseExpr", "casePart",
+			"ifExpr", "ifPart", "elseIfPart", "elsePart", "block", "exprBlock", "returnExpr",
+			"expr", "ifCondition", "variableAssign", "item", "unit", "variable",
+			"cellPosition", "relativeCell", "currentCellValue", "currentCellData",
+			"cell", "dataset", "function", "functionParameter", "set", "cellCoordinate",
+			"coordinate", "cellIndicator", "conditions", "condition", "property",
 			"currentValue", "simpleValue", "join", "aggregate"
 		};
 	}
@@ -51,19 +49,19 @@ public class ReportParserParser extends Parser {
 
 	private static String[] makeLiteralNames() {
 		return new String[] {
-			null, "'?'", "'case'", "'{'", "'}'", "'if'", "'else'", "'return'", "';'", 
-			"'var'", "'='", "'&'", "'$'", "'#'", "'.'", "'cell'", "'['", "']'", "'to'", 
-			"'@'", null, null, null, null, null, "':'", "','", "'null'", "'('", "')'", 
+			null, "'?'", "'case'", "'{'", "'}'", "'if'", "'else'", "'return'", "';'",
+			"'var'", "'='", "'&'", "'$'", "'#'", "'.'", "'cell'", "'['", "']'", "'to'",
+			"'@'", null, null, null, null, null, "':'", "','", "'null'", "'('", "')'",
 			null, null, null, null, null, "'!'"
 		};
 	}
 	private static final String[] _LITERAL_NAMES = makeLiteralNames();
 	private static String[] makeSymbolicNames() {
 		return new String[] {
-			null, null, null, null, null, null, null, null, null, null, null, null, 
-			null, null, null, null, null, null, null, null, "Cell", "Operator", "OP", 
-			"ORDER", "BOOLEAN", "COLON", "COMMA", "NULL", "LeftParen", "RightParen", 
-			"STRING", "AND", "OR", "INTEGER", "NUMBER", "EXCLAMATION", "EXP", "Identifier", 
+			null, null, null, null, null, null, null, null, null, null, null, null,
+			null, null, null, null, null, null, null, null, "Cell", "Operator", "OP",
+			"ORDER", "BOOLEAN", "COLON", "COMMA", "NULL", "LeftParen", "RightParen",
+			"STRING", "AND", "OR", "INTEGER", "NUMBER", "EXCLAMATION", "EXP", "Identifier",
 			"LETTER", "Char", "DIGIT", "WS", "NL"
 		};
 	}
@@ -145,7 +143,7 @@ public class ReportParserParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(77); 
+			setState(77);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			do {
@@ -155,7 +153,7 @@ public class ReportParserParser extends Parser {
 				expression();
 				}
 				}
-				setState(79); 
+				setState(79);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & 164703025828L) != 0) );
@@ -263,7 +261,7 @@ public class ReportParserParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_exprComposite; }
-	 
+
 		public ExprCompositeContext() { }
 		public void copyFrom(ExprCompositeContext ctx) {
 			super.copyFrom(ctx);
@@ -394,7 +392,7 @@ public class ReportParserParser extends Parser {
 					setState(101);
 					exprComposite(2);
 					}
-					} 
+					}
 				}
 				setState(106);
 				_errHandler.sync(this);
@@ -681,7 +679,7 @@ public class ReportParserParser extends Parser {
 					setState(148);
 					elseIfPart();
 					}
-					} 
+					}
 				}
 				setState(153);
 				_errHandler.sync(this);
@@ -954,7 +952,7 @@ public class ReportParserParser extends Parser {
 					setState(195);
 					exprBlock();
 					}
-					} 
+					}
 				}
 				setState(200);
 				_errHandler.sync(this);
@@ -1151,7 +1149,7 @@ public class ReportParserParser extends Parser {
 					setState(218);
 					item();
 					}
-					} 
+					}
 				}
 				setState(223);
 				_errHandler.sync(this);
@@ -1286,7 +1284,7 @@ public class ReportParserParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_item; }
-	 
+
 		public ItemContext() { }
 		public void copyFrom(ItemContext ctx) {
 			super.copyFrom(ctx);
@@ -1374,7 +1372,7 @@ public class ReportParserParser extends Parser {
 						setState(239);
 						unit();
 						}
-						} 
+						}
 					}
 					setState(244);
 					_errHandler.sync(this);
@@ -1402,7 +1400,7 @@ public class ReportParserParser extends Parser {
 				match(LeftParen);
 				setState(250);
 				item();
-				setState(253); 
+				setState(253);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 				do {
@@ -1414,7 +1412,7 @@ public class ReportParserParser extends Parser {
 					item();
 					}
 					}
-					setState(255); 
+					setState(255);
 					_errHandler.sync(this);
 					_la = _input.LA(1);
 				} while ( _la==Operator );
@@ -2055,7 +2053,7 @@ public class ReportParserParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_set; }
-	 
+
 		public SetContext() { }
 		public void copyFrom(SetContext ctx) {
 			super.copyFrom(ctx);
@@ -2316,7 +2314,7 @@ public class ReportParserParser extends Parser {
 					setState(367);
 					set(2);
 					}
-					} 
+					}
 				}
 				setState(372);
 				_errHandler.sync(this);
@@ -2474,7 +2472,7 @@ public class ReportParserParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_cellIndicator; }
-	 
+
 		public CellIndicatorContext() { }
 		public void copyFrom(CellIndicatorContext ctx) {
 			super.copyFrom(ctx);
@@ -2624,7 +2622,7 @@ public class ReportParserParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_condition; }
-	 
+
 		public ConditionContext() { }
 		public void copyFrom(ConditionContext ctx) {
 			super.copyFrom(ctx);
@@ -2819,7 +2817,7 @@ public class ReportParserParser extends Parser {
 					setState(430);
 					property(2);
 					}
-					} 
+					}
 				}
 				setState(435);
 				_errHandler.sync(this);

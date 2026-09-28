@@ -1,5 +1,3 @@
-// Generated from D:/TestCode/luck-report-v2-dev/luck-report-plus/luck-report-server/luck-report-core/dsl/ReportParser.g4 by ANTLR 4.13.1
-
 package com.luck.report.core.dsl;
 
 import org.antlr.v4.runtime.Lexer;
@@ -19,11 +17,11 @@ public class ReportParserLexer extends Lexer {
 	protected static final PredictionContextCache _sharedContextCache =
 		new PredictionContextCache();
 	public static final int
-		T__0=1, T__1=2, T__2=3, T__3=4, T__4=5, T__5=6, T__6=7, T__7=8, T__8=9, 
-		T__9=10, T__10=11, T__11=12, T__12=13, T__13=14, T__14=15, T__15=16, T__16=17, 
-		T__17=18, T__18=19, Cell=20, Operator=21, OP=22, ORDER=23, BOOLEAN=24, 
-		COLON=25, COMMA=26, NULL=27, LeftParen=28, RightParen=29, STRING=30, AND=31, 
-		OR=32, INTEGER=33, NUMBER=34, EXCLAMATION=35, EXP=36, Identifier=37, LETTER=38, 
+		T__0=1, T__1=2, T__2=3, T__3=4, T__4=5, T__5=6, T__6=7, T__7=8, T__8=9,
+		T__9=10, T__10=11, T__11=12, T__12=13, T__13=14, T__14=15, T__15=16, T__16=17,
+		T__17=18, T__18=19, Cell=20, Operator=21, OP=22, ORDER=23, BOOLEAN=24,
+		COLON=25, COMMA=26, NULL=27, LeftParen=28, RightParen=29, STRING=30, AND=31,
+		OR=32, INTEGER=33, NUMBER=34, EXCLAMATION=35, EXP=36, Identifier=37, LETTER=38,
 		Char=39, DIGIT=40, WS=41, NL=42;
 	public static String[] channelNames = {
 		"DEFAULT_TOKEN_CHANNEL", "HIDDEN"
@@ -35,12 +33,12 @@ public class ReportParserLexer extends Lexer {
 
 	private static String[] makeRuleNames() {
 		return new String[] {
-			"T__0", "T__1", "T__2", "T__3", "T__4", "T__5", "T__6", "T__7", "T__8", 
-			"T__9", "T__10", "T__11", "T__12", "T__13", "T__14", "T__15", "T__16", 
-			"T__17", "T__18", "Cell", "Operator", "OP", "ORDER", "BOOLEAN", "COLON", 
-			"COMMA", "NULL", "LeftParen", "RightParen", "STRING", "AND", "OR", "INTEGER", 
-			"NUMBER", "EXCLAMATION", "EXP", "Identifier", "LETTER", "Char", "DIGIT", 
-			"STRING_CONTENT", "EscapeSequence", "OctalEscape", "UnicodeEscape", "HEX", 
+			"T__0", "T__1", "T__2", "T__3", "T__4", "T__5", "T__6", "T__7", "T__8",
+			"T__9", "T__10", "T__11", "T__12", "T__13", "T__14", "T__15", "T__16",
+			"T__17", "T__18", "Cell", "Operator", "OP", "ORDER", "BOOLEAN", "COLON",
+			"COMMA", "NULL", "LeftParen", "RightParen", "STRING", "AND", "OR", "INTEGER",
+			"NUMBER", "EXCLAMATION", "EXP", "Identifier", "LETTER", "Char", "DIGIT",
+			"STRING_CONTENT", "EscapeSequence", "OctalEscape", "UnicodeEscape", "HEX",
 			"StartChar", "WS", "NL"
 		};
 	}
@@ -48,19 +46,19 @@ public class ReportParserLexer extends Lexer {
 
 	private static String[] makeLiteralNames() {
 		return new String[] {
-			null, "'?'", "'case'", "'{'", "'}'", "'if'", "'else'", "'return'", "';'", 
-			"'var'", "'='", "'&'", "'$'", "'#'", "'.'", "'cell'", "'['", "']'", "'to'", 
-			"'@'", null, null, null, null, null, "':'", "','", "'null'", "'('", "')'", 
+			null, "'?'", "'case'", "'{'", "'}'", "'if'", "'else'", "'return'", "';'",
+			"'var'", "'='", "'&'", "'$'", "'#'", "'.'", "'cell'", "'['", "']'", "'to'",
+			"'@'", null, null, null, null, null, "':'", "','", "'null'", "'('", "')'",
 			null, null, null, null, null, "'!'"
 		};
 	}
 	private static final String[] _LITERAL_NAMES = makeLiteralNames();
 	private static String[] makeSymbolicNames() {
 		return new String[] {
-			null, null, null, null, null, null, null, null, null, null, null, null, 
-			null, null, null, null, null, null, null, null, "Cell", "Operator", "OP", 
-			"ORDER", "BOOLEAN", "COLON", "COMMA", "NULL", "LeftParen", "RightParen", 
-			"STRING", "AND", "OR", "INTEGER", "NUMBER", "EXCLAMATION", "EXP", "Identifier", 
+			null, null, null, null, null, null, null, null, null, null, null, null,
+			null, null, null, null, null, null, null, null, "Cell", "Operator", "OP",
+			"ORDER", "BOOLEAN", "COLON", "COMMA", "NULL", "LeftParen", "RightParen",
+			"STRING", "AND", "OR", "INTEGER", "NUMBER", "EXCLAMATION", "EXP", "Identifier",
 			"LETTER", "Char", "DIGIT", "WS", "NL"
 		};
 	}

@@ -1,5 +1,3 @@
-// Generated from D:/TestCode/luck-report-v2-dev/luck-report-plus/luck-report-server/luck-report-core/dsl/ReportParser.g4 by ANTLR 4.13.1
-
 package com.luck.report.core.dsl;
 
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;

@@ -55,10 +55,6 @@
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-collections4</artifactId>
-        </dependency>
         <!-- 知识库文档解析：Word/Excel 文本抽取 -->
         <dependency>
             <groupId>org.apache.poi</groupId>

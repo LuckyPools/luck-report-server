@@ -11,7 +11,7 @@
 
     <name>Luck-Report</name>
     <description>基于 Spring 的高性能 Java 报表引擎（UReport2 重构）</description>
-    <url>https://gitee.com/LuckyPools/luck-report-plus</url>
+    <url>https://gitee.com/LuckyPools/luck-report-server</url>
     <inceptionYear>2026</inceptionYear>
 
     <licenses>
@@ -32,9 +32,9 @@
     </developers>
 
     <scm>
-        <connection>scm:git:https://gitee.com/LuckyPools/luck-report-plus.git</connection>
-        <developerConnection>scm:git:https://gitee.com/LuckyPools/luck-report-plus.git</developerConnection>
-        <url>https://gitee.com/LuckyPools/luck-report-plus</url>
+        <connection>scm:git:https://gitee.com/LuckyPools/luck-report-server.git</connection>
+        <developerConnection>scm:git:https://gitee.com/LuckyPools/luck-report-server.git</developerConnection>
+        <url>https://gitee.com/LuckyPools/luck-report-server</url>
         <tag>HEAD</tag>
     </scm>
 
@@ -70,7 +70,6 @@
         <commons-text.version>1.13.1</commons-text.version>
         <commons-beanutils.version>1.11.0</commons-beanutils.version>
         <commons-io.version>2.21.0</commons-io.version>
-        <commons-logging.version>1.2</commons-logging.version>
         <antlr4-runtime.version>4.13.1</antlr4-runtime.version>
         <dom4j.version>2.1.4</dom4j.version>
         <itextpdf.version>5.5.13.3</itextpdf.version>
@@ -79,9 +78,7 @@
         <pdfbox.version>2.0.31</pdfbox.version>
         <zxing-core.version>3.5.4</zxing-core.version>
         <jsqlparser.version>4.9</jsqlparser.version>
-        <mybatis.version>2.3.2</mybatis.version>
         <postgresql.version>42.7.3</postgresql.version>
-        <commons-collections4.version>4.4</commons-collections4.version>
         <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
         <protobuf-java.version>3.25.5</protobuf-java.version>
         <milvus-sdk-java.version>2.6.18</milvus-sdk-java.version>
@@ -153,11 +150,6 @@
                 <version>${commons-io.version}</version>
             </dependency>
             <dependency>
-                <groupId>commons-logging</groupId>
-                <artifactId>commons-logging</artifactId>
-                <version>${commons-logging.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr4-runtime</artifactId>
                 <version>${antlr4-runtime.version}</version>
@@ -199,21 +191,10 @@
                 <version>${jsqlparser.version}</version>
             </dependency>
 
-            <!-- agent模块依赖 -->
-            <dependency>
-                <groupId>org.mybatis.spring.boot</groupId>
-                <artifactId>mybatis-spring-boot-starter</artifactId>
-                <version>${mybatis.version}</version>
-            </dependency>
             <dependency>
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
                 <version>${postgresql.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-collections4</artifactId>
-                <version>${commons-collections4.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.squareup.okhttp3</groupId>
