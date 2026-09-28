@@ -1,0 +1,39 @@
+<!doctype html>
+<!--
+  报表工作台首页 - Thymeleaf 壳模板
+  - 由 ViewController#index 返回的视图名 'index' 解析到此文件
+  - 路径前缀 classpath:/html/ + 视图名 index + 后缀 .html ⇒ classpath:/html/index.html
+  - @{...} 由 Thymeleaf 自动拼当前请求 contextPath，与 luck-report.servletPrefix 解耦
+  - 加载顺序：vendor.js (UI 依赖全局) -> lib UMD -> mount()
+  - 不加载 langchain.js（设计器 AI 聊天专用；表格底座 Jspreadsheet 已打进 UMD；
+    菜单点击设计器 / 预览走 window.open 新标签整页加载对应壳页面）
+  - assetVersion：lib 强缓存 cache-bust
+-->
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>报表工作台</title>
+    <link rel="stylesheet" th:href="@{|/${servletPrefix}/lib/style.css?v=${assetVersion}|}" />
+    <link rel="icon" th:href="@{|/${servletPrefix}/lib/favicon.ico?v=${assetVersion}|}" />
+  </head>
+  <body>
+    <div id="app"></div>
+    <script th:src="@{|/${servletPrefix}/lib/vendor.js?v=${assetVersion}|}"></script>
+    <script th:inline="javascript">
+      window.__LUCK_REPORT_SERVLET_PREFIX__ = /*[[${servletPrefix}]]*/ 'report'
+      window.__LUCK_REPORT_ASSET_VERSION__ = /*[[${assetVersion}]]*/ '0'
+    </script>
+    <script th:src="@{|/${servletPrefix}/lib/luck-report-ui.umd.js?v=${assetVersion}|}"></script>
+    <script th:inline="javascript">
+      window.__PAGE__ = 'index'
+      const servletPrefix = /*[[${servletPrefix}]]*/ 'report'
+      LuckReport.mount('#app', {
+        token:         /*[[${token}]]*/         '',
+        baseURL:       /*[[${baseURL}]]*/       '',
+        servletPrefix: servletPrefix,
+        embed:         true
+      })
+    </script>
+  </body>
+</html>

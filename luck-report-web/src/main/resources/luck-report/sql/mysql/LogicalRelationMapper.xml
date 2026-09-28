@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<mapper namespace="com.luck.report.web.modules.datasource.mapper.LogicalRelationMapper">
+
+    <insert id="insert">
+        INSERT INTO luck_logical_relation (id, datasource_id, source_table_name, source_column_name,
+            target_table_name, target_column_name, relation_type, description,
+            create_by, create_time, update_by, update_time, del_flag)
+        VALUES (#{id}, #{datasourceId}, #{sourceTableName}, #{sourceColumnName},
+            #{targetTableName}, #{targetColumnName}, #{relationType}, #{description},
+            #{createBy}, #{createTime}, #{updateBy}, #{updateTime}, #{delFlag})
+    </insert>
+
+    <update id="updateById">
+        UPDATE luck_logical_relation SET source_table_name = #{sourceTableName},
+            source_column_name = #{sourceColumnName}, target_table_name = #{targetTableName},
+            target_column_name = #{targetColumnName}, relation_type = #{relationType},
+            description = #{description} WHERE id = #{id}
+    </update>
+
+    <select id="selectById">
+        SELECT id, datasource_id, source_table_name, source_column_name,
+            target_table_name, target_column_name, relation_type, description,
+            create_by, create_time, update_by, update_time, del_flag
+        FROM luck_logical_relation WHERE id = #{id} AND del_flag = 0
+    </select>
+
+    <select id="selectByDatasourceId">
+        SELECT id, datasource_id, source_table_name, source_column_name,
+            target_table_name, target_column_name, relation_type, description,
+            create_by, create_time, update_by, update_time, del_flag
+        FROM luck_logical_relation WHERE datasource_id = #{datasourceId} AND del_flag = 0
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectByDatasourceIds">
+        SELECT id, datasource_id, source_table_name, source_column_name,
+            target_table_name, target_column_name, relation_type, description,
+            create_by, create_time, update_by, update_time, del_flag
+        FROM luck_logical_relation WHERE datasource_id IN
+        <foreach collection="datasourceIds" item="dsId" open="(" separator="," close=")">
+            #{dsId}
+        </foreach>
+        AND del_flag = 0 ORDER BY create_time DESC
+    </select>
+
+    <update id="deleteById">
+        UPDATE luck_logical_relation SET del_flag = 1 WHERE id = #{id}
+    </update>
+
+    <select id="checkExists">
+        SELECT COUNT(*) FROM luck_logical_relation
+        WHERE datasource_id = #{datasourceId} AND source_table_name = #{sourceTableName}
+        AND source_column_name = #{sourceColumnName} AND target_table_name = #{targetTableName}
+        AND target_column_name = #{targetColumnName} AND del_flag = 0
+    </select>
+
+    <update id="deleteByDatasourceId">
+        UPDATE luck_logical_relation SET del_flag = 1 WHERE datasource_id = #{datasourceId}
+    </update>
+
+</mapper>

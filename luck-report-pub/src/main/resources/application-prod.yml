@@ -1,0 +1,95 @@
+spring:
+  datasource:
+    username: root
+    password: root
+    url: jdbc:mysql://localhost:3306/luck_report?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  redis:
+    database: 0
+    host: 127.0.0.1
+    port: 6379
+    password: root
+    timeout: PT1800S
+    jedis:
+      pool:
+        max-idle: 100
+        min-idle: 1
+        max-active: 100
+        max-wait: -1
+    expire: 7200
+
+luck-report:
+  # 禁用本地缓存，使用 Redis 分布式缓存
+  disableLocalReportCache: true
+  # 缓存默认过期时间（秒），默认 15 分钟
+  cacheExpireSeconds: 900
+  # 请求前缀
+  servletPrefix: luck-report
+  # 调试日志
+  debug: true
+  # 自动扫描组件
+  autoConfig: true
+  # 打印启动标语
+  banner:
+    enable: true
+  # 向量数据库
+  #  vector:
+  #    type: milvus
+  #    datasource:
+  #      host: https://xxxx.vectordb.zilliz.com.cn
+  #      port: 19530
+  #      username: db_admin
+  #      password: yyyy
+  #      # 向量维度
+  #      dimension: 1024
+  #
+  #    # 知识库分块
+  #    chunk-size: 1000
+  #    chunk-overlap: 100
+  #    # 知识库 RAG 检索
+  #    retrieval:
+  #      recall-top-k: 30
+  #      # 最多保留几个知识（按该知识最高分排序）
+  #      final-top-k: 5
+  #      # 同一知识最多保留几个高分 chunk（分条返回，各带 score）
+  #      merge-top-n: 3
+  #      threshold: 0.35
+  #      reject-mismatched-model: false
+  #      # 混合检索
+  #      method: hybrid
+  #      vector-recall-top-k: 40
+  #      fulltext-recall-top-k: 40
+  #      embedding-weight: 0.5
+  #      rrf-k: 60
+  #      fusion-top-n: 20
+  #      # 精排需同时：rerank-enabled=true + 存在激活的 RERANK 模型
+  #      rerank-enabled: true
+  #      rerank-top-n: 3
+  #      rerank-weight: 0.5
+  #      rerank-timeout-ms: 10000
+  #      rerank-doc-max-chars: 2000
+  #    # 知识库文档解析
+  #    document-parse:
+  #      max-file-bytes: 20971520
+  #      pdf-min-chars: 50
+  #      excel-max-cells: 50000
+
+  # ============ 报表 Token 校验 ============
+  token:
+    enabled: false
+    # token header 名称
+    header-name: X-Access-Token
+    # 是否允许 URL 上传 token（用于 iframe 首次 GET）
+    allow-query-token: true
+    # 报表管理员角色白名单（命中任一角色的用户可访问 /designer / 角色报表管理 API）
+    admin-roles:
+      - admin
+
+  agent:
+    # 日志上报
+    trace:
+      enabled: true
+
+  # 多语言
+  locale: zh_CN

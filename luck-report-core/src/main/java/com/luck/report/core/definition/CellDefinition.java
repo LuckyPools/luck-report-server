@@ -1,0 +1,334 @@
+/*******************************************************************************
+ * Copyright 2017 Bstek
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License.  You may obtain a copy
+ * of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ ******************************************************************************/
+package com.luck.report.core.definition;
+
+import com.luck.report.core.Range;
+import com.luck.report.core.definition.value.Value;
+import com.luck.report.core.expression.ExpressionUtils;
+import com.luck.report.core.expression.model.Expression;
+import com.luck.report.core.model.Cell;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.apache.commons.lang3.StringUtils;
+
+import java.io.Serializable;
+import java.util.*;
+
+
+/**
+ * @author Jacky.gao
+ * @since 2016年11月1日
+ */
+public class CellDefinition implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private int rowNumber;
+    private int columnNumber;
+    private int rowSpan;
+    private int colSpan;
+    private String name;
+    private Value value;
+    private CellStyle cellStyle = new CellStyle();
+    private String linkUrl;
+    private String linkTargetWindow;
+    private List<LinkParameter> linkParameters;
+
+    @JsonIgnore // 序列化会丢失
+    private Expression linkUrlExpression;
+
+    private boolean fillBlankRows;
+    /**
+     * 允许填充空白行时fillBlankRows=true，要求当前数据行数必须是multiple定义的行数的倍数，否则就补充空白行
+     */
+    private int multiple;
+
+    private Expand expand = Expand.None;
+
+    @JsonIgnore // 序列化会丢失
+    private Range duplicateRange;
+    private com.luck.report.core.build.cell.ExpandDuplicatorPlan downDuplicatorPlan;
+    private com.luck.report.core.build.cell.ExpandDuplicatorPlan rightDuplicatorPlan;
+    @JsonIgnore // 序列化会丢失
+    private Set<String> increaseSpanCellNames = new HashSet<String>();
+    @JsonIgnore // 序列化会丢失
+    private Map<String, BlankCellInfo> newBlankCellsMap = new HashMap<String, BlankCellInfo>();
+    @JsonIgnore // 序列化会丢失
+    private Set<String> newCellNames = new HashSet<String>();
+
+    /**
+     * 当前单元格左父格名
+     */
+    private String leftParentCellName;
+    /**
+     * 当前单元格上父格名
+     */
+    private String topParentCellName;
+    /**
+     * 当前单元格左父格
+     */
+    @JsonIgnore // 序列化会丢失
+    private CellDefinition leftParentCell;
+    /**
+     * 当前单元格上父格
+     */
+    @JsonIgnore // 序列化会丢失
+    private CellDefinition topParentCell;
+    /**
+     * 当前单无格所在行的所有子格
+     */
+    @JsonIgnore // 序列化会丢失
+    private List<CellDefinition> rowChildrenCells = new ArrayList<>();
+    /**
+     * 当前单无格所在列的所有子格
+     */
+    @JsonIgnore // 序列化会丢失
+    private List<CellDefinition> columnChildrenCells = new ArrayList<CellDefinition>();
+
+    private List<ConditionPropertyItem> conditionPropertyItems;
+
+    /**
+     * 默认无参构造器
+     */
+    public CellDefinition() {}
+
+    protected Cell newCell() {
+        Cell cell = new Cell();
+        cell.setValue(value);
+        cell.setName(name);
+        cell.setRowSpan(rowSpan);
+        cell.setColSpan(colSpan);
+        cell.setExpand(expand);
+        cell.setCellStyle(cellStyle);
+        cell.setNewBlankCellsMap(newBlankCellsMap);
+        cell.setIncreaseSpanCellNames(increaseSpanCellNames);
+        cell.setNewCellNames(newCellNames);
+        cell.setDuplicateRange(duplicateRange);
+        cell.setDownDuplicatorPlan(downDuplicatorPlan);
+        cell.setRightDuplicatorPlan(rightDuplicatorPlan);
+        cell.setLinkParameters(linkParameters);
+        cell.setLinkTargetWindow(linkTargetWindow);
+        cell.setLinkUrl(linkUrl);
+        cell.setConditionPropertyItems(conditionPropertyItems);
+        cell.setFillBlankRows(fillBlankRows);
+        cell.setMultiple(multiple);
+        cell.setLinkUrlExpression(linkUrlExpression);
+        return cell;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getRowNumber() {
+        return rowNumber;
+    }
+
+    public void setRowNumber(int rowNumber) {
+        this.rowNumber = rowNumber;
+    }
+
+    public int getColumnNumber() {
+        return columnNumber;
+    }
+
+    public void setColumnNumber(int columnNumber) {
+        this.columnNumber = columnNumber;
+    }
+
+    public Value getValue() {
+        return value;
+    }
+
+    public void setValue(Value value) {
+        this.value = value;
+    }
+
+    public int getRowSpan() {
+        return rowSpan;
+    }
+
+    public void setRowSpan(int rowSpan) {
+        this.rowSpan = rowSpan;
+    }
+
+    public int getColSpan() {
+        return colSpan;
+    }
+
+    public void setColSpan(int colSpan) {
+        this.colSpan = colSpan;
+    }
+
+    public Expand getExpand() {
+        return expand;
+    }
+
+    public void setExpand(Expand expand) {
+        this.expand = expand;
+    }
+
+    public String getLeftParentCellName() {
+        return leftParentCellName;
+    }
+
+    public void setLeftParentCellName(String leftParentCellName) {
+        this.leftParentCellName = leftParentCellName;
+    }
+
+    public String getTopParentCellName() {
+        return topParentCellName;
+    }
+
+    public void setTopParentCellName(String topParentCellName) {
+        this.topParentCellName = topParentCellName;
+    }
+
+    public CellDefinition getLeftParentCell() {
+        return leftParentCell;
+    }
+
+    public void setLeftParentCell(CellDefinition leftParentCell) {
+        this.leftParentCell = leftParentCell;
+    }
+
+    public CellDefinition getTopParentCell() {
+        return topParentCell;
+    }
+
+    public void setTopParentCell(CellDefinition topParentCell) {
+        this.topParentCell = topParentCell;
+    }
+
+    public CellStyle getCellStyle() {
+        return cellStyle;
+    }
+
+    public void setCellStyle(CellStyle cellStyle) {
+        this.cellStyle = cellStyle;
+    }
+
+    public boolean isFillBlankRows() {
+        return fillBlankRows;
+    }
+
+    public void setFillBlankRows(boolean fillBlankRows) {
+        this.fillBlankRows = fillBlankRows;
+    }
+
+    public int getMultiple() {
+        return multiple;
+    }
+
+    public void setMultiple(int multiple) {
+        this.multiple = multiple;
+    }
+
+    public Range getDuplicateRange() {
+        return duplicateRange;
+    }
+
+    public void setDuplicateRange(Range duplicateRange) {
+        this.duplicateRange = duplicateRange;
+    }
+
+    public com.luck.report.core.build.cell.ExpandDuplicatorPlan getDownDuplicatorPlan() {
+        return downDuplicatorPlan;
+    }
+
+    public void setDownDuplicatorPlan(com.luck.report.core.build.cell.ExpandDuplicatorPlan downDuplicatorPlan) {
+        this.downDuplicatorPlan = downDuplicatorPlan;
+    }
+
+    public com.luck.report.core.build.cell.ExpandDuplicatorPlan getRightDuplicatorPlan() {
+        return rightDuplicatorPlan;
+    }
+
+    public void setRightDuplicatorPlan(com.luck.report.core.build.cell.ExpandDuplicatorPlan rightDuplicatorPlan) {
+        this.rightDuplicatorPlan = rightDuplicatorPlan;
+    }
+
+    public List<CellDefinition> getRowChildrenCells() {
+        return rowChildrenCells;
+    }
+
+    public List<CellDefinition> getColumnChildrenCells() {
+        return columnChildrenCells;
+    }
+
+    public Set<String> getIncreaseSpanCellNames() {
+        return increaseSpanCellNames;
+    }
+
+    public Map<String, BlankCellInfo> getNewBlankCellsMap() {
+        return newBlankCellsMap;
+    }
+
+    public Set<String> getNewCellNames() {
+        return newCellNames;
+    }
+
+    public String getLinkUrl() {
+        return linkUrl;
+    }
+
+    public void setLinkUrl(String linkUrl) {
+        this.linkUrl = linkUrl;
+        if (StringUtils.isNotBlank(linkUrl)
+                && linkUrl.startsWith(ExpressionUtils.EXPR_PREFIX)
+                && linkUrl.endsWith(ExpressionUtils.EXPR_SUFFIX)) {
+            String expr = linkUrl.substring(2, linkUrl.length() - 1);
+            Expression urlExpression = ExpressionUtils.parseExpression(expr);
+            this.linkUrlExpression = urlExpression;
+        } else {
+            this.linkUrlExpression = null;
+        }
+    }
+
+    public String getLinkTargetWindow() {
+        return linkTargetWindow;
+    }
+
+    public void setLinkTargetWindow(String linkTargetWindow) {
+        this.linkTargetWindow = linkTargetWindow;
+    }
+
+    public List<LinkParameter> getLinkParameters() {
+        return linkParameters;
+    }
+
+    public void setLinkParameters(List<LinkParameter> linkParameters) {
+        this.linkParameters = linkParameters;
+    }
+
+    public List<ConditionPropertyItem> getConditionPropertyItems() {
+        return conditionPropertyItems;
+    }
+
+    public void setConditionPropertyItems(
+            List<ConditionPropertyItem> conditionPropertyItems) {
+        this.conditionPropertyItems = conditionPropertyItems;
+    }
+
+    public Expression getLinkUrlExpression() {
+        return linkUrlExpression;
+    }
+
+    public void setLinkUrlExpression(Expression linkUrlExpression) {
+        this.linkUrlExpression = linkUrlExpression;
+    }
+}

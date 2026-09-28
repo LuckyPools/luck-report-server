@@ -1,0 +1,130 @@
+/*******************************************************************************
+ * Copyright 2017 Bstek
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License.  You may obtain a copy
+ * of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ ******************************************************************************/
+package com.luck.report.core.expression.model.condition;
+
+import com.luck.report.core.Utils;
+import com.luck.report.core.build.Context;
+import com.luck.report.core.exception.ReportComputeException;
+import com.luck.report.core.expression.ExpressionUtils;
+import com.luck.report.core.expression.model.Expression;
+import com.luck.report.core.expression.model.data.ExpressionData;
+import com.luck.report.core.model.Cell;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * @author Jacky.gao
+ * @since 2017年4月7日
+ */
+public class CellExpressionCondition extends BaseCondition {
+    private ConditionType type = ConditionType.cell;
+    private String cellName;
+    private Expression rightExpression;
+
+    public CellExpressionCondition() {}
+
+    @Override
+    Object computeLeft(Cell cell, Cell currentCell, Object obj, Context context) {
+        if (cellName.equals(currentCell.getName())) {
+            return currentCell.getData();
+        } else {
+            List<Cell> cells = Utils.fetchTargetCells(cell, context, cellName);
+            int size = cells.size();
+            if (cells == null || size == 0) {
+                return new ReportComputeException("Unknow cell : " + cellName);
+            } else {
+                for (Cell c : cells) {
+                    if (c.getRow() == cell.getRow() || c.getColumn() == cell.getColumn()) {
+                        return c.getData();
+                    }
+                }
+                if (size > 1) {
+                    StringBuilder sb = new StringBuilder();
+                    for (Cell c : cells) {
+                        if (sb.length() > 0) {
+                            sb.append(",");
+                        }
+                        sb.append(c.getData());
+                    }
+                    return sb.toString();
+                } else {
+                    return cells.get(0).getData();
+                }
+            }
+        }
+    }
+
+    @Override
+    Object computeRight(Cell cell, Cell currentCell, Object obj, Context context) {
+        ExpressionData<?> exprData = rightExpression.execute(cell, currentCell, context);
+        return extractExpressionData(exprData);
+    }
+
+    @Override
+    public ConditionType getType() {
+        return type;
+    }
+
+    /**
+     * 空实现，用于兼容JSON反序列化时可能存在的type字段
+     * @param type
+     */
+    public void setType(ConditionType type) {
+        // 空实现，忽略type字段
+    }
+
+    public String getCellName() {
+        return cellName;
+    }
+
+    public void setCellName(String cellName) {
+        this.cellName = cellName;
+    }
+
+    /**
+     * 重写父类方法，设置右侧表达式字符串并自动派生右侧Expression对象
+     * @param right 右侧表达式字符串
+     */
+    @Override
+    public void setRight(String right) {
+        super.setRight(right);
+        if (right != null && !right.isEmpty()) {
+            this.rightExpression = ExpressionUtils.parseExpression(right);
+        }
+    }
+
+    public Expression getRightExpression() {
+        return rightExpression;
+    }
+
+    public void setRightExpression(Expression rightExpression) {
+        this.rightExpression = rightExpression;
+    }
+
+    @Override
+    public List<String> fetchCellName() {
+        List<String> list = new ArrayList<String>();
+        if (cellName != null && !cellName.isEmpty()) {
+            list.add(cellName);
+        }
+        if (rightExpression != null) {
+            list.addAll(rightExpression.fetchCellName());
+        }
+        list.addAll(super.fetchCellName());
+        return list;
+    }
+}

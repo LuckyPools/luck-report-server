@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.luck.report.web.modules.chat.mapper.ChatMessageMapper">
+
+    <!-- 根据会话ID查询消息列表，按创建时间升序排列 -->
+    <select id="selectBySessionId" resultType="com.luck.report.web.modules.chat.domain.entity.ChatMessage">
+        SELECT id, session_id, role, content, message_type, metadata, create_time, create_by, update_by, update_time, del_flag
+        FROM luck_chat_message
+        WHERE session_id = #{sessionId} AND del_flag = 0
+        ORDER BY create_time ASC
+    </select>
+
+    <!-- 根据ID查询消息 -->
+    <select id="selectById" resultType="com.luck.report.web.modules.chat.domain.entity.ChatMessage">
+        SELECT id, session_id, role, content, message_type, metadata, create_time, create_by, update_by, update_time, del_flag
+        FROM luck_chat_message
+        WHERE id = #{id} AND del_flag = 0
+    </select>
+
+    <!-- 查询会话的消息数量 -->
+    <select id="countBySessionId" resultType="int">
+        SELECT COUNT(*) FROM luck_chat_message WHERE session_id = #{sessionId} AND del_flag = 0
+    </select>
+
+    <!-- 插入单条消息，createTime由Java侧赋值，ID由Snowflake生成 -->
+    <insert id="insert">
+        INSERT INTO luck_chat_message (id, session_id, role, content, message_type, metadata, create_time, create_by, update_by, update_time, del_flag)
+        VALUES (#{id}, #{sessionId}, #{role}, #{content}, #{messageType}, #{metadata}, #{createTime}, #{createBy}, #{updateBy}, #{updateTime}, #{delFlag})
+    </insert>
+
+    <!-- 批量插入消息（Oracle 12c/19c 用 INSERT ALL，不支持多行 VALUES） -->
+    <insert id="batchInsert">
+        INSERT ALL
+        <foreach collection="list" item="item">
+            INTO luck_chat_message (id, session_id, role, content, message_type, metadata, create_time, create_by, update_by, update_time, del_flag)
+            VALUES (#{item.id}, #{item.sessionId}, #{item.role}, #{item.content}, #{item.messageType}, #{item.metadata},
+                    #{item.createTime}, #{item.createBy}, #{item.updateBy}, #{item.updateTime}, #{item.delFlag})
+        </foreach>
+        SELECT 1 FROM DUAL
+    </insert>
+
+    <!-- 根据ID删除单条消息 -->
+    <update id="deleteById">
+        UPDATE luck_chat_message SET del_flag = 1 WHERE id = #{id}
+    </update>
+
+    <!-- 根据会话ID删除所有消息 -->
+    <delete id="deleteBySessionId">
+        DELETE FROM luck_chat_message WHERE session_id = #{sessionId}
+    </delete>
+
+</mapper>

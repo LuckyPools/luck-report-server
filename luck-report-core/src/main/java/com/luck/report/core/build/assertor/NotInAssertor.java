@@ -1,0 +1,36 @@
+/*******************************************************************************
+ * Copyright 2017 Bstek
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License.  You may obtain a copy
+ * of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ ******************************************************************************/
+package com.luck.report.core.build.assertor;
+
+/**
+ * not in：左值不在右值集合中。非 null 时语义等价于 !(left in right)；
+ * left 或 right 为 null 时与 InAssertor 一样返回 false。
+ *
+ * @author Jacky.gao
+ * @since 2017年1月12日
+ */
+public class NotInAssertor implements Assertor {
+
+    private final InAssertor inAssertor = new InAssertor();
+
+    @Override
+    public boolean eval(Object left, Object right) {
+        if (left == null || right == null) {
+            return false;
+        }
+        return !inAssertor.eval(left, right);
+    }
+}

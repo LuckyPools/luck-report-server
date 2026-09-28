@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>luck-report-web</artifactId>
+    <version>${revision}</version>
+    <name>Luck Report Web</name>
+
+    <parent>
+        <groupId>com.luck.product</groupId>
+        <artifactId>luck-report-server</artifactId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.luck.product</groupId>
+            <artifactId>luck-report-core</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.luck.product</groupId>
+            <artifactId>luck-report-jdbc</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <!-- Spring Boot Web: provided, 运行时由宿主项目提供具体的 javax/jakarta servlet -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.luck.product</groupId>
+            <artifactId>luck-report-font</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <!-- Thymeleaf 已移至适配器模块：spring-boot2-servlet 使用 thymeleaf-spring5，spring-boot3-servlet 使用 thymeleaf-spring6 -->
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+        </dependency>
+        <!-- 知识库文档解析：Word/Excel 文本抽取 -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-scratchpad</artifactId>
+        </dependency>
+        <!-- 知识库文档解析：PDF 文本层抽取（无 OCR） -->
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>${project.artifactId}</finalName>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*.xml</include>
+                    <include>**/*.properties</include>
+                    <include>**/*.txt</include>
+                    <include>**/*.md</include>
+                    <include>**/*.template</include>
+                    <include>**/*.jpg</include>
+                    <include>**/*.factories</include>
+                    <include>**/*.imports</include>
+                </includes>
+                <filtering>true</filtering>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*.jar</include>
+                    <include>**/*.xsd</include>
+                    <include>**/*.schemas</include>
+                    <include>**/*.handlers</include>
+                    <include>**/*.png</include>
+                    <include>**/*.jpg</include>
+                    <include>**/*.gif</include>
+                    <include>**/*.map</include>
+                    <include>**/*.swf</include>
+                    <include>**/*.swz</include>
+                    <include>**/*.eot</include>
+                    <include>**/*.svg</include>
+                    <include>**/*.ttf</include>
+                    <include>**/*.ttc</include>
+                    <include>**/*.TTF</include>
+                    <include>**/*.TTC</include>
+                    <include>**/*.woff</include>
+                    <include>**/*.woff2</include>
+                    <include>**/*.ico</include>
+                    <include>**/*.gz</include>
+                    <include>**/*.br</include>
+                    <include>**/*.js</include>
+                    <include>**/*.css</include>
+                    <include>**/*.html</include>
+                </includes>
+                <filtering>false</filtering>
+            </resource>
+        </resources>
+    </build>
+</project>

@@ -1,0 +1,5 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.luck.report.servlet.javax.JavaxReportAutoConfiguration,\
+  com.luck.report.web.config.DataSourceConfig,\
+  com.luck.report.servlet.javax.JavaxServletConfiguration,\
+  com.luck.report.servlet.javax.JavaxThymeleafConfig

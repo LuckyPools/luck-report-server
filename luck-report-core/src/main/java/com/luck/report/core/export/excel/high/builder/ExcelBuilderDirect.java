@@ -1,0 +1,273 @@
+/*******************************************************************************
+ * Copyright 2017 Bstek
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License.  You may obtain a copy
+ * of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ ******************************************************************************/
+package com.luck.report.core.export.excel.high.builder;
+
+import com.luck.report.core.Utils;
+import com.luck.report.core.chart.ChartData;
+import com.luck.report.core.definition.Paper;
+import com.luck.report.core.exception.ReportComputeException;
+import com.luck.report.core.export.excel.high.CellStyleContext;
+import com.luck.report.core.model.Column;
+import com.luck.report.core.model.Image;
+import com.luck.report.core.model.Report;
+import com.luck.report.core.model.Row;
+import com.luck.report.core.utils.ImageUtils;
+import com.luck.report.core.utils.UnitUtils;
+import com.luck.report.core.utils.FreezeUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.util.Units;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * @author Jacky.gao
+ * @since 2017年8月10日
+ */
+public class ExcelBuilderDirect extends ExcelBuilder {
+
+    private static final Logger logger = LoggerFactory.getLogger(ExcelBuilderDirect.class);
+
+    public void build(Report report, OutputStream outputStream) {
+        CellStyleContext cellStyleContext = new CellStyleContext();
+        SXSSFWorkbook wb = new SXSSFWorkbook(100000);
+        CreationHelper creationHelper = wb.getCreationHelper();
+        Paper paper = report.getPaper();
+        try {
+            List<Column> columns = report.getColumns();
+            Map<Row, Map<Column, com.luck.report.core.model.Cell>> cellMap = report.getRowColCellMap();
+            int columnSize = columns.size();
+            Sheet sheet = createSheet(wb, paper, null);
+            Drawing<?> drawing = sheet.createDrawingPatriarch();
+            List<Row> rows = report.getRows();
+            // 解析冻结锚点为展开后物理行列号，再换算为 Excel 有效行列数（跳过隐藏行/列）
+            int freezeRowCount = FreezeUtils.computeFreezeRowCount(report, paper.getFreezeRowCellName());
+            int freezeColCount = FreezeUtils.computeFreezeColCount(report, paper.getFreezeColCellName());
+            int freezeRowSplit = FreezeUtils.computeVisibleRowCount(rows, freezeRowCount);
+            int freezeColSplit = FreezeUtils.computeVisibleColCount(columns, freezeColCount);
+            boolean hasFloat = hasFloatElements(report);
+            int rowNumber = 0;
+            for (Row r : rows) {
+                int realHeight = r.getRealHeight();
+                if (realHeight < 1) {
+                    continue;
+                }
+                if (r.isForPaging()) {
+                    break;
+                }
+                org.apache.poi.ss.usermodel.Row row = sheet.getRow(rowNumber);
+                if (row == null) {
+                    row = sheet.createRow(rowNumber);
+                }
+                Map<Column, com.luck.report.core.model.Cell> colCell = cellMap.get(r);
+                int skipCol = 0;
+                for (int i = 0; i < columnSize; i++) {
+                    Column col = columns.get(i);
+                    int w = col.getWidth();
+                    if (w < 1) {
+                        skipCol++;
+                        continue;
+                    }
+                    double colWidth = UnitUtils.pointToPixel(w) * 37.5;
+                    int colNum = i - skipCol;
+                    sheet.setColumnWidth(colNum, (short) colWidth);
+                    org.apache.poi.ss.usermodel.Cell cell = row.getCell(colNum);
+                    if (cell != null) {
+                        continue;
+                    }
+                    cell = row.createCell(colNum);
+                    com.luck.report.core.model.Cell cellInfo = null;
+                    if (colCell != null) {
+                        cellInfo = colCell.get(col);
+                    }
+                    if (cellInfo == null) {
+                        continue;
+                    }
+                    if (cellInfo.isForPaging()) {
+                        continue;
+                    }
+                    XSSFCellStyle style = cellStyleContext.produceXSSFCellStyle(wb, cellInfo);
+                    int colSpan = cellInfo.getColSpan();
+                    int rowSpan = cellInfo.getRowSpan();
+                    int rowStart = rowNumber;
+                    int rowEnd = rowSpan;
+                    if (rowSpan == 0) {
+                        rowEnd++;
+                    }
+                    rowEnd += rowNumber;
+                    int colStart = i;
+                    int colEnd = colSpan;
+                    if (colSpan == 0) {
+                        colEnd++;
+                    }
+                    colEnd += i;
+                    for (int j = rowStart; j < rowEnd; j++) {
+                        org.apache.poi.ss.usermodel.Row rr = sheet.getRow(j);
+                        if (rr == null) {
+                            rr = sheet.createRow(j);
+                        }
+                        for (int c = colStart; c < colEnd; c++) {
+                            Cell cc = rr.getCell(c - skipCol);
+                            if (cc == null) {
+                                cc = rr.createCell(c - skipCol);
+                            }
+                            cc.setCellStyle(style);
+                        }
+                    }
+                    if (colSpan > 0 || rowSpan > 0) {
+                        if (rowSpan > 0) {
+                            rowSpan--;
+                        }
+                        if (colSpan > 0) {
+                            colSpan--;
+                        }
+                        CellRangeAddress cellRegion = new CellRangeAddress(rowNumber, (rowNumber + rowSpan), i - skipCol, (i - skipCol + colSpan));
+                        sheet.addMergedRegion(cellRegion);
+                    }
+                    Object obj = cellInfo.isRenderFlag() ? cellInfo.getFormatData() : null;
+                    if (obj != null) {
+                        if (obj instanceof String) {
+                            cell.setCellValue((String) obj);
+                        } else if (obj instanceof Number) {
+                            BigDecimal bigDecimal = Utils.toBigDecimal(obj);
+                            cell.setCellValue(bigDecimal.doubleValue());
+                        } else if (obj instanceof Boolean) {
+                            cell.setCellValue((Boolean) obj);
+                        } else if (obj instanceof Image) {
+                            Image img = (Image) obj;
+                            InputStream inputStream = ImageUtils.base64DataToInputStream(img.getBase64Data());
+                            BufferedImage bufferedImage = ImageIO.read(inputStream);
+                            int width = bufferedImage.getWidth();
+                            int height = bufferedImage.getHeight();
+                            IOUtils.closeQuietly(inputStream);
+                            inputStream = ImageUtils.base64DataToInputStream(img.getBase64Data());
+
+                            int leftMargin = 0, topMargin = 0;
+                            int wholeWidth = getWholeWidth(columns, i, cellInfo.getColSpan());
+                            int wholeHeight = getWholeHeight(rows, rowNumber, cellInfo.getRowSpan());
+                            HorizontalAlignment align = style.getAlignment();
+                            if (align.equals(HorizontalAlignment.CENTER)) {
+                                leftMargin = (wholeWidth - width) / 2;
+                            } else if (align.equals(HorizontalAlignment.RIGHT)) {
+                                leftMargin = wholeWidth - width;
+                            }
+                            VerticalAlignment valign = style.getVerticalAlignment();
+                            if (valign.equals(VerticalAlignment.CENTER)) {
+                                topMargin = (wholeHeight - height) / 2;
+                            } else if (valign.equals(VerticalAlignment.BOTTOM)) {
+                                topMargin = wholeHeight - height;
+                            }
+
+                            try {
+                                XSSFClientAnchor anchor = (XSSFClientAnchor) creationHelper.createClientAnchor();
+                                byte[] bytes = IOUtils.toByteArray(inputStream);
+                                int pictureFormat = buildImageFormat(img);
+                                int pictureIndex = wb.addPicture(bytes, pictureFormat);
+                                anchor.setCol1(i);
+                                anchor.setCol2(i + colSpan);
+                                anchor.setRow1(rowNumber);
+                                anchor.setRow2(rowNumber + rowSpan);
+                                anchor.setDx1(Units.pixelToEMU(leftMargin));
+                                anchor.setDx2(Units.pixelToEMU(width));
+                                anchor.setDy1(Units.pixelToEMU(topMargin));
+                                anchor.setDy2(Units.pixelToEMU(height));
+                                drawing.createPicture(anchor, pictureIndex);
+                            } finally {
+                                IOUtils.closeQuietly(inputStream);
+                            }
+                        } else if (obj instanceof ChartData) {
+                            ChartData chartData = (ChartData) obj;
+                            String base64Data = chartData.retriveBase64Data();
+                            // 关键决策点：base64 为空则跳过画图，对应图表将缺失
+                            if (base64Data != null) {
+                                Image img = new Image(base64Data, chartData.getWidth(), chartData.getHeight());
+                                InputStream inputStream = ImageUtils.base64DataToInputStream(img.getBase64Data());
+                                int width = getWholeWidth(columns, i, cellInfo.getColSpan());
+                                int height = getWholeHeight(rows, rowNumber, cellInfo.getRowSpan());
+                                try {
+                                    XSSFClientAnchor anchor = (XSSFClientAnchor) creationHelper.createClientAnchor();
+                                    byte[] bytes = IOUtils.toByteArray(inputStream);
+                                    int pictureFormat = buildImageFormat(img);
+                                    int pictureIndex = wb.addPicture(bytes, pictureFormat);
+                                    anchor.setCol1(i);
+                                    anchor.setCol2(i + colSpan);
+                                    anchor.setRow1(rowNumber);
+                                    anchor.setRow2(rowNumber + rowSpan);
+                                    anchor.setDx1(Units.pixelToEMU(0));
+                                    anchor.setDx2(Units.pixelToEMU(width));
+                                    anchor.setDy1(Units.pixelToEMU(0));
+                                    anchor.setDy2(Units.pixelToEMU(height));
+                                    drawing.createPicture(anchor, pictureIndex);
+                                    logger.info("[excel-chart] 画图成功, chartId={}, row={}, col={}, base64长度={}", chartData.getId(), rowNumber, i, base64Data.length());
+                                } finally {
+                                    IOUtils.closeQuietly(inputStream);
+                                }
+                            } else {
+                                logger.warn("[excel-chart] 跳过画图, chartId={}, row={}, col={}, base64为空", chartData.getId(), rowNumber, i);
+                            }
+                        } else if (obj instanceof Date) {
+                            cell.setCellValue((Date) obj);
+                        }
+                    }
+                }
+                row.setHeight((short) UnitUtils.pointToTwip(r.getRealHeight()));
+                rowNumber++;
+            }
+            // 渲染悬浮元素（不分页，全部在第 0 页）
+            if (hasFloat) {
+                List<Row> visibleRows = new ArrayList<>();
+                for (Row r : rows) {
+                    if (r.getRealHeight() < 1) {
+                        continue;
+                    }
+                    if (r.isForPaging()) {
+                        break;
+                    }
+                    visibleRows.add(r);
+                }
+                float totalHeight = 0;
+                for (Row r : visibleRows) {
+                    totalHeight += r.getRealHeight();
+                }
+                renderFloatElementsForPage(sheet, drawing, report, 0, totalHeight, visibleRows, 0, columns, creationHelper, wb);
+            }
+            // 冻结窗格：左 freezeColSplit 列、上 freezeRowSplit 行；均为0时不调用避免多余冻结
+            if (freezeRowSplit > 0 || freezeColSplit > 0) {
+                sheet.createFreezePane(freezeColSplit, freezeRowSplit);
+            }
+            sheet.setRowBreak(rowNumber - 1);
+            wb.write(outputStream);
+        } catch (Exception ex) {
+            throw new ReportComputeException(ex);
+        } finally {
+            wb.dispose();
+        }
+    }
+}

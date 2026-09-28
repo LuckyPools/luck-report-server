@@ -1,0 +1,27 @@
+server:
+  port: 8049
+  # Tomcat 配置
+  tomcat:
+    # 表单参数最大大小（用于处理大报表数据）
+    max-http-form-post-size: 100MB
+
+spring:
+  application:
+    name: luck-report  # 应用名
+
+  profiles:
+    active: dev
+
+  servlet:
+    multipart:
+      # 单个文件最大大小
+      max-file-size: 100MB
+      # 单次请求所有文件总大小
+      max-request-size: 100MB
+      # 启用文件上传
+      enabled: true
+
+# Snowflake ID 生成器配置（用于主键 String ID）
+snowflake:
+  worker-id: 1      # 机器节点 ID（0~31）
+  datacenter-id: 1  # 数据中心 ID（0~31）

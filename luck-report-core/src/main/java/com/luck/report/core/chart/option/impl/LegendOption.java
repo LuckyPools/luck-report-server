@@ -1,0 +1,95 @@
+/*******************************************************************************
+ * Copyright 2017 Bstek
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License.  You may obtain a copy
+ * of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ ******************************************************************************/
+package com.luck.report.core.chart.option.impl;
+
+import com.luck.report.core.chart.option.Labels;
+import com.luck.report.core.chart.option.Option;
+import com.luck.report.core.chart.option.Position;
+
+import java.io.Serializable;
+
+/**
+ * @author Jacky.gao
+ * @since 2017年6月8日
+ */
+public class LegendOption implements Option, Serializable {
+    private static final long serialVersionUID = 1L;
+
+    public LegendOption() {}
+    private boolean display = true;
+    private Position position = Position.top;
+    private String align = "center";
+    private Labels labels;
+
+    @Override
+    public String buildOptionJson() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("\"legend\":{");
+        sb.append("\"display\":" + display + ",");
+        sb.append("\"position\":\"" + position + "\",");
+        sb.append("\"align\":\"" + align + "\"");
+        if (labels != null) {
+            sb.append(",\"labels\":" + labels.toJson());
+        }
+        sb.append("}");
+        return sb.toString();
+    }
+
+    @Override
+    public String getType() {
+        return "legend";
+    }
+
+    /**
+     * 空实现，用于兼容JSON反序列化时可能存在的type字段
+     * @param type 类型（忽略）
+     */
+    public void setType(String type) {
+        // 空实现，忽略type字段
+    }
+
+    public boolean isDisplay() {
+        return display;
+    }
+
+    public void setDisplay(boolean display) {
+        this.display = display;
+    }
+
+    public Position getPosition() {
+        return position;
+    }
+
+    public void setPosition(Position position) {
+        this.position = position;
+    }
+
+    public String getAlign() {
+        return align;
+    }
+
+    public void setAlign(String align) {
+        this.align = align;
+    }
+
+    public Labels getLabels() {
+        return labels;
+    }
+
+    public void setLabels(Labels labels) {
+        this.labels = labels;
+    }
+}

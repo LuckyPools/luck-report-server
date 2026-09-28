@@ -1,0 +1,70 @@
+<!doctype html>
+<!--
+  报表设计器 - Thymeleaf 壳模板（ViewController#designer 返回视图名 'designer' 解析到此文件）
+  - @{...} 由 Thymeleaf 自动拼 contextPath，与 luck-report.servletPrefix 解耦
+  - 加载链见下方注释（核心约束：UMD 必须最后执行）-> mount
+  - assetVersion：lib 强缓存下的 cache-bust，避免旧 style.css 导致 iconfont 乱码
+-->
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>报表设计器</title>
+    <!-- 全部 CSS（含 iconfont @font-face）；?v= 强制刷新 -->
+    <link rel="stylesheet" th:href="@{|/${servletPrefix}/lib/style.css?v=${assetVersion}|}" />
+    <link rel="icon" th:href="@{|/${servletPrefix}/lib/favicon.ico?v=${assetVersion}|}" />
+  </head>
+  <body>
+    <div id="app"></div>
+    <!-- 全局配置（UMD 执行前就位） -->
+    <script th:inline="javascript">
+      window.__PAGE__ = 'designer'
+      window.__LUCK_REPORT_SERVLET_PREFIX__ = /*[[${servletPrefix}]]*/ 'report'
+      window.__LUCK_REPORT_ASSET_VERSION__ = /*[[${assetVersion}]]*/ '0'
+    </script>
+    <!--
+      加载链（顺序是正确性约束，不可调换）：vendor / langchain 并行加载
+      （互不依赖）→ 二者就绪后执行 UMD → mount。
+      表格底座 Jspreadsheet CE 已打进 luck-report-ui.umd.js，不再单独加载 univer.js；
+      langchain.js 仍须在 UMD 前就位（AI 聊天 external）。
+    -->
+    <script th:inline="javascript">
+      const servletPrefix = /*[[${servletPrefix}]]*/ 'report'
+      const libBase = /*[[@{'/' + ${servletPrefix} + '/lib/'}]]*/ '/report/lib/'
+      const assetVersion = /*[[${assetVersion}]]*/ '0'
+      const v = '?v=' + encodeURIComponent(assetVersion)
+
+      function loadScript(src) {
+        return new Promise((resolve, reject) => {
+          const el = document.createElement('script')
+          el.src = src
+          el.onload = resolve
+          el.onerror = () => reject(new Error('加载失败: ' + src))
+          document.head.appendChild(el)
+        })
+      }
+
+      Promise.all([
+        loadScript(libBase + 'vendor.js' + v),
+        loadScript(libBase + 'langchain.js' + v)
+      ])
+        .then(() => loadScript(libBase + 'luck-report-ui.umd.js' + v))
+        .then(() => {
+          LuckReport.mount('#app', {
+            token:         /*[[${token}]]*/         '',
+            baseURL:       /*[[${baseURL}]]*/       '',
+            servletPrefix: servletPrefix,
+            defaultRoute:  '/' + servletPrefix + '/designer',
+            embed:         true
+          })
+        })
+        .catch((err) => {
+          console.error('[designer] 脚本加载失败', err)
+          const el = document.createElement('div')
+          el.style.cssText = 'padding:24px;font-size:14px;color:#d46b08'
+          el.textContent = '报表脚本加载失败，请刷新页面重试'
+          document.getElementById('app').appendChild(el)
+        })
+    </script>
+  </body>
+</html>

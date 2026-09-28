@@ -1,0 +1,67 @@
+/*******************************************************************************
+ * Copyright 2017 Bstek
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License.  You may obtain a copy
+ * of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ ******************************************************************************/
+package com.luck.report.core.expression.model.expr;
+
+import com.luck.report.core.build.Context;
+import com.luck.report.core.expression.model.data.ExpressionData;
+import com.luck.report.core.expression.model.data.ObjectExpressionData;
+import com.luck.report.core.model.Cell;
+
+import java.math.BigDecimal;
+
+/**
+ * @author Jacky.gao
+ * @since 2016年12月23日
+ */
+public class NumberExpression extends BaseExpression {
+    private static final long serialVersionUID = 1L;
+    private BigDecimal value;
+
+    public NumberExpression() {}
+
+    public NumberExpression(BigDecimal value) {
+        this.value = value;
+    }
+
+    /**
+     * 返回字面量数值，保持解析得到的 BigDecimal
+     *
+     * @param cell 表达式所在单元格，本方法不使用
+     * @param currentCell 当前计算单元格，本方法不使用
+     * @param context 计算上下文，本方法不使用
+     * @return 字面量的精确数值；未设置时返回 null
+     */
+    @Override
+    public ExpressionData<?> compute(Cell cell, Cell currentCell, Context context) {
+        return new ObjectExpressionData(value);
+    }
+
+    /**
+     * 获取数值
+     * @return 数值
+     */
+    public BigDecimal getValue() {
+        return value;
+    }
+
+    /**
+     * 设置数值
+     * @param value 数值
+     */
+    public void setValue(BigDecimal value) {
+        this.value = value;
+    }
+}

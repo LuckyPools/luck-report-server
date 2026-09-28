@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.luck.product</groupId>
+        <artifactId>luck-report-server</artifactId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <groupId>com.luck.product</groupId>
+    <artifactId>luck-report-spring-boot2-starter</artifactId>
+    <name>Luck Report Spring Boot 2 Starter</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.luck.product</groupId>
+            <artifactId>luck-report-infra</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.luck.product</groupId>
+            <artifactId>luck-report-web</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <!-- javax.servlet: 编译时可用, 打包时不打入jar, 运行时由宿主Spring Boot2容器提供 -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <!-- Spring Web: 同理, 运行时由宿主项目提供 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <!-- Thymeleaf: 用于渲染报表前端 SPA 入口模板 -->
+        <dependency>
+            <groupId>org.thymeleaf</groupId>
+            <artifactId>thymeleaf</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.thymeleaf</groupId>
+            <artifactId>thymeleaf-spring5</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+</project>

@@ -1,0 +1,43 @@
+Luck-Report Closed-Source Paid Software License Agreement
+Luck-Report Software Closed-Source Paid License Statement
+Version 1.0, August 2026
+TERMS AND CONDITIONS FOR AUTHORIZED USE, PROHIBITED MODIFICATION AND DISTRIBUTION
+1. Core Ownership and Definitions
+1.1 Software Ownership: All intellectual property rights of Luck-Report (hereinafter referred to as the "Software"), including but not limited to copyright, patent rights, trademark rights, and trade secrets, are exclusively owned by the copyright owner. The Software is protected by the Copyright Law of the People's Republic of China, the Regulations for the Protection of Computer Software, and international copyright conventions.
+1.2 Authorized Users: Refers to individuals or legal entities that have completed paid purchases through official channels and obtained formal written or system authorization from the copyright owner. Any entity without payment and official authorization possesses no right to use the Software.
+1.3 Closed-Source Definition: The Software is a fully closed-source commercial product. No source code, core configuration files, underlying logic documents or core technical materials shall be disclosed to the public. The Software is not an open-source product, and any form of open-source dissemination is strictly prohibited.
+1.4 Derivative Works: All programs, plugins and tools generated based on modification, secondary development, splicing or encapsulation of the Software shall be deemed derivative works of the Software. All ownership rights of derivative works belong exclusively to the copyright owner. No individual or entity may create, use or distribute derivative works without prior written official authorization.
+2. Authorized Scope of Use (For Paid Users Only)
+2.1 Paid users may only use the Software within the scope of authorized devices and authorized scenarios, in accordance with the permissions specified in the purchased package, solely for personal or internal business purposes, and shall not exceed the authorized scope.
+2.2 The license granted herein is non-exclusive, non-transferable and non-assignable. Users shall not rent, lend, sell, transfer or share the Software usage rights or authorization credentials to any third party.
+2.3 Users are permitted to use the functional features of the Software and generate or export software operation data and reports for their own legitimate business use. Users are not entitled to secondary distribution, resale or sub-licensing rights of any kind.
+3. Prohibited Behaviors (Core Closed-Source and Paid Restrictions)
+3.1 Prohibition of Open Source and Information Leakage: Any act of extracting, reverse engineering, decompiling, disassembling or cracking the Software’s source code and core logic is strictly forbidden. Disseminating or disclosing the Software source code, crack patches, core configurations and internal documents on any network platform, open-source community or third-party channel is prohibited.
+3.2 Prohibition of Unauthorized Distribution: It is strictly prohibited to share, copy, disseminate or sell the Software installation package, program body, cracked version or modified version through free or paid channels, including but not limited to network disk sharing, community dissemination and bulk distribution.
+3.3 Prohibition of Tampering and Secondary Development: Without formal written authorization from the copyright owner, users are not allowed to modify, delete or add software functions, encapsulate secondary versions, develop derivative tools or adapt third-party plugins for the Software.
+3.4 Prohibition of Unauthorized Commercial Use: Unauthorized use, cracked use, commercial use beyond authorization scope, multi-person sharing of a single license and unauthorized license transfer are all regarded as infringing commercial behaviors, for which the copyright owner reserves the right to pursue legal liabilities.
+4. Paid Authorization Rules
+4.1 The only valid basis for legal use of the Software is official paid purchase plus exclusive authorization credentials. Any use without valid authorization credentials constitutes illegal infringement.
+4.2 Different paid packages correspond to different usage permissions, device quotas, service cycles and after-sales rights. Users shall strictly abide by package specifications, and any out-of-scope use shall be deemed a breach of agreement.
+4.3 Within the valid authorization period, the copyright owner provides routine maintenance and technical consulting services for the corresponding version. Upon expiration, users must renew the fee to continue using the Software, and shall immediately stop using and uninstall the Software if no renewal is completed.
+5. User Obligations
+5.1 Users shall properly keep their authorization information and private keys, and shall not disclose or share authorization credentials. Users shall bear full responsibility for any infringement risks caused by improper custody.
+5.2 Users shall not use the Software for illegal activities, infringement behaviors or network security violations. Otherwise, the copyright owner has the right to terminate the authorization, disable the Software access and pursue corresponding legal liabilities.
+5.3 Users shall not delete, tamper with or shield the built-in copyright statements, authorization marks and watermarks of the Software.
+6. Disclaimer of Warranty
+6.1 The Software is provided on an "AS IS" basis. The copyright owner does not warrant that the Software is completely defect-free or fault-free, but guarantees the normal operation of core functions under legitimate and compliant use.
+6.2 The copyright owner shall not be liable for any software abnormalities, data loss or business losses caused by users’ unauthorized modification, cracking, improper operation, hardware failure, network exceptions or third-party tool interference.
+6.3 Any legal disputes, civil compensations or administrative penalties arising from unauthorized cracking, tampering or distribution shall be borne solely by the infringing party, and the copyright owner shall not be held responsible.
+7. Liability and Infringement Pursuit
+7.1 For any violation of this Agreement or intellectual property infringement of the Software, the copyright owner has the right to terminate the user’s authorization immediately, take technical protection measures such as account and device banning, and pursue civil liabilities and full economic compensation from the infringer.
+7.2 For severe mass piracy, cracking and open-source dissemination behaviors, the copyright owner will pursue administrative and criminal liabilities of the infringer in accordance with the law.
+8. Agreement Effectiveness and Revision
+8.1 Downloading, installing or using the Software constitutes full acceptance and voluntary recognition of all terms of this Agreement, and this Agreement shall take effect immediately.
+8.2 The copyright owner reserves the right to revise and update this Agreement and software authorization rules at any time. The updated terms shall take effect immediately after being publicly announced through official channels.
+END OF TERMS AND CONDITIONS
+General Copyright Notice Template (Available for Code Files, Program Footer and Software About Page)
+Copyright [yyyy] [Name of Copyright Owner]
+Luck-Report is an exclusive closed-source paid commercial software protected by national copyright laws and international copyright treaties.
+No unauthorized reverse engineering, cracking, modification, open-sourcing, distribution or commercial use is permitted. All infringement behaviors will be held legally accountable.
+Official Authorized Paid Version Only.
+All Rights Reserved.

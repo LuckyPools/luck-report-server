@@ -1,0 +1,933 @@
+package com.luck.report.web.modules.datasource.service.impl;
+
+import com.luck.report.core.exception.ReportBizException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.luck.report.web.modules.vector.service.impl.AgentVectorStore;
+import com.luck.report.web.utils.SnowflakeIdGenerator;
+import com.luck.report.web.common.domain.vo.PageResultVO;
+import com.luck.report.web.modules.datasource.domain.dto.ColumnDTO;
+import com.luck.report.web.modules.datasource.domain.dto.ReportDatasourceQueryDTO;
+import com.luck.report.web.modules.datasource.domain.dto.ForeignKeyDTO;
+import com.luck.report.web.modules.datasource.domain.dto.SchemaDTO;
+import com.luck.report.web.modules.datasource.domain.vo.SchemaSearchResultVO;
+import com.luck.report.web.modules.datasource.domain.dto.TableDTO;
+import com.luck.report.web.modules.datasource.domain.entity.ReportDatasource;
+import com.luck.report.web.modules.datasource.domain.enums.DatasourceStatusEnum;
+import com.luck.report.web.modules.datasource.domain.enums.DatasourceTestStatusEnum;
+import com.luck.report.web.modules.datasource.domain.entity.LogicalRelation;
+import com.luck.report.web.modules.datasource.domain.vo.ReportDatasourceVO;
+import com.luck.report.web.modules.datasource.service.impl.BuildinDatasourceLoader;
+import com.luck.report.web.modules.datasource.handler.DatasourceTypeHandler;
+import com.luck.report.web.modules.datasource.handler.DatasourceTypeHandlerRegistry;
+import com.luck.report.web.modules.datasource.mapper.ReportDatasourceMapper;
+import com.luck.report.web.modules.datasource.mapper.LogicalRelationMapper;
+import com.luck.report.web.modules.dataset.mapper.ReportDatasetMapper;
+import com.luck.report.web.modules.datasource.service.ReportDatasourceService;
+import com.luck.report.web.security.utils.SecurityUtils;
+import com.luck.report.core.security.SensitiveConfigCipher;
+import com.luck.report.infra.modules.vector.domain.dto.VectorStoreSearchResult;
+import com.luck.report.infra.modules.vector.domain.entity.VectorDocument;
+import com.luck.report.infra.modules.vector.domain.param.VectorSearchParam;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
+
+/**
+ * 数据源服务实现
+ * 提供数据源CRUD、连接测试、表管理、Schema初始化和逻辑外键管理
+ *
+ * @author luck
+ */
+@Slf4j
+@Service("bean.datasourceService")
+@AllArgsConstructor
+public class ReportDatasourceServiceImpl implements ReportDatasourceService {
+
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
+    private final ReportDatasourceMapper reportDatasourceMapper;
+    private final LogicalRelationMapper logicalRelationMapper;
+    /** 公共数据集Mapper，用于删除数据源前的引用检查 */
+    private final ReportDatasetMapper reportDatasetMapper;
+    private final DynamicDatasourceManager dynamicDatasourceManager;
+    private final DatasourceTypeHandlerRegistry handlerRegistry;
+    private final AgentVectorStore agentVectorStore;
+    /** 内置数据源加载器，用于同步更新数据源缓存 */
+    private final BuildinDatasourceLoader buildinDatasourceLoader;
+
+    @Override
+    public List<ReportDatasourceVO> getAllDatasource() {
+        List<ReportDatasource> list = reportDatasourceMapper.selectAll();
+        return list.stream().map(this::toVO).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ReportDatasourceVO> getDatasourceByStatus(String status) {
+        List<ReportDatasource> list = reportDatasourceMapper.selectByStatus(status);
+        return list.stream().map(this::toVO).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ReportDatasourceVO> getDatasourceByType(String type) {
+        List<ReportDatasource> list = reportDatasourceMapper.selectByType(type);
+        return list.stream().map(this::toVO).collect(Collectors.toList());
+    }
+
+    @Override
+    public ReportDatasourceVO getDatasourceById(String id) {
+        ReportDatasource reportDatasource = reportDatasourceMapper.selectById(id);
+        return reportDatasource != null ? toVO(reportDatasource) : null;
+    }
+
+    @Override
+    public ReportDatasourceVO createDatasource(ReportDatasource reportDatasource) {
+        // 根据类型生成连接URL
+        DatasourceTypeHandler handler = handlerRegistry.getRequired(reportDatasource.getType());
+        String connectionUrl = handler.resolveConnectionUrl(reportDatasource);
+        if (StringUtils.isNotBlank(connectionUrl)) {
+            reportDatasource.setConnectionUrl(connectionUrl);
+        }
+
+        // 设置默认值
+        if (reportDatasource.getStatus() == null) {
+            reportDatasource.setStatus(DatasourceStatusEnum.ACTIVE.getValue());
+        }
+        if (reportDatasource.getTestStatus() == null) {
+            reportDatasource.setTestStatus(DatasourceTestStatusEnum.UNKNOWN.getValue());
+        }
+        if (reportDatasource.getPassword() == null) {
+            reportDatasource.setPassword("");
+        }
+        if (reportDatasource.getUsername() == null) {
+            reportDatasource.setUsername("");
+        }
+        reportDatasource.setPassword(SensitiveConfigCipher.encrypt(reportDatasource.getPassword()));
+
+        reportDatasource.setId(SnowflakeIdGenerator.generateId());
+        String userId = SecurityUtils.getCurrentUserId();
+        reportDatasource.setCreateBy(userId);
+        reportDatasource.setUpdateBy(userId);
+        reportDatasource.setDelFlag(0);
+
+        reportDatasourceMapper.insert(reportDatasource);
+        // 同步更新内置数据源缓存
+        buildinDatasourceLoader.addOrUpdateDatasource(reportDatasource);
+        log.info("创建数据源: id={}, name={}, type={}", reportDatasource.getId(), reportDatasource.getName(), reportDatasource.getType());
+        return toVO(reportDatasource);
+    }
+
+    @Override
+    public ReportDatasourceVO updateDatasource(String id, ReportDatasource reportDatasource) {
+        // 重新生成连接URL
+        DatasourceTypeHandler handler = handlerRegistry.getRequired(reportDatasource.getType());
+        String connectionUrl = handler.resolveConnectionUrl(reportDatasource);
+        if (StringUtils.isNotBlank(connectionUrl)) {
+            reportDatasource.setConnectionUrl(connectionUrl);
+        }
+        reportDatasource.setId(id);
+
+        // 密码为空时保留原密码，避免前端未传密码导致密码被清空；非空则按明文加密后覆盖
+        if (reportDatasource.getPassword() == null || reportDatasource.getPassword().isEmpty()) {
+            ReportDatasource existing = reportDatasourceMapper.selectById(id);
+            if (existing != null) {
+                reportDatasource.setPassword(existing.getPassword());
+            }
+        } else {
+            reportDatasource.setPassword(SensitiveConfigCipher.encrypt(reportDatasource.getPassword()));
+        }
+        if (reportDatasource.getUsername() == null) {
+            reportDatasource.setUsername("");
+        }
+
+        reportDatasource.setUpdateBy(SecurityUtils.getCurrentUserId());
+        reportDatasourceMapper.updateById(reportDatasource);
+        // 更新后重建连接池
+        dynamicDatasourceManager.removeDatasourcePool(id);
+        // 同步更新内置数据源缓存
+        ReportDatasource updated = reportDatasourceMapper.selectById(id);
+        buildinDatasourceLoader.addOrUpdateDatasource(updated);
+        log.info("更新数据源: id={}", id);
+        return toVO(updated);
+    }
+
+    @Override
+    @Transactional
+    public void deleteDatasource(String id) {
+        // 先获取数据源信息，用于删除缓存
+        ReportDatasource reportDatasource = reportDatasourceMapper.selectById(id);
+        String datasourceName = reportDatasource != null ? reportDatasource.getName() : null;
+
+        // 公共数据集引用检查：被引用的数据源不允许删除，避免已配置的SQL数据集失效
+        Long reportDatasetCount = reportDatasetMapper.countByDatasourceId(id);
+        if (reportDatasetCount != null && reportDatasetCount > 0) {
+            throw new ReportBizException("error.datasource.referenced", reportDatasetCount);
+        }
+
+        // 删除关联的逻辑外键
+        logicalRelationMapper.deleteByDatasourceId(id);
+        // 删除数据源
+        reportDatasourceMapper.deleteById(id);
+        // 关闭连接池
+        dynamicDatasourceManager.removeDatasourcePool(id);
+        // 同步删除内置数据源缓存
+        if (datasourceName != null) {
+            buildinDatasourceLoader.removeDatasource(datasourceName);
+        }
+        // 删除向量库中该数据源的所有Schema文档（TABLE + COLUMN + 旧版DATASOURCE）
+        for (String vectorType : Arrays.asList("TABLE", "COLUMN", "DATASOURCE")) {
+            // 调用新的组合删除接口：按 vectorType + datasourceId 删除
+            agentVectorStore.deleteByMetadata(vectorType, "datasourceId", id);
+        }
+        log.info("删除数据源: id={}", id);
+    }
+
+    @Override
+    public void deleteDatasourceBatch(List<String> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return;
+        }
+        for (String id : ids) {
+            if (id != null && !id.isEmpty()) {
+                deleteDatasource(id);
+            }
+        }
+    }
+
+    @Override
+    public boolean testConnection(String id) {
+        ReportDatasource reportDatasource = reportDatasourceMapper.selectById(id);
+        if (reportDatasource == null) {
+            return false;
+        }
+        try {
+            boolean success = dynamicDatasourceManager.testConnection(reportDatasource);
+            log.info("数据源连接测试: id={}, name={}, result={}", id, reportDatasource.getName(), success);
+            // 更新测试状态
+            reportDatasourceMapper.updateTestStatusById(id, success ? DatasourceTestStatusEnum.SUCCESS.getValue() : DatasourceTestStatusEnum.FAILED.getValue());
+            return success;
+        } catch (Exception e) {
+            reportDatasourceMapper.updateTestStatusById(id, DatasourceTestStatusEnum.FAILED.getValue());
+            log.error("数据源连接测试异常: id={}, error={}", id, e.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public List<String> getDatasourceTables(String id) throws Exception {
+        ReportDatasource reportDatasource = reportDatasourceMapper.selectById(id);
+        if (reportDatasource == null) {
+            throw new ReportBizException("error.datasource.notExistId", id);
+        }
+        return dynamicDatasourceManager.getDatasourceTables(reportDatasource);
+    }
+
+    @Override
+    public List<String> getTableColumns(String id, String tableName) throws Exception {
+        ReportDatasource reportDatasource = reportDatasourceMapper.selectById(id);
+        if (reportDatasource == null) {
+            throw new ReportBizException("error.datasource.notExistId", id);
+        }
+        return dynamicDatasourceManager.getTableColumns(reportDatasource, tableName);
+    }
+
+    @Override
+    public void initTableSchema(String id, List<String> tables, String modelId) throws Exception {
+        ReportDatasource reportDatasource = reportDatasourceMapper.selectById(id);
+        if (reportDatasource == null) {
+            throw new ReportBizException("error.datasource.notExistId", id);
+        }
+
+        // 先删除该数据源已有的Schema文档（TABLE + COLUMN + 旧版DATASOURCE）
+        for (String vectorType : Arrays.asList("TABLE", "COLUMN", "DATASOURCE")) {
+            // 调用新的组合删除接口：按 vectorType + datasourceId 删除
+            agentVectorStore.deleteByMetadata(vectorType, "datasourceId", id);
+        }
+
+        // 查询物理外键
+        Map<String, List<String>> foreignKeyMap = new HashMap<>();
+        try {
+            List<String> physicalForeignKeys = dynamicDatasourceManager.getForeignKeys(reportDatasource);
+            for (String fk : physicalForeignKeys) {
+                // fk格式: sourceTable.sourceCol=targetTable.targetCol
+                String[] parts = fk.split("=");
+                if (parts.length == 2) {
+                    String[] sourceParts = parts[0].trim().split("\\.");
+                    if (sourceParts.length == 2) {
+                        String sourceTable = sourceParts[0];
+                        foreignKeyMap.computeIfAbsent(sourceTable, k -> new ArrayList<>()).add(fk);
+                    }
+                    String[] targetParts = parts[1].trim().split("\\.");
+                    if (targetParts.length == 2) {
+                        String targetTable = targetParts[0];
+                        foreignKeyMap.computeIfAbsent(targetTable, k -> new ArrayList<>()).add(fk);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.warn("查询物理外键失败: datasourceId={}, error={}", id, e.getMessage());
+        }
+
+        // 构建TABLE文档和COLUMN文档
+        List<VectorDocument> tableDocuments = new ArrayList<>();
+        List<VectorDocument> columnDocuments = new ArrayList<>();
+
+        for (String tableName : tables) {
+            try {
+                // 获取表注释
+                String tableComment = dynamicDatasourceManager.getTableComment(reportDatasource, tableName);
+                // 获取字段详情
+                List<String> columnDetails = dynamicDatasourceManager.getTableColumnsDetail(reportDatasource, tableName);
+                // 获取主键
+                List<String> primaryKeys = dynamicDatasourceManager.getTablePrimaryKeys(reportDatasource, tableName);
+                // 获取示例数据
+                Map<String, List<String>> sampleData = dynamicDatasourceManager.getTableSampleData(reportDatasource, tableName, 5);
+
+                // 该表的物理外键
+                List<String> tableForeignKeys = foreignKeyMap.getOrDefault(tableName, new ArrayList<>());
+
+                // 构建TABLE文档：content用表注释或表名（用于语义检索），metadata存完整表信息
+                String tableContent = StringUtils.isNotBlank(tableComment) ? tableComment : tableName;
+                Map<String, Object> tableMeta = new HashMap<>();
+                tableMeta.put("vectorType", "TABLE");
+                tableMeta.put("datasourceId", id);
+                tableMeta.put("name", tableName);
+                tableMeta.put("description", tableComment != null ? tableComment : "");
+                tableMeta.put("primaryKeys", String.join(",", primaryKeys));
+                tableMeta.put("foreignKey", String.join("、", tableForeignKeys));
+                tableMeta.put("datasourceName", reportDatasource.getName());
+                tableMeta.put("datasourceType", reportDatasource.getType());
+                tableDocuments.add(new VectorDocument(tableContent, tableMeta));
+
+                // 构建COLUMN文档：每个字段一条文档，content用字段注释或字段名，metadata存完整字段信息
+                for (String col : columnDetails) {
+                    String[] parts = col.split("\\|");
+                    String colName = parts.length > 0 ? parts[0].trim() : "";
+                    String colType = parts.length > 1 ? parts[1].trim() : "";
+                    String colComment = parts.length > 2 ? parts[2].trim() : "";
+                    boolean isPrimary = primaryKeys.contains(colName);
+
+                    String colContent = StringUtils.isNotBlank(colComment) ? colComment : colName;
+                    List<String> samples = sampleData.getOrDefault(colName, new ArrayList<>());
+                    // 过滤和限制示例数据：去重、最多3个、长度不超过100
+                    List<String> filteredSamples = samples.stream()
+                            .filter(Objects::nonNull)
+                            .distinct()
+                            .limit(3)
+                            .filter(s -> s.length() <= 100)
+                            .collect(Collectors.toList());
+
+                    Map<String, Object> colMeta = new HashMap<>();
+                    colMeta.put("vectorType", "COLUMN");
+                    colMeta.put("datasourceId", id);
+                    colMeta.put("tableName", tableName);
+                    colMeta.put("name", colName);
+                    colMeta.put("description", colComment);
+                    colMeta.put("type", colType);
+                    colMeta.put("primary", isPrimary);
+                    try {
+                        colMeta.put("samples", objectMapper.writeValueAsString(filteredSamples));
+                    } catch (Exception e) {
+                        log.warn("序列化字段示例数据失败: table={}, column={}, error={}", tableName, colName, e.getMessage());
+                        colMeta.put("samples", "[]");
+                    }
+                    columnDocuments.add(new VectorDocument(colContent, colMeta));
+                }
+            } catch (Exception e) {
+                log.error("获取表Schema失败: datasourceId={}, table={}, error={}", id, tableName, e.getMessage());
+            }
+        }
+
+        // 分批提交到向量库（Embedding API限制batch size不超过10）
+        int batchSize = 10;
+        List<VectorDocument> allDocuments = new ArrayList<>();
+        allDocuments.addAll(tableDocuments);
+        allDocuments.addAll(columnDocuments);
+
+        for (int i = 0; i < allDocuments.size(); i += batchSize) {
+            int end = Math.min(i + batchSize, allDocuments.size());
+            List<VectorDocument> batch = allDocuments.subList(i, end);
+            agentVectorStore.addDocuments(new ArrayList<>(batch), modelId);
+            log.info("向量化第 {}/{} 批, 本批 {} 条文档", (i / batchSize + 1),
+                    (allDocuments.size() + batchSize - 1) / batchSize, batch.size());
+        }
+        log.info("初始化数据源Schema到向量库: datasourceId={}, tables={}, TABLE文档={}, COLUMN文档={}, 总文档数={}",
+                id, tables.size(), tableDocuments.size(), columnDocuments.size(), allDocuments.size());
+
+        // 保存已初始化的表名列表到数据源记录，用于前端回显
+        try {
+            String initializedTablesJson = objectMapper.writeValueAsString(tables);
+            reportDatasourceMapper.updateInitializedTables(id, initializedTablesJson);
+            log.info("保存已初始化表列表: datasourceId={}, tables={}", id, tables);
+        } catch (Exception e) {
+            log.warn("保存已初始化表列表失败: datasourceId={}, error={}", id, e.getMessage());
+        }
+    }
+
+    @Override
+    public void updateStatus(String id, String status) {
+        reportDatasourceMapper.updateStatusById(id, status);
+        // 同步更新内置数据源缓存
+        ReportDatasource reportDatasource = reportDatasourceMapper.selectById(id);
+        if (reportDatasource != null) {
+            if (DatasourceStatusEnum.ACTIVE.getValue().equals(status)) {
+                // 状态变为 active，添加到缓存
+                buildinDatasourceLoader.addOrUpdateDatasource(reportDatasource);
+            } else {
+                // 状态变为非 active，从缓存移除
+                buildinDatasourceLoader.removeDatasource(reportDatasource.getName());
+            }
+        }
+        log.info("更新数据源状态: id={}, status={}", id, status);
+    }
+
+    @Override
+    public List<LogicalRelation> getLogicalRelations(String datasourceId) {
+        return logicalRelationMapper.selectByDatasourceId(datasourceId);
+    }
+
+    @Override
+    public LogicalRelation addLogicalRelation(String datasourceId, LogicalRelation logicalRelation) {
+        logicalRelation.setDatasourceId(datasourceId);
+
+        // 检查是否已存在相同的外键关系
+        int exists = logicalRelationMapper.checkExists(datasourceId,
+                logicalRelation.getSourceTableName(), logicalRelation.getSourceColumnName(),
+                logicalRelation.getTargetTableName(), logicalRelation.getTargetColumnName());
+        if (exists > 0) {
+            throw new ReportBizException("error.datasource.relationExists");
+        }
+
+        // 生成 Snowflake ID
+        logicalRelation.setId(SnowflakeIdGenerator.generateId());
+        String userId = SecurityUtils.getCurrentUserId();
+        logicalRelation.setCreateBy(userId);
+        logicalRelation.setUpdateBy(userId);
+        logicalRelation.setCreateTime(LocalDateTime.now());
+        logicalRelation.setUpdateTime(LocalDateTime.now());
+        logicalRelation.setDelFlag(0);
+        logicalRelationMapper.insert(logicalRelation);
+        log.info("添加逻辑外键: datasourceId={}, id={}", datasourceId, logicalRelation.getId());
+        return logicalRelation;
+    }
+
+    @Override
+    public LogicalRelation updateLogicalRelation(String datasourceId, String relationId, LogicalRelation logicalRelation) {
+        // 验证外键是否存在且属于该数据源
+        LogicalRelation existing = logicalRelationMapper.selectById(relationId);
+        if (existing == null) {
+            throw new ReportBizException("error.datasource.relationNotExist", relationId);
+        }
+        if (!existing.getDatasourceId().equals(datasourceId)) {
+            throw new ReportBizException("error.datasource.relationNotMatch");
+        }
+
+        logicalRelation.setId(relationId);
+        logicalRelation.setDatasourceId(datasourceId);
+        logicalRelation.setUpdateBy(SecurityUtils.getCurrentUserId());
+        logicalRelationMapper.updateById(logicalRelation);
+        log.info("更新逻辑外键: datasourceId={}, relationId={}", datasourceId, relationId);
+        return logicalRelationMapper.selectById(relationId);
+    }
+
+    @Override
+    public void deleteLogicalRelation(String datasourceId, String relationId) {
+        LogicalRelation existing = logicalRelationMapper.selectById(relationId);
+        if (existing == null) {
+            throw new ReportBizException("error.datasource.relationNotExist", relationId);
+        }
+        if (!existing.getDatasourceId().equals(datasourceId)) {
+            throw new ReportBizException("error.datasource.relationNotMatch");
+        }
+
+        logicalRelationMapper.deleteById(relationId);
+        log.info("删除逻辑外键: datasourceId={}, relationId={}", datasourceId, relationId);
+    }
+
+    @Override
+    @Transactional
+    public List<LogicalRelation> saveLogicalRelations(String datasourceId, List<LogicalRelation> logicalRelations) {
+        // 获取现有外键
+        List<LogicalRelation> existingRelations = logicalRelationMapper.selectByDatasourceId(datasourceId);
+        Map<String, LogicalRelation> existingMap = existingRelations.stream()
+                .collect(Collectors.toMap(LogicalRelation::getId, r -> r));
+
+        // 收集传入列表中已存在的ID
+        Set<String> incomingIds = logicalRelations.stream()
+                .map(LogicalRelation::getId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        // 删除不在传入列表中的外键
+        for (LogicalRelation existing : existingRelations) {
+            if (!incomingIds.contains(existing.getId())) {
+                logicalRelationMapper.deleteById(existing.getId());
+            }
+        }
+
+        // 去重
+        List<LogicalRelation> uniqueRelations = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+        for (LogicalRelation relation : logicalRelations) {
+            String key = relation.getSourceTableName() + "|" + relation.getSourceColumnName() + "|"
+                    + relation.getTargetTableName() + "|" + relation.getTargetColumnName();
+            if (!seen.contains(key)) {
+                seen.add(key);
+                uniqueRelations.add(relation);
+            }
+        }
+
+        // 插入或更新
+        for (LogicalRelation relation : uniqueRelations) {
+            relation.setDatasourceId(datasourceId);
+            if (relation.getId() != null && existingMap.containsKey(relation.getId())) {
+                relation.setUpdateBy(SecurityUtils.getCurrentUserId());
+                logicalRelationMapper.updateById(relation);
+            } else {
+                relation.setId(SnowflakeIdGenerator.generateId());
+                String userId = SecurityUtils.getCurrentUserId();
+                relation.setCreateBy(userId);
+                relation.setUpdateBy(userId);
+                relation.setCreateTime(LocalDateTime.now());
+                relation.setUpdateTime(LocalDateTime.now());
+                relation.setDelFlag(0);
+                logicalRelationMapper.insert(relation);
+            }
+        }
+
+        log.info("批量保存逻辑外键: datasourceId={}, count={}", datasourceId, uniqueRelations.size());
+        return logicalRelationMapper.selectByDatasourceId(datasourceId);
+    }
+
+    /**
+     * 实体转VO
+     * 隐藏密码等敏感字段
+     *
+     * @param reportDatasource 数据源实体
+     * @return 数据源VO
+     */
+    private ReportDatasourceVO toVO(ReportDatasource reportDatasource) {
+        return ReportDatasourceVO.builder()
+                .id(reportDatasource.getId())
+                .name(reportDatasource.getName())
+                .type(reportDatasource.getType())
+                .host(reportDatasource.getHost())
+                .port(reportDatasource.getPort())
+                .databaseName(reportDatasource.getDatabaseName())
+                .username(reportDatasource.getUsername())
+                .connectionUrl(reportDatasource.getConnectionUrl())
+                .status(reportDatasource.getStatus())
+                .testStatus(reportDatasource.getTestStatus())
+                .description(reportDatasource.getDescription())
+                .initializedTables(reportDatasource.getInitializedTables())
+                .createBy(reportDatasource.getCreateBy())
+                .createTime(reportDatasource.getCreateTime())
+                .updateTime(reportDatasource.getUpdateTime())
+                .build();
+    }
+
+    @Override
+    public SchemaDTO buildSchemaDTO(String datasourceId, String query) {
+        ReportDatasource reportDatasource = reportDatasourceMapper.selectById(datasourceId);
+        if (reportDatasource == null) {
+            throw new ReportBizException("error.datasource.notExistId", datasourceId);
+        }
+
+        // 第一步：向量检索召回与查询相关的TABLE文档
+        // 调用新的组合检索接口：按 vectorType + datasourceId 检索
+        List<VectorStoreSearchResult> tableSearchResults = agentVectorStore.search(query,
+            VectorSearchParam.builder()
+                .topK(10).threshold(0.5)
+                .vectorType("TABLE")
+                .metadataEquals(Collections.singletonMap("datasourceId", datasourceId))
+                .build());
+
+        if (tableSearchResults.isEmpty()) {
+            log.warn("向量检索未找到相关表Schema: datasourceId={}, query={}", datasourceId, query);
+            return SchemaDTO.builder()
+                    .name(reportDatasource.getDatabaseName())
+                    .tableCount(0)
+                    .table(new ArrayList<>())
+                    .foreignKeys(new ArrayList<>())
+                    .build();
+        }
+
+        // 从TABLE文档提取召回的表名
+        Set<String> recalledTableNames = new LinkedHashSet<>();
+        Map<String, VectorDocument> tableDocMap = new LinkedHashMap<>();
+        for (VectorStoreSearchResult result : tableSearchResults) {
+            VectorDocument doc = result.getDocument();
+            if (doc == null || doc.getMetadata() == null) {
+                continue;
+            }
+            String tableName = (String) doc.getMetadata().get("name");
+            if (tableName != null && !recalledTableNames.contains(tableName)) {
+                recalledTableNames.add(tableName);
+                tableDocMap.put(tableName, doc);
+            }
+        }
+
+        // 第二步：向量检索召回与查询相关的COLUMN文档
+        // 调用新的组合检索接口：按 vectorType + datasourceId 检索
+        List<VectorStoreSearchResult> columnSearchResults = agentVectorStore.search(query,
+            VectorSearchParam.builder()
+                .topK(20).threshold(0.4)
+                .vectorType("COLUMN")
+                .metadataEquals(Collections.singletonMap("datasourceId", datasourceId))
+                .build());
+
+        // 按表名分组COLUMN文档
+        Map<String, List<VectorDocument>> columnDocMap = new LinkedHashMap<>();
+        for (VectorStoreSearchResult result : columnSearchResults) {
+            VectorDocument doc = result.getDocument();
+            if (doc == null || doc.getMetadata() == null) {
+                continue;
+            }
+            String tableName = (String) doc.getMetadata().get("tableName");
+            if (tableName != null && recalledTableNames.contains(tableName)) {
+                columnDocMap.computeIfAbsent(tableName, k -> new ArrayList<>()).add(doc);
+            }
+        }
+
+        // 第三步：构建TableDTO列表
+        List<TableDTO> tableList = new ArrayList<>();
+        for (String tableName : recalledTableNames) {
+            VectorDocument tableDoc = tableDocMap.get(tableName);
+            List<VectorDocument> columnDocs = columnDocMap.getOrDefault(tableName, new ArrayList<>());
+            TableDTO tableDTO = buildTableDTOFromMetadata(tableDoc, columnDocs);
+            tableList.add(tableDTO);
+        }
+
+        // 第四步：合并物理外键和逻辑外键
+        List<ForeignKeyDTO> foreignKeyList = new ArrayList<>();
+        Set<String> foreignKeyKeys = new LinkedHashSet<>();
+
+        // 4.1 从TABLE文档metadata提取物理外键（格式：t1.col1=t2.col2，多个用"、"分隔）
+        for (VectorDocument tableDoc : tableDocMap.values()) {
+            String fkStr = (String) tableDoc.getMetadata().getOrDefault("foreignKey", "");
+            if (StringUtils.isBlank(fkStr)) {
+                continue;
+            }
+            for (String fk : fkStr.split("、")) {
+                ForeignKeyDTO parsed = parseForeignKeyString(fk);
+                if (parsed != null && foreignKeyKeys.add(foreignKeyKey(parsed))) {
+                    foreignKeyList.add(parsed);
+                }
+            }
+        }
+
+        // 4.2 从逻辑外键表查询，只保留与召回表相关的外键
+        List<LogicalRelation> allRelations = logicalRelationMapper.selectByDatasourceId(datasourceId);
+        for (LogicalRelation relation : allRelations) {
+            boolean sourceInRecalled = recalledTableNames.contains(relation.getSourceTableName());
+            boolean targetInRecalled = recalledTableNames.contains(relation.getTargetTableName());
+            if (!sourceInRecalled && !targetInRecalled) {
+                continue;
+            }
+            ForeignKeyDTO fk = ForeignKeyDTO.builder()
+                    .sourceTable(relation.getSourceTableName())
+                    .sourceColumn(relation.getSourceColumnName())
+                    .targetTable(relation.getTargetTableName())
+                    .targetColumn(relation.getTargetColumnName())
+                    .build();
+            if (foreignKeyKeys.add(foreignKeyKey(fk))) {
+                foreignKeyList.add(fk);
+            }
+        }
+
+        // 第五步：组装SchemaDTO
+        return SchemaDTO.builder()
+                .name(reportDatasource.getDatabaseName())
+                .description(reportDatasource.getDescription())
+                .tableCount(tableList.size())
+                .table(tableList)
+                .foreignKeys(foreignKeyList)
+                .build();
+    }
+
+    @Override
+    public SchemaDTO getTableRelations(String datasourceId, String query) {
+        return buildSchemaDTO(datasourceId, query);
+    }
+
+    @Override
+    public ReportDatasourceVO getDatasourceByName(String name) {
+        ReportDatasource reportDatasource = reportDatasourceMapper.selectByName(name);
+        return reportDatasource != null ? toVO(reportDatasource) : null;
+    }
+
+    /**
+     * 从向量文档metadata构建TableDTO
+     * 参照参考项目，向量库存储TABLE和COLUMN两种文档，字段信息存在metadata中
+     *
+     * @param tableDoc   TABLE类型的向量文档
+     * @param columnDocs 该表对应的COLUMN类型向量文档列表
+     * @return TableDTO
+     */
+    private TableDTO buildTableDTOFromMetadata(VectorDocument tableDoc, List<VectorDocument> columnDocs) {
+        Map<String, Object> tableMeta = tableDoc.getMetadata();
+        String tableName = (String) tableMeta.get("name");
+        String tableDescription = (String) tableMeta.getOrDefault("description", "");
+        String primaryKeysStr = (String) tableMeta.getOrDefault("primaryKeys", "");
+        List<String> primaryKeys = StringUtils.isNotBlank(primaryKeysStr)
+                ? Arrays.asList(primaryKeysStr.split(",")) : new ArrayList<>();
+
+        List<ColumnDTO> columns = new ArrayList<>();
+        for (VectorDocument colDoc : columnDocs) {
+            Map<String, Object> colMeta = colDoc.getMetadata();
+            ColumnDTO columnDTO = ColumnDTO.builder()
+                    .name((String) colMeta.getOrDefault("name", ""))
+                    .type((String) colMeta.getOrDefault("type", ""))
+                    .description((String) colMeta.getOrDefault("description", ""))
+                    .build();
+
+            // 解析示例数据
+            String samplesStr = (String) colMeta.getOrDefault("samples", "");
+            if (StringUtils.isNotBlank(samplesStr)) {
+                try {
+                    List<String> samples = objectMapper.readValue(samplesStr, new TypeReference<List<String>>() {});
+                    columnDTO.setData(samples);
+                } catch (Exception e) {
+                    log.warn("解析字段示例数据失败: column={}, samples={}", columnDTO.getName(), samplesStr);
+                }
+            }
+            columns.add(columnDTO);
+        }
+
+        return TableDTO.builder()
+                .name(tableName)
+                .description(tableDescription)
+                .column(columns)
+                .primaryKeys(primaryKeys)
+                .build();
+    }
+
+    /**
+     * 分页条件查询数据源
+     *
+     * @param queryDTO 查询条件
+     * @return 分页结果
+     */
+    @Override
+    public PageResultVO<ReportDatasourceVO> queryByPage(ReportDatasourceQueryDTO queryDTO) {
+        int offset = (queryDTO.getPageNum() - 1) * queryDTO.getPageSize();
+
+        Long total = reportDatasourceMapper.countByConditions(queryDTO);
+
+        List<ReportDatasource> dataList = reportDatasourceMapper.selectByConditionsWithPage(queryDTO, offset, queryDTO.getPageSize());
+        List<ReportDatasourceVO> dataListVO = dataList.stream()
+                .map(this::toVO)
+                .collect(Collectors.toList());
+
+        return PageResultVO.success(dataListVO, total, queryDTO.getPageNum(), queryDTO.getPageSize());
+    }
+
+    /**
+     * 跨数据源搜索Schema（优化版）
+     * 一次性从向量库检索TABLE和COLUMN文档，按datasourceId分组后批量查数据库，避免N+1查询
+     *
+     * @param query 用户自然语言查询
+     * @return 搜索结果列表，每项包含数据源信息和Schema提示词
+     */
+    @Override
+    public List<SchemaSearchResultVO> searchSchema(String query) {
+        // 第一步：一次性向量检索所有TABLE文档（不按datasourceId过滤，topK放大以覆盖多数据源）
+        // 调用新的类型检索接口：按 vectorType 检索
+        List<VectorStoreSearchResult> tableSearchResults = agentVectorStore.search(query,
+            VectorSearchParam.builder()
+                .topK(30).threshold(0.5)
+                .vectorType("TABLE")
+                .build());
+        if (tableSearchResults.isEmpty()) {
+            log.info("跨数据源搜索未命中任何TABLE文档: query={}", query);
+            return new ArrayList<>();
+        }
+
+        // 第二步：一次性向量检索所有COLUMN文档
+        // 调用新的类型检索接口：按 vectorType 检索
+        List<VectorStoreSearchResult> columnSearchResults = agentVectorStore.search(query,
+            VectorSearchParam.builder()
+                .topK(50).threshold(0.4)
+                .vectorType("COLUMN")
+                .build());
+
+        // 第三步：TABLE文档按datasourceId分组，同时收集表名映射
+        Map<String, List<VectorStoreSearchResult>> tableResultsByDsId = new LinkedHashMap<>();
+        Map<String, Map<String, VectorDocument>> tableDocMapByDsId = new LinkedHashMap<>();
+        Map<String, Set<String>> recalledTableNamesByDsId = new LinkedHashMap<>();
+
+        for (VectorStoreSearchResult result : tableSearchResults) {
+            VectorDocument doc = result.getDocument();
+            if (doc == null || doc.getMetadata() == null) {
+                continue;
+            }
+            Object dsIdObj = doc.getMetadata().get("datasourceId");
+            if (dsIdObj == null) {
+                continue;
+            }
+            String dsId = String.valueOf(dsIdObj);
+            String tableName = (String) doc.getMetadata().get("name");
+
+            tableResultsByDsId.computeIfAbsent(dsId, k -> new ArrayList<>()).add(result);
+            tableDocMapByDsId.computeIfAbsent(dsId, k -> new LinkedHashMap<>());
+            recalledTableNamesByDsId.computeIfAbsent(dsId, k -> new LinkedHashSet<>());
+
+            if (tableName != null && !recalledTableNamesByDsId.get(dsId).contains(tableName)) {
+                recalledTableNamesByDsId.get(dsId).add(tableName);
+                tableDocMapByDsId.get(dsId).put(tableName, doc);
+            }
+        }
+
+        if (tableResultsByDsId.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // 第四步：COLUMN文档按datasourceId + tableName分组，仅保留与召回表匹配的列
+        Map<String, Map<String, List<VectorDocument>>> columnDocMapByDsId = new LinkedHashMap<>();
+        for (VectorStoreSearchResult result : columnSearchResults) {
+            VectorDocument doc = result.getDocument();
+            if (doc == null || doc.getMetadata() == null) {
+                continue;
+            }
+            Object dsIdObj = doc.getMetadata().get("datasourceId");
+            if (dsIdObj == null) {
+                continue;
+            }
+            String dsId = String.valueOf(dsIdObj);
+            String tableName = (String) doc.getMetadata().get("tableName");
+
+            Set<String> recalledTables = recalledTableNamesByDsId.get(dsId);
+            if (recalledTables != null && tableName != null && recalledTables.contains(tableName)) {
+                columnDocMapByDsId.computeIfAbsent(dsId, k -> new LinkedHashMap<>());
+                columnDocMapByDsId.get(dsId).computeIfAbsent(tableName, k -> new ArrayList<>()).add(doc);
+            }
+        }
+
+        // 第五步：批量查询命中的数据源和逻辑外键
+        List<String> hitDsIds = new ArrayList<>(tableResultsByDsId.keySet());
+        Map<String, ReportDatasource> datasourceMap = reportDatasourceMapper.selectByIds(hitDsIds).stream()
+                .collect(Collectors.toMap(ReportDatasource::getId, ds -> ds, (a, b) -> a));
+        Map<String, List<LogicalRelation>> relationMapByDsId = logicalRelationMapper.selectByDatasourceIds(hitDsIds).stream()
+                .collect(Collectors.groupingBy(LogicalRelation::getDatasourceId));
+
+        // 第六步：按数据源组装SchemaDTO和提示词
+        List<SchemaSearchResultVO> results = new ArrayList<>();
+        for (String dsId : hitDsIds) {
+            ReportDatasource reportDatasource = datasourceMap.get(dsId);
+            if (reportDatasource == null) {
+                continue;
+            }
+
+            Set<String> recalledTableNames = recalledTableNamesByDsId.get(dsId);
+            Map<String, VectorDocument> tableDocMap = tableDocMapByDsId.get(dsId);
+            Map<String, List<VectorDocument>> columnDocMap = columnDocMapByDsId.getOrDefault(dsId, new LinkedHashMap<>());
+
+            // 构建TableDTO列表
+            List<TableDTO> tableList = new ArrayList<>();
+            for (String tableName : recalledTableNames) {
+                VectorDocument tableDoc = tableDocMap.get(tableName);
+                List<VectorDocument> columnDocs = columnDocMap.getOrDefault(tableName, new ArrayList<>());
+                tableList.add(buildTableDTOFromMetadata(tableDoc, columnDocs));
+            }
+
+            // 合并物理外键和逻辑外键
+            List<ForeignKeyDTO> foreignKeyList = new ArrayList<>();
+            Set<String> foreignKeyKeys = new LinkedHashSet<>();
+            for (VectorDocument tableDoc : tableDocMap.values()) {
+                String fkStr = (String) tableDoc.getMetadata().getOrDefault("foreignKey", "");
+                if (StringUtils.isBlank(fkStr)) {
+                    continue;
+                }
+                for (String fk : fkStr.split("、")) {
+                    ForeignKeyDTO parsed = parseForeignKeyString(fk);
+                    if (parsed != null && foreignKeyKeys.add(foreignKeyKey(parsed))) {
+                        foreignKeyList.add(parsed);
+                    }
+                }
+            }
+            List<LogicalRelation> relations = relationMapByDsId.getOrDefault(dsId, new ArrayList<>());
+            for (LogicalRelation relation : relations) {
+                boolean sourceInRecalled = recalledTableNames.contains(relation.getSourceTableName());
+                boolean targetInRecalled = recalledTableNames.contains(relation.getTargetTableName());
+                if (!sourceInRecalled && !targetInRecalled) {
+                    continue;
+                }
+                ForeignKeyDTO fk = ForeignKeyDTO.builder()
+                        .sourceTable(relation.getSourceTableName())
+                        .sourceColumn(relation.getSourceColumnName())
+                        .targetTable(relation.getTargetTableName())
+                        .targetColumn(relation.getTargetColumnName())
+                        .build();
+                if (foreignKeyKeys.add(foreignKeyKey(fk))) {
+                    foreignKeyList.add(fk);
+                }
+            }
+
+            SchemaDTO schemaDTO = SchemaDTO.builder()
+                    .name(reportDatasource.getDatabaseName())
+                    .description(reportDatasource.getDescription())
+                    .tableCount(tableList.size())
+                    .table(tableList)
+                    .foreignKeys(foreignKeyList)
+                    .build();
+
+            results.add(SchemaSearchResultVO.builder()
+                    .datasourceId(dsId)
+                    .datasourceName(reportDatasource.getName())
+                    .datasourceType(reportDatasource.getType())
+                    .schema(schemaDTO)
+                    .build());
+
+            log.info("跨数据源搜索命中: datasourceId={}, name={}, 匹配表数={}",
+                    dsId, reportDatasource.getName(), tableList.size());
+        }
+
+        log.info("跨数据源搜索完成: query={}, 命中数据源数={}", query, results.size());
+        return results;
+    }
+
+    /**
+     * 解析物理外键字符串（格式：t1.col1=t2.col2）
+     *
+     * @param fkStr 物理外键字符串
+     * @return 解析成功返回 ForeignKeyDTO，格式不合法返回 null
+     */
+    private ForeignKeyDTO parseForeignKeyString(String fkStr) {
+        if (StringUtils.isBlank(fkStr)) {
+            return null;
+        }
+        String[] sides = fkStr.split("=", 2);
+        if (sides.length != 2) {
+            return null;
+        }
+        String[] source = sides[0].split("\\.", 2);
+        String[] target = sides[1].split("\\.", 2);
+        if (source.length != 2 || target.length != 2) {
+            return null;
+        }
+        if (StringUtils.isBlank(source[0]) || StringUtils.isBlank(source[1])
+                || StringUtils.isBlank(target[0]) || StringUtils.isBlank(target[1])) {
+            return null;
+        }
+        return ForeignKeyDTO.builder()
+                .sourceTable(source[0].trim())
+                .sourceColumn(source[1].trim())
+                .targetTable(target[0].trim())
+                .targetColumn(target[1].trim())
+                .build();
+    }
+
+    /**
+     * 外键去重 key（按 sourceTable.sourceColumn=targetTable.targetColumn 拼接）
+     */
+    private String foreignKeyKey(ForeignKeyDTO fk) {
+        return fk.getSourceTable() + "." + fk.getSourceColumn()
+                + "=" + fk.getTargetTable() + "." + fk.getTargetColumn();
+    }
+}
