@@ -49,11 +49,12 @@
             <version>${revision}</version>
         </dependency>
 
-        <dependency>
-            <groupId>com.luck.product</groupId>
-            <artifactId>luck-report-postgresql-vector</artifactId>
-            <version>${revision}</version>
-        </dependency>
+        <!-- 向量检索、持久化依赖，按需引入 -->
+        <!--        <dependency>-->
+<!--            <groupId>com.luck.product</groupId>-->
+<!--            <artifactId>luck-report-postgresql-vector</artifactId>-->
+<!--            <version>${revision}</version>-->
+<!--        </dependency>-->
 
 <!--        <dependency>-->
 <!--            <groupId>com.luck.product</groupId>-->
