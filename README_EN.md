@@ -84,7 +84,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
 
 luck-report:
-  servletPrefix: report
+  servletPrefix: luck-report
   # Prefer local cache for a first run to avoid a hard Redis dependency
   disableLocalReportCache: false
   token:
@@ -104,7 +104,7 @@ java -jar luck-report-pub/target/luck-report-pub.jar
 
 Or run the main class in your IDE: `com.luck.report.pub.LuckReportApplication` (active profile `dev`).
 
-The default development port is defined in `application-dev.yml` (typically `8049`). `servletPrefix` defaults to `luck-report`.
+The default development port is defined in `application-dev.yml` (typically `8049`). `servletPrefix` is set to `luck-report`.
 
 ### 4. Open the app
 
@@ -165,54 +165,66 @@ The default development port is defined in `application-dev.yml` (typically `804
 
 **Report designer**
 
-<!-- local: /images-plus/git/报表设计器.png -->
-<img src="https://i.ibb.co/hFTzXV1M/image.png" alt="Report designer" style="max-width: 100%; height: auto;" />
+<!-- local: /images-plus/git/报表设计器-1.png -->
+<!-- <img src="/images-plus/git/报表设计器-1.png" alt="Report designer" style="max-width: 100%; height: auto;" /> -->
+<img src="https://i.ibb.co/j9XX6WZP/1.png" alt="Report designer" style="max-width: 100%; height: auto;" />
 
 **AI assistant**
 
-<!-- local: /images-plus/git/智能助手.png -->
-<img src="https://i.ibb.co/xwXTwvq/image.png" alt="AI assistant" style="max-width: 100%; height: auto;" />
-
-**Knowledge base**
-
-<!-- local: /images-plus/git/报表知识库.png -->
-<img src="https://i.ibb.co/pvhbwLTL/agent.png" alt="Knowledge base" style="max-width: 100%; height: auto;" />
-
-**Preview**
-
-<!-- local: /images-plus/git/预览.png -->
-<img src="https://i.ibb.co/gZ20n06q/image.png" alt="Preview" style="max-width: 100%; height: auto;" />
-
-**Report management**
-
-<!-- local: /images-plus/git/报表管理.png -->
-<img src="https://i.ibb.co/1YYx72zx/image.png" alt="Report management" style="max-width: 100%; height: auto;" />
-
-**Shared datasources**
-
-<!-- local: /images-plus/git/公共数据源.png -->
-<img src="https://i.ibb.co/tp6Cswpc/image.png" alt="Shared datasources" style="max-width: 100%; height: auto;" />
-
-**Permissions**
-
-<!-- local: /images-plus/git/权限管理.png -->
-<img src="https://i.ibb.co/1fSMhDp9/manage.png" alt="Permissions" style="max-width: 100%; height: auto;" />
+<!-- local: /images-plus/git/智能助手-1.png -->
+<!-- <img src="/images-plus/git/智能助手-1.png" alt="AI assistant" style="max-width: 100%; height: auto;" /> -->
+<img src="https://i.ibb.co/zh83vTNZ/1.png" alt="AI assistant" style="max-width: 100%; height: auto;" />
 
 **Charts**
 
-<!-- local: /images-plus/git/图表.png -->
-<img src="https://i.ibb.co/60WJWQXp/image.png" alt="Charts" style="max-width: 100%; height: auto;" />
+<!-- local: /images-plus/git/图表-1.png -->
+<!-- <img src="/images-plus/git/图表-1.png" alt="Charts" style="max-width: 100%; height: auto;" /> -->
+<img src="https://i.ibb.co/7dPMvv5J/1.png" alt="Charts" style="max-width: 100%; height: auto;" />
+
+**Preview**
+
+<!-- local: /images-plus/git/预览-1.png -->
+<!-- <img src="/images-plus/git/预览-1.png" alt="Preview" style="max-width: 100%; height: auto;" /> -->
+<img src="https://i.ibb.co/2YW9DJ0K/1.png" alt="Preview" style="max-width: 100%; height: auto;" />
+
+**Report management**
+
+<!-- local: /images-plus/git/报表管理-1.png -->
+<!-- <img src="/images-plus/git/报表管理-1.png" alt="Report management" style="max-width: 100%; height: auto;" /> -->
+<img src="https://i.ibb.co/TBLLywm1/1.png" alt="Report management" style="max-width: 100%; height: auto;" />
+
+**Knowledge base**
+
+<!-- local: /images-plus/git/报表知识库-1.png -->
+<!-- <img src="/images-plus/git/报表知识库-1.png" alt="Knowledge base" style="max-width: 100%; height: auto;" /> -->
+<img src="https://i.ibb.co/3m3y0Jh2/1.png" alt="Knowledge base" style="max-width: 100%; height: auto;" />
+
+**Shared datasources**
+
+<!-- local: /images-plus/git/公共数据源-1.png -->
+<!-- <img src="/images-plus/git/公共数据源-1.png" alt="Shared datasources" style="max-width: 100%; height: auto;" /> -->
+<img src="https://i.ibb.co/dJJ47Rrq/1.png" alt="Shared datasources" style="max-width: 100%; height: auto;" />
+
+**Permissions**
+
+<!-- local: /images-plus/git/权限管理-1.png -->
+<!-- <img src="/images-plus/git/权限管理-1.png" alt="Permissions" style="max-width: 100%; height: auto;" /> -->
+<img src="https://i.ibb.co/5g60NS8g/1.png" alt="Permissions" style="max-width: 100%; height: auto;" />
+
 
 ## ❤️ Sponsorship
 
 If this project helps you, a tip via the QR code below helps keep maintenance going.
 
 <!-- local: /images-plus/git/support-pay.jpg -->
+<!-- <img src="/images-plus/git/support-pay.jpg" alt="Sponsorship QR code" width="200" /> -->
 <img src="https://i.ibb.co/358Hb2jW/support-pay.png" alt="Sponsorship QR code" width="200" />
 
 ## 💬 Contact
 
-For frontend source access, contact the author. When adding on WeChat, please note **【Luck Report】**.
+For questions or frontend source access, contact the author to join the group.
+
+When adding on WeChat, please note **【Luck Report】**.
 
 <!-- local: /images-plus/contact/weixin.png -->
 <!-- <img src="/images-plus/contact/weixin.png" alt="Author WeChat" width="200" /> -->
