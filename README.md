@@ -108,10 +108,10 @@ java -jar luck-report-pub/target/luck-report-pub.jar
 
 ### 4. 访问
 
-| 页面 | 地址                                                        |
-|------|-----------------------------------------------------------|
-| 管理页 | http://localhost:8049/luck-report/manage                  |
-| 设计器 | http://localhost:8049/luck-report/designer                     |
+| 页面 | 地址 |
+|------|------|
+| 管理页 | http://localhost:8049/luck-report/manage |
+| 设计器 | http://localhost:8049/luck-report/designer |
 | 预览 | http://localhost:8049/luck-report/preview?reportPath=db:{报表ID} |
 
 ## 🗂 目录结构
@@ -159,60 +159,72 @@ java -jar luck-report-pub/target/luck-report-pub.jar
 | 权限 | 管理端 / 设计器角色白名单，预览端按角色授权报表 |
 | 缓存 | 本地缓存与 Redis 分布式缓存扩展 |
 | 国际化 | 中英文界面切换（`zh_CN` / `en_US`） |
-| 旧版迁移 | 提供 **UReport2**、Luck-Report V1 报表转化工具 |
+| 旧版迁移 | 提供 UReport2、Luck-Report V1 报表转化工具 |
 
 ## 📷 演示图
 
 **报表设计器**
 
-<!-- 本地: /images-plus/git/报表设计器.png -->
-<img src="https://i.ibb.co/hFTzXV1M/image.png" alt="报表设计器" style="max-width: 100%; height: auto;" />
+<!-- 本地: /images-plus/git/报表设计器-1.png -->
+<!-- <img src="/images-plus/git/报表设计器-1.png" alt="报表设计器" style="max-width: 100%; height: auto;" /> -->
+<img src="https://i.ibb.co/j9XX6WZP/1.png" alt="报表设计器" style="max-width: 100%; height: auto;" />
 
 **智能助手**
 
-<!-- 本地: /images-plus/git/智能助手.png -->
-<img src="https://i.ibb.co/xwXTwvq/image.png" alt="智能助手" style="max-width: 100%; height: auto;" />
-
-**知识库**
-
-<!-- 本地: /images-plus/git/报表知识库.png -->
-<img src="https://i.ibb.co/pvhbwLTL/agent.png" alt="报表知识库" style="max-width: 100%; height: auto;" />
-
-**预览**
-
-<!-- 本地: /images-plus/git/预览.png -->
-<img src="https://i.ibb.co/gZ20n06q/image.png" alt="预览" style="max-width: 100%; height: auto;" />
-
-**报表管理**
-
-<!-- 本地: /images-plus/git/报表管理.png -->
-<img src="https://i.ibb.co/1YYx72zx/image.png" alt="报表管理" style="max-width: 100%; height: auto;" />
-
-**公共数据源**
-
-<!-- 本地: /images-plus/git/公共数据源.png -->
-<img src="https://i.ibb.co/tp6Cswpc/image.png" alt="公共数据源" style="max-width: 100%; height: auto;" />
-
-**权限管理**
-
-<!-- 本地: /images-plus/git/权限管理.png -->
-<img src="https://i.ibb.co/1fSMhDp9/manage.png" alt="权限管理" style="max-width: 100%; height: auto;" />
+<!-- 本地: /images-plus/git/智能助手-1.png -->
+<!-- <img src="/images-plus/git/智能助手-1.png" alt="智能助手" style="max-width: 100%; height: auto;" /> -->
+<img src="https://i.ibb.co/zh83vTNZ/1.png" alt="智能助手" style="max-width: 100%; height: auto;" />
 
 **图表**
 
-<!-- 本地: /images-plus/git/图表.png -->
-<img src="https://i.ibb.co/60WJWQXp/image.png" alt="图表" style="max-width: 100%; height: auto;" />
+<!-- 本地: /images-plus/git/图表-1.png -->
+<!-- <img src="/images-plus/git/图表-1.png" alt="图表" style="max-width: 100%; height: auto;" /> -->
+<img src="https://i.ibb.co/7dPMvv5J/1.png" alt="图表" style="max-width: 100%; height: auto;" />
+
+**预览**
+
+<!-- 本地: /images-plus/git/预览-1.png -->
+<!-- <img src="/images-plus/git/预览-1.png" alt="预览" style="max-width: 100%; height: auto;" /> -->
+<img src="https://i.ibb.co/2YW9DJ0K/1.png" alt="预览" style="max-width: 100%; height: auto;" />
+
+**报表管理**
+
+<!-- 本地: /images-plus/git/报表管理-1.png -->
+<!-- <img src="/images-plus/git/报表管理-1.png" alt="报表管理" style="max-width: 100%; height: auto;" /> -->
+<img src="https://i.ibb.co/TBLLywm1/1.png" alt="报表管理" style="max-width: 100%; height: auto;" />
+
+**知识库**
+
+<!-- 本地: /images-plus/git/报表知识库-1.png -->
+<!-- <img src="/images-plus/git/报表知识库-1.png" alt="报表知识库" style="max-width: 100%; height: auto;" /> -->
+<img src="https://i.ibb.co/3m3y0Jh2/1.png" alt="报表知识库" style="max-width: 100%; height: auto;" />
+
+**公共数据源**
+
+<!-- 本地: /images-plus/git/公共数据源-1.png -->
+<!-- <img src="/images-plus/git/公共数据源-1.png" alt="公共数据源" style="max-width: 100%; height: auto;" /> -->
+<img src="https://i.ibb.co/dJJ47Rrq/1.png" alt="公共数据源" style="max-width: 100%; height: auto;" />
+
+**权限管理**
+
+<!-- 本地: /images-plus/git/权限管理-1.png -->
+<!-- <img src="/images-plus/git/权限管理-1.png" alt="权限管理" style="max-width: 100%; height: auto;" /> -->
+<img src="https://i.ibb.co/5g60NS8g/1.png" alt="权限管理" style="max-width: 100%; height: auto;" />
+
 
 ## ❤️ 赞助支持
 
 如果觉得本项目对你有帮助，欢迎扫码赞助，你的支持是项目持续维护的动力～
 
 <!-- 本地: /images-plus/git/support-pay.jpg -->
+<!-- <img src="/images-plus/git/support-pay.jpg" alt="赞助二维码" width="200" /> -->
 <img src="https://i.ibb.co/358Hb2jW/support-pay.png" alt="赞助二维码" width="200" />
 
-## 💬 联系作者
+## 💬 沟通交流
 
-如果需要前端源码，可以联系作者，添加微信时请备注 **【Luck Report】**。
+想要咨询相关问题、获取前端源码，可联系作者邀请进群。
+
+添加微信时请备注 **【Luck Report】**。
 
 <!-- 本地: /images-plus/contact/weixin.png -->
 <!-- <img src="/images-plus/contact/weixin.png" alt="作者微信" width="200" /> -->
