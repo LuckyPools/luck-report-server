@@ -14,7 +14,7 @@ public class ReportScopedCache {
     /**
      * 缓存键前缀
      */
-    private static final String CACHE_PREFIX = "report:temp:";
+    private static final String CACHE_PREFIX = "luck-report:temp:";
 
     /**
      * 过期时间，单位：秒

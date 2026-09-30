@@ -28,7 +28,7 @@ public class ResourceCache {
     /**
      * 缓存键前缀
      */
-    private static final String CACHE_PREFIX = "report:resource:";
+    private static final String CACHE_PREFIX = "luck-report:resource:";
 
     /**
      * 存入图片资源到缓存。

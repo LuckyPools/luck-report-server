@@ -21,14 +21,14 @@ import com.luck.report.infra.modules.cache.utils.CacheUtils;
 import java.util.Map;
 
 /**
- * 图表缓存：一图一 key（report:chart:{scope}:{chartId}）。
+ * 图表缓存：一图一 key（luck-report:chart:{scope}:{chartId}）。
  *
  * @author luckyPools
  * @since 2026年05月15日
  */
 public class ChartScopeCache {
 
-    private static final String CACHE_PREFIX = "report:chart:";
+    private static final String CACHE_PREFIX = "luck-report:chart:";
 
     public static String getScopePrefix() {
         return CACHE_PREFIX + CacheUtils.getCacheScopePrefix() + ":";

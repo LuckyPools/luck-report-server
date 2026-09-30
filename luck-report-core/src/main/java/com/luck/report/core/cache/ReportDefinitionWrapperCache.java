@@ -31,7 +31,7 @@ public class ReportDefinitionWrapperCache {
     /**
      * 缓存键前缀
      */
-    private static final String CACHE_PREFIX = "report:definition:";
+    private static final String CACHE_PREFIX = "luck-report:definition:";
 
     /**
      * 根据报表文件名获取报表定义包装类。

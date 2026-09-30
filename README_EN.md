@@ -139,27 +139,27 @@ The default development port is defined in `application-dev.yml` (typically `804
 
 ## 🧩 Features
 
-| Feature | Description |
-|---------|-------------|
-| Report designer | Web visual designer; drag-and-drop field binding, cell and layout config, instant preview |
-| AI assistant | Natural-language create / edit / Q&A with deep thinking; e.g. “Build a sales summary grouped by department”, “Add a total row to column A” |
-| Knowledge base | Report and business knowledge bases; PDF / Word / TXT / Markdown / Q&A vector retrieval; hybrid multi-path recall + optional Reranker for the assistant |
-| Model configuration | Unified chat, embedding, and rerank model settings |
+| Feature                     | Description |
+|-----------------------------|-------------|
+| Report designer             | Web visual designer; drag-and-drop field binding, cell and layout config, instant preview |
+| AI assistant                | Natural-language create / edit / Q&A with deep thinking; e.g. “Build a sales summary grouped by department”, “Add a total row to column A” |
+| RAG Knowledge‑Base          | Report and business knowledge bases; PDF / Word / TXT / Markdown / Q&A vector retrieval; hybrid multi-path recall + optional Reranker for the assistant |
+| Model configuration         | Unified chat, embedding, and rerank model settings |
 | Shared datasources / datasets | Central connections and reusable datasets across reports |
-| Datasources | JDBC, built-in datasource, Spring Bean, static JSON |
-| Query parameters | URL, search form, and built-in params (e.g. user ID) drive queries |
-| Expression engine | Built-in expressions and functions for complex compute and dynamic SQL |
-| Conditional properties | Dynamic style, paging, links, and more by condition |
-| Row bands & paging | Title / repeating header & footer / summary; blank-row fill and fixed rows per page |
-| Charts | 10 chart types via ECharts (pie, bar, line, radar, scatter, bubble, etc.) |
-| Images / barcodes | Path, Base64, expression images; 1D barcodes and QR codes |
+| Datasources                 | JDBC, built-in datasource, Spring Bean, static JSON |
+| Query parameters            | URL, search form, and built-in params (e.g. user ID) drive queries |
+| Expression engine           | Built-in expressions and functions for complex compute and dynamic SQL |
+| Conditional properties      | Dynamic style, paging, links, and more by condition |
+| Row bands & paging          | Title / repeating header & footer / summary; blank-row fill and fixed rows per page |
+| Charts                      | 10 chart types via ECharts (pie, bar, line, radar, scatter, bubble, etc.) |
+| Images / barcodes           | Path, Base64, expression images; 1D barcodes and QR codes |
 | Float elements / form overlay | Floating text/images; overlay background aligned to pre-printed forms |
-| Preview & toolbar | Preview / paged preview; toolbar buttons configurable per report |
-| Export & print | PDF, Word, Excel (paged / multi-sheet); PDF and browser print |
-| Permissions | Admin/designer role whitelist; preview access by role |
-| Cache | Local cache and Redis distributed cache extension |
-| i18n | Chinese / English UI (`zh_CN` / `en_US`) |
-| Legacy migration | Tools to convert **UReport2** and Luck-Report V1 reports |
+| Preview & toolbar           | Preview / paged preview; toolbar buttons configurable per report |
+| Export & print              | PDF, Word, Excel (paged / multi-sheet); PDF and browser print |
+| Permissions                 | Admin/designer role whitelist; preview access by role |
+| Cache                       | Local cache and Redis distributed cache extension |
+| i18n                        | Chinese / English UI (`zh_CN` / `en_US`) |
+| Legacy migration            | Tools to convert **UReport2** and Luck-Report V1 reports |
 
 ## 📷 Screenshots
 

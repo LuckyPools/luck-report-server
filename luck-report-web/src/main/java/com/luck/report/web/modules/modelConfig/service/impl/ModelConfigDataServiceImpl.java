@@ -35,16 +35,16 @@ import java.util.stream.Collectors;
 public class ModelConfigDataServiceImpl implements ModelConfigDataService {
 
     /** 缓存键前缀：模型配置 */
-    private static final String MODEL_CONFIG_PREFIX = "model_config:";
+    private static final String MODEL_CONFIG_PREFIX = "luck-report:model-config:";
 
     /** 缓存键：所有激活的对话模型列表 */
-    private static final String ACTIVE_CHAT_MODELS_KEY = MODEL_CONFIG_PREFIX + "active_chatmodeodels";
+    private static final String ACTIVE_CHAT_MODELS_KEY = MODEL_CONFIG_PREFIX + "active-chat-models";
 
     /** 缓存键：所有激活的嵌入模型列表 */
-    private static final String ACTIVE_EMBEDDING_MODELS_KEY = MODEL_CONFIG_PREFIX + "active_embeddingmodeodels";
+    private static final String ACTIVE_EMBEDDING_MODELS_KEY = MODEL_CONFIG_PREFIX + "active-embedding-models";
 
     /** 缓存键：所有激活的重排序模型列表 */
-    private static final String ACTIVE_RERANK_MODELS_KEY = MODEL_CONFIG_PREFIX + "active_rerankmodels";
+    private static final String ACTIVE_RERANK_MODELS_KEY = MODEL_CONFIG_PREFIX + "active-rerank-models";
 
     /** 缓存键：单个模型配置（后缀为模型ID） */
     private static final String MODEL_BY_ID_PREFIX = MODEL_CONFIG_PREFIX + "id:";
