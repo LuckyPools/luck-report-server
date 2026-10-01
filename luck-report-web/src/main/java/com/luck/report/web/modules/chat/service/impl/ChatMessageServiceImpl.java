@@ -7,6 +7,7 @@ import com.luck.report.web.modules.chat.service.ChatMessageService;
 import com.luck.report.web.security.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,6 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ChatMessageServiceImpl implements ChatMessageService {
 
+    @Qualifier("bean.chatMessageMapper")
     private final ChatMessageMapper chatMessageMapper;
 
     @Override

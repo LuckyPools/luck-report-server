@@ -1,6 +1,6 @@
 package com.luck.report.servlet.jakarta;
 
-import com.luck.report.web.view.ViewRenderer;
+import com.luck.report.web.modules.report.service.ViewRenderer;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -20,7 +20,7 @@ public class JakartaThymeleafConfig {
     private boolean templateCache;
 
     @Bean(name = "bean.luckReportTemplateResolver")
-    public SpringResourceTemplateResolver luckReportTemplateResolver() {
+    public SpringResourceTemplateResolver templateResolver() {
         SpringResourceTemplateResolver resolver = new SpringResourceTemplateResolver();
         resolver.setPrefix("classpath:/html/");
         resolver.setSuffix(".html");
@@ -33,14 +33,14 @@ public class JakartaThymeleafConfig {
     }
 
     @Bean(name = "bean.luckReportTemplateEngine")
-    public SpringTemplateEngine luckReportTemplateEngine() {
+    public SpringTemplateEngine templateEngine() {
         SpringTemplateEngine engine = new SpringTemplateEngine();
-        engine.setTemplateResolver(luckReportTemplateResolver());
+        engine.setTemplateResolver(templateResolver());
         engine.setEnableSpringELCompiler(true);
         return engine;
     }
 
-    @Bean
+    @Bean("bean.viewRenderer")
     public ViewRenderer viewRenderer(@Qualifier("bean.luckReportTemplateEngine") SpringTemplateEngine templateEngine) {
         return new JakartaViewRenderer(templateEngine);
     }

@@ -17,9 +17,9 @@ import com.luck.report.core.export.pdf.PdfProducer;
 import com.luck.report.core.export.word.high.WordProducer;
 import com.luck.report.core.model.Report;
 import com.luck.report.web.modules.report.constant.ReportConstants;
-import com.luck.report.web.utils.UrlParameterUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -37,16 +37,24 @@ import java.util.Map;
 public class ReportExportService {
 
     @Autowired
+    @Qualifier("bean.reportBuilder")
     private ReportBuilder reportBuilder;
 
     @Autowired
+    @Qualifier("bean.exportManager")
     private ExportManager exportManager;
 
     @Autowired
+    @Qualifier("bean.reportRender")
     private ReportRender reportRender;
 
     @Autowired
+    @Qualifier("bean.reportDefinitionService")
     private ReportDefinitionService reportDefinitionService;
+
+    @Autowired
+    @Qualifier("bean.paramService")
+    private ParamService paramService;
 
     private final ExcelProducer excelProducer = new ExcelProducer();
     private final Excel97Producer excel97Producer = new Excel97Producer();
@@ -63,7 +71,7 @@ public class ReportExportService {
         }
         boolean isPreview = ReportConstants.MODE_KEY.equals(mode);
         try {
-            Map<String, Object> parameters = UrlParameterUtils.buildParameters(req);
+            Map<String, Object> parameters = paramService.buildAllParameters(req);
             if (isPreview) {
                 ReportDefinition reportDefinition = reportDefinitionService.getReportDefinition(reportPath);
                 Report report = reportBuilder.buildReport(reportDefinition, parameters);
@@ -95,7 +103,7 @@ public class ReportExportService {
     public void buildExcel97(String reportPath, String mode, ApiRequest req, OutputStream outputStream,
                              boolean withPage, boolean withSheet) throws IOException {
         boolean isPreview = ReportConstants.MODE_KEY.equals(mode);
-        Map<String, Object> parameters = UrlParameterUtils.buildParameters(req);
+        Map<String, Object> parameters = paramService.buildAllParameters(req);
         if (isPreview) {
             ReportDefinition reportDefinition = reportDefinitionService.getReportDefinition(reportPath);
             Report report = reportBuilder.buildReport(reportDefinition, parameters);
@@ -126,7 +134,7 @@ public class ReportExportService {
         boolean isPreview = ReportConstants.MODE_KEY.equals(mode);
         try {
             ReportDefinition reportDefinition;
-            Map<String, Object> parameters = UrlParameterUtils.buildParameters(req);
+            Map<String, Object> parameters = paramService.buildAllParameters(req);
             if (isPreview) {
                 reportDefinition = reportDefinitionService.getReportDefinition(reportPath);
             } else {
@@ -152,7 +160,7 @@ public class ReportExportService {
     public void buildWord(String reportPath, String mode, ApiRequest req, OutputStream outputStream) throws IOException {
         boolean isPreview = ReportConstants.MODE_KEY.equals(mode);
         try {
-            Map<String, Object> parameters = UrlParameterUtils.buildParameters(req);
+            Map<String, Object> parameters = paramService.buildAllParameters(req);
             if (isPreview) {
                 ReportDefinition reportDefinition = reportDefinitionService.getReportDefinition(reportPath);
                 Report report = reportBuilder.buildReport(reportDefinition, parameters);

@@ -5,13 +5,14 @@ import com.luck.report.infra.modules.vector.domain.enums.RetrievalMethod;
 import com.luck.report.infra.modules.vector.domain.param.VectorFullTextSearchParam;
 import com.luck.report.infra.modules.vector.domain.param.VectorSearchParam;
 import com.luck.report.infra.modules.vector.service.VectorStore;
-import com.luck.report.web.config.KnowledgeRetrievalProperties;
+import com.luck.report.web.config.properties.KnowledgeRetrievalProperties;
 import com.luck.report.web.modules.chat.service.impl.EmbeddingService;
 import com.luck.report.web.modules.vector.service.RerankService;
 import com.luck.report.web.modules.vector.utils.ReciprocalRankFusion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -26,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * 双路召回 + RRF + 可选 Rerank。学 Dify：hybrid 时向量阈值置 0；学 FastGPT：加权 RRF。
  */
-@Service
+@Service("bean.hybridRetrievalService")
 public class HybridRetrievalService {
 
     private static final Logger log = LoggerFactory.getLogger(HybridRetrievalService.class);
@@ -35,12 +36,15 @@ public class HybridRetrievalService {
     private VectorStore vectorStore;
 
     @Autowired
+    @Qualifier("bean.embeddingService")
     private EmbeddingService embeddingService;
 
     @Autowired
+    @Qualifier("bean.knowledgeRetrievalProperties")
     private KnowledgeRetrievalProperties props;
 
     @Autowired
+    @Qualifier("bean.rerankService")
     private RerankService rerankService;
 
     private final ExecutorService pool = Executors.newFixedThreadPool(2);

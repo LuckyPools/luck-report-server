@@ -1,4 +1,5 @@
 com.luck.report.servlet.jakarta.JakartaReportAutoConfiguration
-com.luck.report.web.config.DataSourceConfig
+com.luck.report.web.config.DataSourceConfiguration
+com.luck.report.web.config.TransactionConfiguration
 com.luck.report.servlet.jakarta.JakartaServletConfiguration
 com.luck.report.servlet.jakarta.JakartaThymeleafConfig

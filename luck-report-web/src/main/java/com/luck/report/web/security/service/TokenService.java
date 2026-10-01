@@ -13,7 +13,7 @@ import java.util.List;
  * 框架只依赖该接口的方法。
  * <p><b>所有方法的实现策略（生成算法、存储介质、校验逻辑等）均由实现方决定，
  * 框架不规定具体策略。</b>
- * <p>Bean 名：{@code bean.tokenService}。
+ * <p>默认 Bean 名 {@code bean.tokenService}。第三方自定义实现请使用 {@code @Primary}（勿抢同名）。
  *
  * @author luck-report
  * @since 1.0.0

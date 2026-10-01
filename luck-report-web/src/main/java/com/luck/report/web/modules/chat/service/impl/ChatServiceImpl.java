@@ -10,6 +10,7 @@ import com.luck.report.web.modules.modelConfig.domain.entity.ModelConfig;
 import com.luck.report.web.modules.modelConfig.service.ModelConfigDataService;
 import com.luck.report.web.common.domain.vo.ResultVO;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import okhttp3.*;
 import okio.BufferedSource;
 import org.slf4j.Logger;
@@ -39,6 +40,7 @@ public class ChatServiceImpl implements ChatService {
     private static final java.util.concurrent.ConcurrentHashMap<String, Boolean> TOOL_CHOICE_INCOMPATIBLE_MODELS =
             new java.util.concurrent.ConcurrentHashMap<>();
 
+    @Qualifier("bean.modelConfigDataService")
     private final ModelConfigDataService modelConfigDataService;
     private final ExecutorService executorService = Executors.newCachedThreadPool();
 

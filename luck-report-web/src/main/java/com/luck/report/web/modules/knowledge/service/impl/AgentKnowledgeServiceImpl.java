@@ -26,13 +26,14 @@ import com.luck.report.web.modules.knowledge.utils.KnowledgeContentCleaner;
 import com.luck.report.web.modules.knowledge.utils.KnowledgeSimpleText;
 import com.luck.report.web.modules.knowledge.utils.SplitterTypeResolver;
 import com.luck.report.web.modules.knowledge.domain.enums.SplitterType;
-import com.luck.report.web.config.KnowledgeRetrievalProperties;
+import com.luck.report.web.config.properties.KnowledgeRetrievalProperties;
 import com.luck.report.web.modules.chat.service.impl.EmbeddingService;
 import com.luck.report.infra.modules.vector.domain.entity.VectorDocument;
 import com.luck.report.infra.modules.vector.domain.dto.VectorStoreSearchResult;
 import com.luck.report.web.security.utils.SecurityUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -59,14 +60,23 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
 
+    @Qualifier("bean.agentKnowledgeMapper")
     private final AgentKnowledgeMapper agentKnowledgeMapper;
+    @Qualifier("bean.agentVectorStore")
     private final AgentVectorStore reportAgentVectorStore;
+    @Qualifier("bean.agentKnowledgeConverter")
     private final AgentKnowledgeConverter agentKnowledgeConverter;
+    @Qualifier("bean.transactionTemplate")
     private final TransactionTemplate transactionTemplate;
+    @Qualifier("bean.textSplitterFactory")
     private final TextSplitterFactory textSplitterFactory;
+    @Qualifier("bean.documentParserFactory")
     private final DocumentParserFactory documentParserFactory;
+    @Qualifier("bean.knowledgeRetrievalProperties")
     private final KnowledgeRetrievalProperties retrievalProperties;
+    @Qualifier("bean.embeddingService")
     private final EmbeddingService embeddingService;
+    @Qualifier("bean.knowledgeChunkService")
     private final KnowledgeChunkService knowledgeChunkService;
 
     /**

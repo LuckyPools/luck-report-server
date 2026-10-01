@@ -3,7 +3,7 @@ package com.luck.report.web.modules.role.service.impl;
 import com.luck.report.core.exception.ReportBizException;
 import com.luck.report.infra.modules.servlet.provider.ApiRequest;
 import com.luck.report.web.security.domain.bo.AnonymousRole;
-import com.luck.report.web.config.TokenProperties;
+import com.luck.report.web.config.properties.TokenProperties;
 import com.luck.report.web.modules.role.domain.entity.ReportRole;
 import com.luck.report.web.modules.role.domain.vo.ReportRoleListVo;
 import com.luck.report.web.modules.role.mapper.ReportRoleMapper;
@@ -16,6 +16,7 @@ import com.luck.report.web.security.service.TokenService;
 import com.luck.report.web.security.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
@@ -50,9 +51,9 @@ public class ReportRoleServiceImpl implements ReportRoleService, ApplicationCont
     /** 由 {@link #setApplicationContext} 注入的 ReportProvider 列表副本。 */
     private List<ReportProvider> reportProviders = Collections.emptyList();
 
-    public ReportRoleServiceImpl(ReportRoleMapper roleMapper,
+    public ReportRoleServiceImpl(@Qualifier("bean.reportRoleMapper") ReportRoleMapper roleMapper,
                                  TokenService tokenService,
-                                 TokenProperties tokenProperties) {
+                                 @Qualifier("bean.tokenProperties") TokenProperties tokenProperties) {
         this.roleMapper = roleMapper;
         this.tokenService = tokenService;
         this.tokenProperties = tokenProperties;

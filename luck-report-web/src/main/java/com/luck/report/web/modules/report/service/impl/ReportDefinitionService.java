@@ -6,6 +6,7 @@ import com.luck.report.core.export.ReportRender;
 import com.luck.report.web.cache.ReportScopedCache;
 import com.luck.report.web.exception.ReportDesignException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 /**
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 public class ReportDefinitionService {
 
     @Autowired
+    @Qualifier("bean.reportRender")
     private ReportRender reportRender;
 
     /**

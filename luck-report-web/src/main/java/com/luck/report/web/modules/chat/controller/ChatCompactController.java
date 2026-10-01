@@ -5,6 +5,7 @@ import com.luck.report.web.modules.chat.domain.vo.CompactResult;
 import com.luck.report.web.common.domain.vo.ResultVO;
 import com.luck.report.web.modules.chat.service.ChatService;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,12 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
  * 接收前端传入的早期对话消息，调用 LLM 生成结构化摘要，
  * 替代原始消息以减少上下文 token 消耗
  *
- * 工作流程：
- * 1. 前端检测到消息超过压缩阈值 → 收集早期消息
- * 2. 前端从 prompt/compact 加载压缩提示词，连同 messages + existingSummary + reportSnapshot 一起发送
- * 3. 后端委托 ChatService.compact() 调用 LLM 非流式生成摘要
- * 4. 返回 CompactResult（summary + keyOperations），前端替换早期消息
- *
  * @author luck
  */
 @RestController("bean.chatCompactController")
@@ -29,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @AllArgsConstructor
 public class ChatCompactController {
 
+    @Qualifier("bean.chatService")
     private final ChatService chatService;
 
     /**

@@ -20,7 +20,7 @@ import java.util.Map;
  * @author luck-report
  * @since 2.2.0
  */
-@Component
+@Component("bean.userBuiltInParamProvider")
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class UserBuiltInParamProvider implements BuiltInParamProvider {
 

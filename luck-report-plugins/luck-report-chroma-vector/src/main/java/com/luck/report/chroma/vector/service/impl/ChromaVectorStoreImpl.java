@@ -33,7 +33,7 @@ import java.util.*;
  * 4. 调用 search() 前，queryVector 必须已生成
  *
  * Bean 注册：
- * - 由 ChromaVectorStoreAutoConfiguration.chromaVectorStore() 方法创建
+ * - 由 ChromaVectorStoreConfiguration 注册为 bean.chromaVectorStore
  *
  * Collection 结构
  * {
@@ -54,7 +54,7 @@ public class ChromaVectorStoreImpl implements VectorStore {
     private final String defaultCollectionName;
 
     /**
-     * 构造函数：由 ChromaVectorStoreAutoConfiguration 注入 Client、DefaultApi 和 collectionName
+     * 构造函数：由 ChromaVectorStoreConfiguration 注入 Client、DefaultApi 和 collectionName
      *
      * @param chromaClient Chroma HTTP 客户端（用于 Collection 管理）
      * @param api Chroma 底层 API（用于直接传向量的增删查操作）

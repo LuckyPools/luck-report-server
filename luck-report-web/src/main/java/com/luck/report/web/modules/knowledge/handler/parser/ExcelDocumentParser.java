@@ -1,7 +1,7 @@
 package com.luck.report.web.modules.knowledge.handler.parser;
 
 import com.luck.report.core.exception.ReportBizException;
-import com.luck.report.web.config.KnowledgeDocumentParseProperties;
+import com.luck.report.web.config.properties.KnowledgeDocumentParseProperties;
 import com.luck.report.web.modules.knowledge.handler.parser.DocumentParser;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DataFormatter;
@@ -9,6 +9,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,14 +24,14 @@ import java.util.List;
  *
  * @author luck
  */
-@Component
+@Component("bean.excelDocumentParser")
 @Order(40)
 public class ExcelDocumentParser implements DocumentParser {
 
     private final KnowledgeDocumentParseProperties properties;
     private final DataFormatter dataFormatter = new DataFormatter();
 
-    public ExcelDocumentParser(KnowledgeDocumentParseProperties properties) {
+    public ExcelDocumentParser(@Qualifier("bean.knowledgeDocumentParseProperties") KnowledgeDocumentParseProperties properties) {
         this.properties = properties;
     }
 

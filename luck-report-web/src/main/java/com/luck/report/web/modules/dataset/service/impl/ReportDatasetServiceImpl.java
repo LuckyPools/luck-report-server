@@ -19,6 +19,7 @@ import com.luck.report.web.utils.SnowflakeIdGenerator;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -49,7 +50,9 @@ public class ReportDatasetServiceImpl implements ReportDatasetService {
     private static final String STATUS_ACTIVE = "active";
     private static final String STATUS_INACTIVE = "inactive";
 
+    @Qualifier("bean.reportDatasetMapper")
     private final ReportDatasetMapper reportDatasetMapper;
+    @Qualifier("bean.reportDatasourceMapper")
     private final ReportDatasourceMapper reportDatasourceMapper;
 
     @Override

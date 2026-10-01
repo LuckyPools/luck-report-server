@@ -15,6 +15,7 @@ import com.luck.report.infra.modules.cache.utils.CacheUtils;
 import com.luck.report.web.security.utils.SecurityUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,6 +50,7 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
     /** 缓存键：单个模型配置（后缀为模型ID） */
     private static final String MODEL_BY_ID_PREFIX = MODEL_CONFIG_PREFIX + "id:";
 
+    @Qualifier("bean.modelConfigMapper")
     private final ModelConfigMapper modelConfigMapper;
 
     /**

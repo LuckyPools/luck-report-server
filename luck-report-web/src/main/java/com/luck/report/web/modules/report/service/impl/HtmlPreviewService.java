@@ -17,11 +17,11 @@ import com.luck.report.core.utils.FreezeUtils;
 import com.luck.report.web.modules.report.constant.ReportConstants;
 import com.luck.report.web.modules.report.domain.vo.cell.ChartDataVo;
 import com.luck.report.web.modules.report.domain.vo.report.HtmlReportVo;
-import com.luck.report.web.utils.UrlParameterUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -43,43 +43,37 @@ public class HtmlPreviewService {
     private static final Logger logger = LoggerFactory.getLogger(HtmlPreviewService.class);
 
     @Autowired
+    @Qualifier("bean.exportManager")
     private ExportManager exportManager;
 
     @Autowired
+    @Qualifier("bean.reportBuilder")
     private ReportBuilder reportBuilder;
 
     @Autowired
+    @Qualifier("bean.reportRender")
     private ReportRender reportRender;
 
     @Autowired
+    @Qualifier("bean.reportDefinitionService")
     private ReportDefinitionService reportDefinitionService;
 
     @Autowired
+    @Qualifier("bean.designerService")
     private DesignerService designerService;
 
     @Autowired
-    private BuiltInParamService builtInParamService;
+    @Qualifier("bean.paramService")
+    private ParamService paramService;
 
     private final HtmlProducer htmlProducer = new HtmlProducer();
-
-    /**
-     * 构建参数 Map 并注入内置参数
-     *
-     * @param req HTTP 请求上下文，不可为空
-     * @return 包含 HTTP 参数和内置参数的 Map，不可为空
-     */
-    private Map<String, Object> buildParametersWithBuiltIn(ApiRequest req) {
-        Map<String, Object> parameters = UrlParameterUtils.buildParameters(req);
-        builtInParamService.injectBuiltInParams(parameters, req);
-        return parameters;
-    }
 
     /**
      * 加载 HTML 预览内容并组装返回数据。
      */
     public HtmlReportVo loadHtml(String reportPath, String mode, String pageIndex, ApiRequest req) {
         String contextPath = req.getContextPath();
-        Map<String, Object> parameters = buildParametersWithBuiltIn(req);
+        Map<String, Object> parameters = paramService.buildAllParameters(req);
         HtmlReport htmlReport = loadReport(reportPath, mode, pageIndex, contextPath, parameters);
         HtmlReportVo vo = toVo(htmlReport);
         vo.setReportName(designerService.resolveProvider(reportPath).getReportFile(reportPath).getName());
@@ -91,7 +85,7 @@ public class HtmlPreviewService {
      */
     public String loadPrintPages(String reportPath, String mode, ApiRequest req) {
         boolean isPreview = ReportConstants.MODE_KEY.equals(mode);
-        Map<String, Object> parameters = buildParametersWithBuiltIn(req);
+        Map<String, Object> parameters = paramService.buildAllParameters(req);
         ReportDefinition reportDefinition;
         if (isPreview) {
             reportDefinition = reportDefinitionService.getReportDefinition(reportPath);
@@ -140,7 +134,7 @@ public class HtmlPreviewService {
      */
     public HtmlReportVo loadData(String reportPath, String mode, String pageIndex, ApiRequest req) {
         String contextPath = req.getContextPath();
-        Map<String, Object> parameters = buildParametersWithBuiltIn(req);
+        Map<String, Object> parameters = paramService.buildAllParameters(req);
         HtmlReport htmlReport = loadReport(reportPath, mode, pageIndex, contextPath, parameters);
         return toVo(htmlReport);
     }

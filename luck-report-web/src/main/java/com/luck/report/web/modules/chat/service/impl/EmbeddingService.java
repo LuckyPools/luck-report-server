@@ -10,6 +10,7 @@ import com.luck.report.web.modules.modelConfig.service.ModelConfigDataService;
 import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -52,7 +53,7 @@ public class EmbeddingService {
      *
      * @param modelConfigDataService 模型配置数据服务
      */
-    public EmbeddingService(ModelConfigDataService modelConfigDataService) {
+    public EmbeddingService(@Qualifier("bean.modelConfigDataService") ModelConfigDataService modelConfigDataService) {
         this.modelConfigDataService = modelConfigDataService;
         this.baseHttpClient = new OkHttpClient.Builder()
                 .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)

@@ -10,22 +10,22 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ProviderConfiguration {
 
-    @Bean
+    @Bean("bean.defaultImageProvider")
     public DefaultImageProvider defaultImageProvider() {
         return new DefaultImageProvider();
     }
 
-    @Bean
+    @Bean("bean.httpImageProvider")
     public HttpImageProvider httpImageProvider() {
         return new HttpImageProvider();
     }
 
-    @Bean
+    @Bean("bean.httpsImageProvider")
     public HttpsImageProvider httpsImageProvider() {
         return new HttpsImageProvider();
     }
 
-    @Bean
+    @Bean("bean.classpathReportProvider")
     public ClasspathReportProvider classpathReportProvider() {
         return new ClasspathReportProvider();
     }

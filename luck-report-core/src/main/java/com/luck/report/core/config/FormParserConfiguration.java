@@ -7,67 +7,67 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class FormParserConfiguration {
 
-    @Bean
+    @Bean("bean.formParserUtils")
     public FormParserUtils formParserUtils() {
         return new FormParserUtils();
     }
 
-    @Bean
+    @Bean("bean.rowParser")
     public RowParser rowParser() {
         return new RowParser();
     }
 
-    @Bean
+    @Bean("bean.colParser")
     public ColParser colParser() {
         return new ColParser();
     }
 
-    @Bean
+    @Bean("bean.inputParser")
     public InputParser inputParser() {
         return new InputParser();
     }
 
-    @Bean
+    @Bean("bean.buttonParser")
     public ButtonParser buttonParser() {
         return new ButtonParser();
     }
 
-    @Bean
+    @Bean("bean.switchParser")
     public SwitchParser switchParser() {
         return new SwitchParser();
     }
 
-    @Bean
+    @Bean("bean.selectParser")
     public SelectParser selectParser() {
         return new SelectParser();
     }
 
-    @Bean
+    @Bean("bean.cascaderParser")
     public CascaderParser cascaderParser() {
         return new CascaderParser();
     }
 
-    @Bean
+    @Bean("bean.treeSelectParser")
     public TreeSelectParser treeSelectParser() {
         return new TreeSelectParser();
     }
 
-    @Bean
+    @Bean("bean.checkboxGroupParser")
     public CheckboxGroupParser checkboxGroupParser() {
         return new CheckboxGroupParser();
     }
 
-    @Bean
+    @Bean("bean.radioGroupParser")
     public RadioGroupParser radioGroupParser() {
         return new RadioGroupParser();
     }
 
-    @Bean
+    @Bean("bean.inputNumberParser")
     public InputNumberParser inputNumberParser() {
         return new InputNumberParser();
     }
 
-    @Bean
+    @Bean("bean.datePickerParser")
     public DatePickerParser datePickerParser() {
         return new DatePickerParser();
     }

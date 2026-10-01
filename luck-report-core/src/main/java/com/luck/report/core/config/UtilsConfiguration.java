@@ -11,26 +11,26 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class UtilsConfiguration {
 
-    @Bean
+    @Bean("bean.uReportPropertyPlaceholderConfigurer")
     public UReportPropertyPlaceholderConfigurer uReportPropertyPlaceholderConfigurer() {
         UReportPropertyPlaceholderConfigurer configurer = new UReportPropertyPlaceholderConfigurer();
         configurer.setIgnoreUnresolvablePlaceholders(true);
         return configurer;
     }
 
-    @Bean
+    @Bean("bean.expressionUtils")
     public ExpressionUtils expressionUtils() {
         return new ExpressionUtils();
     }
 
-    @Bean
+    @Bean("bean.utils")
     public Utils utils(@Value("${luck-report.debug:false}") boolean debug) {
         Utils utils = new Utils();
         utils.setDebug(debug);
         return utils;
     }
 
-    @Bean
+    @Bean("bean.cacheUtils")
     public CacheUtils cacheUtils() {
         return new CacheUtils();
     }

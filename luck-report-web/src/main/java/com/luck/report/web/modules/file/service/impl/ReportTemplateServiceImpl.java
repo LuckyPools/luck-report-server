@@ -8,6 +8,7 @@ import com.luck.report.web.security.utils.SecurityUtils;
 import com.luck.report.web.common.domain.vo.PageResultVO;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +32,7 @@ import com.luck.report.core.exception.ReportBizException;
 @AllArgsConstructor
 public class ReportTemplateServiceImpl implements ReportTemplateService {
 
+    @Qualifier("bean.reportTemplateMapper")
     private final ReportTemplateMapper reportTemplateMapper;
 
     @Override

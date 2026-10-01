@@ -2,7 +2,7 @@ package com.luck.report.web.modules.trace.service.impl;
 
 import com.luck.report.infra.modules.servlet.context.RequestHolder;
 import com.luck.report.infra.modules.servlet.provider.ApiRequest;
-import com.luck.report.web.config.AgentTraceProperties;
+import com.luck.report.web.config.properties.AgentTraceProperties;
 import com.luck.report.web.filter.TraceIdHandler;
 import com.luck.report.web.modules.trace.domain.vo.AgentTraceLogVO;
 import com.luck.report.web.modules.trace.domain.vo.AgentTraceReportRequest;
@@ -11,6 +11,7 @@ import com.luck.report.web.modules.trace.service.AgentTraceService;
 import com.luck.report.web.modules.chat.utils.ChatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -58,7 +59,7 @@ public class AgentTraceServiceImpl implements AgentTraceService {
     /** client_context 去重集合上限，超限整体清空，防止长驻进程无限增长 */
     private static final int MAX_CLIENT_CONTEXT_TRACE_IDS = 2048;
 
-    public AgentTraceServiceImpl(AgentTraceProperties properties) {
+    public AgentTraceServiceImpl(@Qualifier("bean.agentTraceProperties") AgentTraceProperties properties) {
         this.properties = properties;
         this.traceLog = LoggerFactory.getLogger(properties.getLoggerName());
     }

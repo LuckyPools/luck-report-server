@@ -1,7 +1,7 @@
 package com.luck.report.servlet.jakarta;
 
-import com.luck.report.web.view.LibAssetVersions;
-import com.luck.report.web.view.ViewRenderer;
+import com.luck.report.web.modules.report.constant.LibAssetVersions;
+import com.luck.report.web.modules.report.service.ViewRenderer;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.thymeleaf.context.WebContext;
 import org.thymeleaf.spring6.SpringTemplateEngine;

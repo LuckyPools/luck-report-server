@@ -3,9 +3,10 @@ package com.luck.report.servlet.jakarta;
 import com.luck.report.web.modules.report.constant.ReportUrls;
 import com.luck.report.web.modules.role.mapper.ReportRoleMapper;
 import com.luck.report.web.security.service.impl.ReportAccessChecker;
-import com.luck.report.web.config.TokenProperties;
+import com.luck.report.web.config.properties.TokenProperties;
 import com.luck.report.web.security.service.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -20,18 +21,21 @@ public class JakartaServletConfiguration implements WebMvcConfigurer {
     private String servletPrefix;
 
     @Autowired
+    @Qualifier("bean.reportAccessChecker")
     private ReportAccessChecker reportAccessChecker;
 
     @Autowired
+    @Qualifier("bean.tokenProperties")
     private TokenProperties tokenProperties;
 
     @Autowired
     private TokenService tokenService;
 
     @Autowired
+    @Qualifier("bean.reportRoleMapper")
     private ReportRoleMapper reportRoleMapper;
 
-    @Bean
+    @Bean("bean.traceIdFilterRegistration")
     public FilterRegistrationBean<JakartaTraceIdFilter> traceIdFilterRegistration() {
         FilterRegistrationBean<JakartaTraceIdFilter> registration = new FilterRegistrationBean<>();
         registration.setFilter(new JakartaTraceIdFilter());
@@ -41,7 +45,7 @@ public class JakartaServletConfiguration implements WebMvcConfigurer {
         return registration;
     }
 
-    @Bean
+    @Bean("bean.requestHolderFilterRegistration")
     public FilterRegistrationBean<JakartaRequestHolderFilter> requestHolderFilterRegistration() {
         FilterRegistrationBean<JakartaRequestHolderFilter> registration = new FilterRegistrationBean<>();
         registration.setFilter(new JakartaRequestHolderFilter());

@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 /**
  * 基于 PostgreSQL + vector 的向量存储实现（纯向量操作）
  * 使用 vector 扩展进行向量存储和相似度检索，支持元数据过滤
- * SQL 操作委托给 PgSqlVectorDocumentDao，由 plugin 自治的 vectorJdbcTemplate 直接绑定 vector 数据源
+ * SQL 操作委托给 PgSqlVectorDocumentDao，由 plugin 自治的 bean.vectorJdbcTemplate 直接绑定 vector 数据源
  *
  * 设计原则：
  * 1. 只负责向量数据的存储、检索、删除
@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
  *
  * @author luck
  */
-@Repository
+@Repository("bean.pgSqlVectorStore")
 @ConditionalOnProperty(name = "luck-report.vector.type", havingValue = "postgresql")
 public class PgSqlVectorStoreImpl implements VectorStore {
 

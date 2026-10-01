@@ -16,6 +16,7 @@ import com.luck.report.web.utils.DownloadUtils;
 import com.luck.report.web.utils.ResultVOUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,6 +34,7 @@ import java.util.List;
 @AllArgsConstructor
 public class AgentKnowledgeController {
 
+    @Qualifier("bean.agentKnowledgeService")
     private final AgentKnowledgeService agentKnowledgeService;
 
     /**

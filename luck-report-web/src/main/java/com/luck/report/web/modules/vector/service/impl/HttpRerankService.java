@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.luck.report.infra.modules.vector.domain.dto.VectorStoreSearchResult;
 import com.luck.report.infra.modules.vector.domain.entity.VectorDocument;
 import com.luck.report.core.security.SensitiveConfigCipher;
-import com.luck.report.web.config.KnowledgeRetrievalProperties;
+import com.luck.report.web.config.properties.KnowledgeRetrievalProperties;
 import com.luck.report.web.modules.modelConfig.converter.ModelConfigConverter;
 import com.luck.report.web.modules.modelConfig.domain.dto.ModelConfigDTO;
 import com.luck.report.web.modules.modelConfig.domain.entity.ModelConfig;
@@ -21,6 +21,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.net.InetSocketAddress;
@@ -39,7 +40,7 @@ import java.util.concurrent.TimeUnit;
  * rerank-enabled 且存在激活 RERANK 模型时精排；否则或失败时退回原序截断。
  * 精排结果再与原候选按 rerankWeight 做 RRF（对齐 FastGPT）。
  */
-@Service
+@Service("bean.httpRerankService")
 public class HttpRerankService implements RerankService {
 
     private static final Logger log = LoggerFactory.getLogger(HttpRerankService.class);
@@ -54,8 +55,8 @@ public class HttpRerankService implements RerankService {
     private final OkHttpClient baseClient;
 
     public HttpRerankService(
-            ModelConfigDataService modelConfigDataService,
-            KnowledgeRetrievalProperties props) {
+            @Qualifier("bean.modelConfigDataService") ModelConfigDataService modelConfigDataService,
+            @Qualifier("bean.knowledgeRetrievalProperties") KnowledgeRetrievalProperties props) {
         this.modelConfigDataService = modelConfigDataService;
         this.props = props;
         this.baseClient = new OkHttpClient.Builder()

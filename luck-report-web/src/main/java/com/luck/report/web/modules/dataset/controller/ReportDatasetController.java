@@ -11,6 +11,7 @@ import com.luck.report.web.utils.DownloadUtils;
 import com.luck.report.web.utils.ResultVOUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,6 +37,7 @@ import java.util.List;
 @AllArgsConstructor
 public class ReportDatasetController {
 
+    @Qualifier("bean.reportDatasetService")
     private final ReportDatasetService reportDatasetService;
 
     /**

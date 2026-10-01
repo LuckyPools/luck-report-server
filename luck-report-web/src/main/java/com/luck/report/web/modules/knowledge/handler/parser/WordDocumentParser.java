@@ -23,7 +23,7 @@ import java.util.List;
  *
  * @author luck
  */
-@Component
+@Component("bean.wordDocumentParser")
 @Order(30)
 public class WordDocumentParser implements DocumentParser {
 

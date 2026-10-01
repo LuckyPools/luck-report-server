@@ -2,8 +2,9 @@ package com.luck.report.web.modules.report.service.impl;
 
 import com.luck.report.core.Utils;
 import com.luck.report.infra.modules.vector.service.VectorStore;
-import com.luck.report.web.config.AgentTraceProperties;
+import com.luck.report.web.config.properties.AgentTraceProperties;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -20,6 +21,7 @@ import java.util.Map;
 public class ResourceLoaderService {
 
     /** agent 链路日志总开关，随工具配置一并返回，供前端决定是否上报 */
+    @Qualifier("bean.agentTraceProperties")
     private final AgentTraceProperties agentTraceProperties;
 
     /** 向量存储实现；EmptyVectorStore 时 vectorEnabled=false */

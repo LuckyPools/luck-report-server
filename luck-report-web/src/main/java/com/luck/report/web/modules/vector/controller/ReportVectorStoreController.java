@@ -9,6 +9,7 @@ import com.luck.report.web.modules.vector.domain.vo.VectorSearchResult;
 import com.luck.report.web.modules.vector.service.ReportVectorSearchService;
 import com.luck.report.web.modules.vector.service.impl.AgentVectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,9 +31,11 @@ import java.util.Map;
 public class ReportVectorStoreController {
 
     @Autowired
+    @Qualifier("bean.agentVectorStore")
     private AgentVectorStore reportAgentVectorStore;
 
     @Autowired
+    @Qualifier("bean.reportVectorSearchService")
     private ReportVectorSearchService reportVectorSearchService;
 
     @PostMapping("/search")

@@ -12,312 +12,312 @@ import org.springframework.context.annotation.Configuration;
 public class FunctionConfiguration {
 
     // 统计函数
-    @Bean
+    @Bean("bean.countFunction")
     public CountFunction countFunction() {
         return new CountFunction();
     }
 
-    @Bean
+    @Bean("bean.sumFunction")
     public SumFunction sumFunction() {
         return new SumFunction();
     }
 
-    @Bean
+    @Bean("bean.maxFunction")
     public MaxFunction maxFunction() {
         return new MaxFunction();
     }
 
-    @Bean
+    @Bean("bean.minFunction")
     public MinFunction minFunction() {
         return new MinFunction();
     }
 
-    @Bean
+    @Bean("bean.listFunction")
     public ListFunction listFunction() {
         return new ListFunction();
     }
 
-    @Bean
+    @Bean("bean.avgFunction")
     public AvgFunction avgFunction() {
         return new AvgFunction();
     }
 
-    @Bean
+    @Bean("bean.orderFunction")
     public OrderFunction orderFunction() {
         return new OrderFunction();
     }
 
-    @Bean
+    @Bean("bean.ifnFunction")
     public IfnFunction ifnFunction() {
         return new IfnFunction();
     }
 
     // 日期函数
-    @Bean
+    @Bean("bean.weekFunction")
     public WeekFunction weekFunction() {
         return new WeekFunction();
     }
 
-    @Bean
+    @Bean("bean.dayFunction")
     public DayFunction dayFunction() {
         return new DayFunction();
     }
 
-    @Bean
+    @Bean("bean.monthFunction")
     public MonthFunction monthFunction() {
         return new MonthFunction();
     }
 
-    @Bean
+    @Bean("bean.yearFunction")
     public YearFunction yearFunction() {
         return new YearFunction();
     }
 
-    @Bean
+    @Bean("bean.dateFunction")
     public DateFunction dateFunction() {
         return new DateFunction();
     }
 
-    @Bean
+    @Bean("bean.formatDateFunction")
     public FormatDateFunction formatDateFunction() {
         return new FormatDateFunction();
     }
 
     // 数学函数
-    @Bean
+    @Bean("bean.absFunction")
     public AbsFunction absFunction() {
         return new AbsFunction();
     }
 
-    @Bean
+    @Bean("bean.ceilFunction")
     public CeilFunction ceilFunction() {
         return new CeilFunction();
     }
 
-    @Bean
+    @Bean("bean.chnFunction")
     public ChnFunction chnFunction() {
         return new ChnFunction();
     }
 
-    @Bean
+    @Bean("bean.chnMoneyFunction")
     public ChnMoneyFunction chnMoneyFunction() {
         return new ChnMoneyFunction();
     }
 
-    @Bean
+    @Bean("bean.cosFunction")
     public CosFunction cosFunction() {
         return new CosFunction();
     }
 
-    @Bean
+    @Bean("bean.expFunction")
     public ExpFunction expFunction() {
         return new ExpFunction();
     }
 
-    @Bean
+    @Bean("bean.floorFunction")
     public FloorFunction floorFunction() {
         return new FloorFunction();
     }
 
-    @Bean
+    @Bean("bean.log10Function")
     public Log10Function log10Function() {
         return new Log10Function();
     }
 
-    @Bean
+    @Bean("bean.logFunction")
     public LogFunction logFunction() {
         return new LogFunction();
     }
 
-    @Bean
+    @Bean("bean.powFunction")
     public PowFunction powFunction() {
         return new PowFunction();
     }
 
-    @Bean
+    @Bean("bean.randomFunction")
     public RandomFunction randomFunction() {
         return new RandomFunction();
     }
 
-    @Bean
+    @Bean("bean.roundFunction")
     public RoundFunction roundFunction() {
         return new RoundFunction();
     }
 
-    @Bean
+    @Bean("bean.sinFunction")
     public SinFunction sinFunction() {
         return new SinFunction();
     }
 
-    @Bean
+    @Bean("bean.sqrtFunction")
     public SqrtFunction sqrtFunction() {
         return new SqrtFunction();
     }
 
-    @Bean
+    @Bean("bean.tanFunction")
     public TanFunction tanFunction() {
         return new TanFunction();
     }
 
-    @Bean
+    @Bean("bean.stdevpFunction")
     public StdevpFunction stdevpFunction() {
         return new StdevpFunction();
     }
 
-    @Bean
+    @Bean("bean.varaFunction")
     public VaraFunction varaFunction() {
         return new VaraFunction();
     }
 
-    @Bean
+    @Bean("bean.modeFunction")
     public ModeFunction modeFunction() {
         return new ModeFunction();
     }
 
-    @Bean
+    @Bean("bean.medianFunction")
     public MedianFunction medianFunction() {
         return new MedianFunction();
     }
 
     // 字符串函数
-    @Bean
+    @Bean("bean.lengthFunction")
     public LengthFunction lengthFunction() {
         return new LengthFunction();
     }
 
-    @Bean
+    @Bean("bean.lowerFunction")
     public LowerFunction lowerFunction() {
         return new LowerFunction();
     }
 
-    @Bean
+    @Bean("bean.indexOfFunction")
     public IndexOfFunction indexOfFunction() {
         return new IndexOfFunction();
     }
 
-    @Bean
+    @Bean("bean.replaceFunction")
     public ReplaceFunction replaceFunction() {
         return new ReplaceFunction();
     }
 
-    @Bean
+    @Bean("bean.substringFunction")
     public SubstringFunction substringFunction() {
         return new SubstringFunction();
     }
 
-    @Bean
+    @Bean("bean.trimFunction")
     public TrimFunction trimFunction() {
         return new TrimFunction();
     }
 
-    @Bean
+    @Bean("bean.upperFunction")
     public UpperFunction upperFunction() {
         return new UpperFunction();
     }
 
-    @Bean
+    @Bean("bean.toNumberFunction")
     public ToNumberFunction toNumberFunction() {
         return new ToNumberFunction();
     }
 
-    @Bean
+    @Bean("bean.leftFunction")
     public LeftFunction leftFunction() {
         return new LeftFunction();
     }
 
-    @Bean
+    @Bean("bean.rightFunction")
     public RightFunction rightFunction() {
         return new RightFunction();
     }
 
-    @Bean
+    @Bean("bean.splitFunction")
     public SplitFunction splitFunction() {
         return new SplitFunction();
     }
 
     // 页面函数
-    @Bean
+    @Bean("bean.pageTotalFunction")
     public PageTotalFunction pageTotalFunction() {
         return new PageTotalFunction();
     }
 
-    @Bean
+    @Bean("bean.pageNumberFunction")
     public PageNumberFunction pageNumberFunction() {
         return new PageNumberFunction();
     }
 
-    @Bean
+    @Bean("bean.pageAvgFunction")
     public PageAvgFunction pageAvgFunction() {
         return new PageAvgFunction();
     }
 
-    @Bean
+    @Bean("bean.pageCountFunction")
     public PageCountFunction pageCountFunction() {
         return new PageCountFunction();
     }
 
-    @Bean
+    @Bean("bean.pageMaxFunction")
     public PageMaxFunction pageMaxFunction() {
         return new PageMaxFunction();
     }
 
-    @Bean
+    @Bean("bean.pageMinFunction")
     public PageMinFunction pageMinFunction() {
         return new PageMinFunction();
     }
 
-    @Bean
+    @Bean("bean.pageRowsFunction")
     public PageRowsFunction pageRowsFunction() {
         return new PageRowsFunction();
     }
 
-    @Bean
+    @Bean("bean.pageSumFunction")
     public PageSumFunction pageSumFunction() {
         return new PageSumFunction();
     }
 
     // 其他函数
-    @Bean
+    @Bean("bean.formatNumberFunction")
     public FormatNumberFunction formatNumberFunction() {
         return new FormatNumberFunction();
     }
 
-    @Bean
+    @Bean("bean.getFunction")
     public GetFunction getFunction() {
         return new GetFunction();
     }
 
-    @Bean
+    @Bean("bean.parameterFunction")
     public ParameterFunction parameterFunction() {
         return new ParameterFunction();
     }
 
-    @Bean
+    @Bean("bean.parameterIsEmptyFunction")
     public ParameterIsEmptyFunction parameterIsEmptyFunction() {
         return new ParameterIsEmptyFunction();
     }
 
-    @Bean
+    @Bean("bean.jsonFunction")
     public JsonFunction jsonFunction() {
         return new JsonFunction();
     }
 
-    @Bean
+    @Bean("bean.rowFunction")
     public RowFunction rowFunction() {
         return new RowFunction();
     }
 
-    @Bean
+    @Bean("bean.columnFunction")
     public ColumnFunction columnFunction() {
         return new ColumnFunction();
     }
 
-    @Bean
+    @Bean("bean.dataRowFunction")
     public DataRowFunction dataRowFunction() {
         return new DataRowFunction();
     }
 
-    @Bean
+    @Bean("bean.dataSeqFunction")
     public DataSeqFunction dataSeqFunction() {
         return new DataSeqFunction();
     }

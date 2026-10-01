@@ -16,6 +16,7 @@ import com.luck.report.web.utils.DownloadUtils;
 import com.luck.report.web.utils.ResultVOUtils;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
 @RequestMapping("${luck-report.servletPrefix:}/model_config")
 public class ModelConfigController {
 
+    @Qualifier("bean.modelConfigDataService")
     private final ModelConfigDataService modelConfigDataService;
 
     /**

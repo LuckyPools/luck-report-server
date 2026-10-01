@@ -2,7 +2,7 @@ package com.luck.report.web.modules.role.controller;
 
 import com.luck.report.infra.modules.servlet.provider.ApiRequest;
 import com.luck.report.infra.modules.servlet.utils.HttpUtils;
-import com.luck.report.web.config.TokenProperties;
+import com.luck.report.web.config.properties.TokenProperties;
 import com.luck.report.web.modules.role.domain.dto.ReportRoleBindingDTO;
 import com.luck.report.web.modules.role.domain.vo.ReportRoleBindingsVo;
 import com.luck.report.web.modules.role.service.ReportRoleService;
@@ -12,6 +12,7 @@ import com.luck.report.web.modules.role.domain.dto.RoleInfo;
 import com.luck.report.web.security.service.TokenService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -50,8 +51,10 @@ import java.util.List;
 @AllArgsConstructor
 public class ReportRoleController {
 
+    @Qualifier("bean.reportRoleService")
     private final ReportRoleService roleDataService;
     private final TokenService tokenService;
+    @Qualifier("bean.tokenProperties")
     private final TokenProperties props;
 
     /** 全量角色列表（第三方角色 + 内置匿名角色，管理页表格，不分页） */

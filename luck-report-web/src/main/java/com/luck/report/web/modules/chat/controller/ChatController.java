@@ -3,6 +3,7 @@ package com.luck.report.web.modules.chat.controller;
 import com.luck.report.web.modules.chat.domain.vo.ChatRequest;
 import com.luck.report.web.modules.chat.service.ChatService;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @AllArgsConstructor
 public class ChatController {
 
+    @Qualifier("bean.chatService")
     private final ChatService chatService;
 
     /**

@@ -23,14 +23,6 @@ import java.util.Objects;
 
 /**
  * Excel 转 JSON 工具类
- * <p>
- * 工作流程：基于 Apache POI 读取 Excel，按 {@link ExcelParseConfig} 选择 Sheet、
- * 解析表头为字段名、按数据行范围逐行提取单元格值并做类型推断（数字/日期/布尔/字符串），
- * 最终序列化为 JSON 数组字符串。
- * </p>
- * <p>
- * 调用方：ImportExcelService（静态数据集 Excel 导入向导后端服务）。
- * </p>
  *
  * @author luck-report
  * @since 2.0.5

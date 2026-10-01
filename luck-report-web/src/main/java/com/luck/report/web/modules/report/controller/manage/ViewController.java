@@ -1,7 +1,8 @@
 package com.luck.report.web.modules.report.controller.manage;
 
-import com.luck.report.web.view.ViewRenderer;
+import com.luck.report.web.modules.report.service.ViewRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -68,6 +69,7 @@ public class ViewController {
      * 视图渲染器，由适配器模块提供具体实现。
      */
     @Autowired
+    @Qualifier("bean.viewRenderer")
     private ViewRenderer viewRenderer;
 
     /**

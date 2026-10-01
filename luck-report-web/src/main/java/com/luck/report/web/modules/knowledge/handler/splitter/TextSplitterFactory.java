@@ -1,11 +1,12 @@
 package com.luck.report.web.modules.knowledge.handler.splitter;
 
-import com.luck.report.web.config.KnowledgeChunkProperties;
+import com.luck.report.web.config.properties.KnowledgeChunkProperties;
 import com.luck.report.web.modules.chat.service.impl.EmbeddingService;
 import com.luck.report.web.modules.knowledge.domain.enums.SplitterType;
 import com.luck.report.web.modules.knowledge.handler.parser.TokenTextSplitter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 /**
@@ -23,7 +24,7 @@ import org.springframework.stereotype.Component;
  *
  * @author luck
  */
-@Component
+@Component("bean.textSplitterFactory")
 public class TextSplitterFactory {
 
     private static final Logger log = LoggerFactory.getLogger(TextSplitterFactory.class);
@@ -31,7 +32,8 @@ public class TextSplitterFactory {
     private final EmbeddingService embeddingService;
     private final KnowledgeChunkProperties chunkProperties;
 
-    public TextSplitterFactory(EmbeddingService embeddingService, KnowledgeChunkProperties chunkProperties) {
+    public TextSplitterFactory(@Qualifier("bean.embeddingService") EmbeddingService embeddingService,
+                               @Qualifier("bean.knowledgeChunkProperties") KnowledgeChunkProperties chunkProperties) {
         this.embeddingService = embeddingService;
         this.chunkProperties = chunkProperties;
     }

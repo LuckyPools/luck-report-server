@@ -23,6 +23,7 @@ import com.luck.report.web.utils.DownloadUtils;
 import com.luck.report.web.utils.ResultVOUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -40,6 +41,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class ReportDatasourceController {
 
+    @Qualifier("bean.datasourceService")
     private final ReportDatasourceService reportDatasourceService;
 
     /**

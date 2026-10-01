@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
@@ -59,13 +60,16 @@ public class SearchFormOptionService implements ApplicationContextAware {
     private static final Logger logger = LoggerFactory.getLogger(SearchFormOptionService.class);
 
     @Autowired
+    @Qualifier("bean.reportRender")
     private ReportRender reportRender;
 
     @Autowired
+    @Qualifier("bean.reportDefinitionService")
     private ReportDefinitionService reportDefinitionService;
 
     @Autowired
-    private BuiltInParamService builtInParamService;
+    @Qualifier("bean.paramService")
+    private ParamService paramService;
 
     private ApplicationContext applicationContext;
 
@@ -120,7 +124,7 @@ public class SearchFormOptionService implements ApplicationContextAware {
             throw new ReportBizException("error.dataset.notExistNamed", ref.getDatasetName());
         }
         Map<String, Object> parameters = ref.getParameters() == null ? new HashMap<>() : ref.getParameters();
-        builtInParamService.injectBuiltInParams(parameters, apiRequest);
+        paramService.injectBuiltInParams(parameters, apiRequest);
         List<?> data = executeDataset(dsDef, datasetDef, parameters);
         if (!isBlank(ref.getParentField())) {
             return buildTreeOptions(data, ref.getLabelField(), ref.getValueField(), ref.getParentField());

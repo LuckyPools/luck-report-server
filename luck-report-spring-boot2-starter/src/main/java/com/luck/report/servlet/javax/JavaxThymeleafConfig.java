@@ -1,6 +1,6 @@
 package com.luck.report.servlet.javax;
 
-import com.luck.report.web.view.ViewRenderer;
+import com.luck.report.web.modules.report.service.ViewRenderer;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,7 +23,7 @@ public class JavaxThymeleafConfig {
     private boolean templateCache;
 
     @Bean(name = "bean.luckReportTemplateResolver")
-    public SpringResourceTemplateResolver luckReportTemplateResolver() {
+    public SpringResourceTemplateResolver templateResolver() {
         SpringResourceTemplateResolver resolver = new SpringResourceTemplateResolver();
         resolver.setPrefix("classpath:/html/");
         resolver.setSuffix(".html");
@@ -36,14 +36,14 @@ public class JavaxThymeleafConfig {
     }
 
     @Bean(name = "bean.luckReportTemplateEngine")
-    public SpringTemplateEngine luckReportTemplateEngine() {
+    public SpringTemplateEngine templateEngine() {
         SpringTemplateEngine engine = new SpringTemplateEngine();
-        engine.setTemplateResolver(luckReportTemplateResolver());
+        engine.setTemplateResolver(templateResolver());
         engine.setEnableSpringELCompiler(true);
         return engine;
     }
 
-    @Bean
+    @Bean("bean.viewRenderer")
     public ViewRenderer viewRenderer(@Qualifier("bean.luckReportTemplateEngine") SpringTemplateEngine templateEngine) {
         return new JavaxViewRenderer(templateEngine);
     }

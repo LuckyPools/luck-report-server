@@ -13,7 +13,7 @@ import java.nio.charset.StandardCharsets;
  *
  * @author luck
  */
-@Component
+@Component("bean.plainTextDocumentParser")
 @Order(100)
 public class PlainTextDocumentParser implements DocumentParser {
 

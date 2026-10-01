@@ -1,10 +1,11 @@
 package com.luck.report.web.modules.knowledge.handler.parser;
 
 import com.luck.report.core.exception.ReportBizException;
-import com.luck.report.web.config.KnowledgeDocumentParseProperties;
+import com.luck.report.web.config.properties.KnowledgeDocumentParseProperties;
 import com.luck.report.web.modules.knowledge.handler.parser.DocumentParser;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,13 +18,13 @@ import java.io.InputStream;
  *
  * @author luck
  */
-@Component
+@Component("bean.pdfDocumentParser")
 @Order(20)
 public class PdfDocumentParser implements DocumentParser {
 
     private final KnowledgeDocumentParseProperties properties;
 
-    public PdfDocumentParser(KnowledgeDocumentParseProperties properties) {
+    public PdfDocumentParser(@Qualifier("bean.knowledgeDocumentParseProperties") KnowledgeDocumentParseProperties properties) {
         this.properties = properties;
     }
 

@@ -80,11 +80,12 @@ public class DatasourceService {
     private ApplicationContext applicationContext;
 
     @Autowired
-    @Qualifier("luckDialectFactory")
+    @Qualifier("bean.luckDialectFactory")
     private DialectFactory dialectFactory;
 
     @Autowired
-    private BuiltInParamService builtInParamService;
+    @Qualifier("bean.paramService")
+    private ParamService paramService;
 
     /**
      * 加载所有内置数据源名称。
@@ -183,7 +184,7 @@ public class DatasourceService {
         try {
             conn = buildConnection(req);
             Map<String, Object> map = buildParameters(req.getParameters());
-            builtInParamService.injectBuiltInParams(map, apiRequest);
+            paramService.injectBuiltInParams(map, apiRequest);
             String sql = parseSql(req.getSql(), map);
             sql = SqlParamUtils.convertToNamedParam(sql);
             if (ProcedureUtils.isProcedure(sql)) {
@@ -234,7 +235,7 @@ public class DatasourceService {
      */
     public DataResult previewData(PreviewDataRequest req, ApiRequest apiRequest) throws ReportServiceException, IOException {
         Map<String, Object> map = buildParameters(req.getParameters());
-        builtInParamService.injectBuiltInParams(map, apiRequest);
+        paramService.injectBuiltInParams(map, apiRequest);
         String originalSql = parseSql(req.getSql(), map);
         originalSql = SqlParamUtils.convertToNamedParam(originalSql);
         SqlSecurityUtils.validate(originalSql);

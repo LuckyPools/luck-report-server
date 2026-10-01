@@ -15,6 +15,7 @@ import com.luck.report.web.modules.knowledge.service.BusinessKnowledgeService;
 import com.luck.report.web.utils.ResultVOUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,6 +32,7 @@ import java.util.List;
 @AllArgsConstructor
 public class BusinessKnowledgeController {
 
+    @Qualifier("bean.businessKnowledgeService")
     private final BusinessKnowledgeService businessKnowledgeService;
 
     @GetMapping("/detail/{id}")

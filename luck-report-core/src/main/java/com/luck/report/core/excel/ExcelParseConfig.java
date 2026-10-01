@@ -2,10 +2,6 @@ package com.luck.report.core.excel;
 
 /**
  * Excel 转 JSON 解析配置
- * <p>
- * 工作流程：由前端 Excel 导入向导收集参数后通过 setter 注入，传入 {@code ExcelToJsonUtil} 控制解析行为，
- * 调用方：ImportExcelService#parseExcelToJson（将前端 FormData 映射为本配置）。
- * </p>
  *
  * @author luck-report
  * @since 2.0.5

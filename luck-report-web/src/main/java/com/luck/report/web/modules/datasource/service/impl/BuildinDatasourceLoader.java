@@ -7,6 +7,7 @@ import com.luck.report.web.modules.datasource.mapper.ReportDatasourceMapper;
 import com.luck.report.core.definition.datasource.BuildinDatasource;
 import com.luck.report.core.definition.datasource.BuildinDatasourceRegistry;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.stereotype.Component;
 
@@ -49,8 +50,8 @@ public class BuildinDatasourceLoader implements SmartInitializingSingleton, Buil
      * @param datasourceMapper 数据源 Mapper
      * @param dynamicDatasourceManager 动态数据源管理器
      */
-    public BuildinDatasourceLoader(ReportDatasourceMapper datasourceMapper,
-                                   DynamicDatasourceManager dynamicDatasourceManager) {
+    public BuildinDatasourceLoader(@Qualifier("bean.reportDatasourceMapper") ReportDatasourceMapper datasourceMapper,
+                                   @Qualifier("bean.dynamicDatasourceManager") DynamicDatasourceManager dynamicDatasourceManager) {
         this.datasourceMapper = datasourceMapper;
         this.dynamicDatasourceManager = dynamicDatasourceManager;
     }

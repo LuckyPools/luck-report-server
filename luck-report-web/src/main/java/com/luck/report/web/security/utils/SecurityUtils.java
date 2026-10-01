@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
  * @author luck-report
  * @since 1.2.0
  */
-@Component
+@Component("bean.securityUtils")
 public class SecurityUtils {
 
     /** 由 Spring setter 注入的实际 TokenService，运行期供静态方法使用 */

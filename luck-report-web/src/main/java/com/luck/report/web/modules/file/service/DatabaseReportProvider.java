@@ -10,6 +10,7 @@ import com.luck.report.core.provider.report.ReportProvider;
 import com.luck.report.core.security.ReportJdbcPasswordXmlUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -36,6 +37,7 @@ public class DatabaseReportProvider implements ReportProvider {
 
     public static final String PREFIX = "db:";
 
+    @Qualifier("bean.reportTemplateService")
     private final ReportTemplateService luckReportFileService;
 
     /**

@@ -9,6 +9,7 @@ import com.luck.report.web.modules.chat.service.impl.EmbeddingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -46,9 +47,11 @@ public class AgentVectorStore {
     private VectorStore vectorStore;
 
     @Autowired
+    @Qualifier("bean.embeddingService")
     private EmbeddingService embeddingService;
 
     @Autowired
+    @Qualifier("bean.hybridRetrievalService")
     private HybridRetrievalService hybridRetrievalService;
 
     /**

@@ -32,6 +32,7 @@ import com.luck.report.infra.modules.vector.domain.param.VectorSearchParam;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,14 +53,21 @@ public class ReportDatasourceServiceImpl implements ReportDatasourceService {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
+    @Qualifier("bean.reportDatasourceMapper")
     private final ReportDatasourceMapper reportDatasourceMapper;
+    @Qualifier("bean.logicalRelationMapper")
     private final LogicalRelationMapper logicalRelationMapper;
     /** 公共数据集Mapper，用于删除数据源前的引用检查 */
+    @Qualifier("bean.reportDatasetMapper")
     private final ReportDatasetMapper reportDatasetMapper;
+    @Qualifier("bean.dynamicDatasourceManager")
     private final DynamicDatasourceManager dynamicDatasourceManager;
+    @Qualifier("bean.datasourceTypeHandlerRegistry")
     private final DatasourceTypeHandlerRegistry handlerRegistry;
+    @Qualifier("bean.agentVectorStore")
     private final AgentVectorStore agentVectorStore;
     /** 内置数据源加载器，用于同步更新数据源缓存 */
+    @Qualifier("bean.buildinDatasourceLoader")
     private final BuildinDatasourceLoader buildinDatasourceLoader;
 
     @Override

@@ -4,7 +4,7 @@ import com.luck.report.core.exception.ReportBizException;
 import com.luck.report.infra.modules.vector.domain.dto.VectorStoreSearchResult;
 import com.luck.report.infra.modules.vector.domain.enums.RetrievalMethod;
 import com.luck.report.infra.modules.vector.domain.param.VectorSearchParam;
-import com.luck.report.web.config.KnowledgeRetrievalProperties;
+import com.luck.report.web.config.properties.KnowledgeRetrievalProperties;
 import com.luck.report.web.modules.chat.service.impl.EmbeddingService;
 import com.luck.report.web.modules.knowledge.constant.AgentKnowledgeMetadataConstant;
 import com.luck.report.web.modules.knowledge.constant.BusinessKnowledgeMetadataConstant;
@@ -16,6 +16,7 @@ import com.luck.report.web.modules.vector.domain.vo.VectorSearchResult;
 import com.luck.report.web.modules.vector.service.ReportVectorSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -23,7 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-@Service
+@Service("bean.reportVectorSearchService")
 public class ReportVectorSearchServiceImpl implements ReportVectorSearchService {
 
     private static final Logger log = LoggerFactory.getLogger(ReportVectorSearchServiceImpl.class);
@@ -38,11 +39,11 @@ public class ReportVectorSearchServiceImpl implements ReportVectorSearchService 
     private final EmbeddingService embeddingService;
 
     public ReportVectorSearchServiceImpl(
-            AgentVectorStore agentVectorStore,
-            BusinessKnowledgeService businessKnowledgeService,
-            AgentKnowledgeService agentKnowledgeService,
-            KnowledgeRetrievalProperties retrievalProperties,
-            EmbeddingService embeddingService) {
+            @Qualifier("bean.agentVectorStore") AgentVectorStore agentVectorStore,
+            @Qualifier("bean.businessKnowledgeService") BusinessKnowledgeService businessKnowledgeService,
+            @Qualifier("bean.agentKnowledgeService") AgentKnowledgeService agentKnowledgeService,
+            @Qualifier("bean.knowledgeRetrievalProperties") KnowledgeRetrievalProperties retrievalProperties,
+            @Qualifier("bean.embeddingService") EmbeddingService embeddingService) {
         this.agentVectorStore = agentVectorStore;
         this.businessKnowledgeService = businessKnowledgeService;
         this.agentKnowledgeService = agentKnowledgeService;

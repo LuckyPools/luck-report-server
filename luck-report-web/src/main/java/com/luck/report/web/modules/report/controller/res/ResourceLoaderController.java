@@ -6,6 +6,7 @@ import com.luck.report.infra.modules.servlet.utils.HttpUtils;
 import com.luck.report.web.modules.report.service.impl.ResourceLoaderService;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,6 +26,7 @@ public class ResourceLoaderController {
 
 
     @Autowired
+    @Qualifier("bean.resourceLoaderService")
     private ResourceLoaderService resourceLoaderService;
 
     /**

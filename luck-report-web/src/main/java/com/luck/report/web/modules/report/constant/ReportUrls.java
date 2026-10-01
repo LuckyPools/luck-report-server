@@ -2,7 +2,7 @@ package com.luck.report.web.modules.report.constant;
 
 /**
  * 报表 URL 路径常量。
- * <p>集中维护管理端和预览端两份 URL 路径段，供 WebConfig、TokenInterceptor、ManageInterceptor、PreviewInterceptor 统一引用。
+ * <p>集中维护管理端和预览端两份 URL 路径段，供 WebConfiguration、TokenInterceptor、ManageInterceptor、PreviewInterceptor 统一引用。
  * <p>新增 Controller 时，只需往对应数组追加路径段，所有拦截器注册和路径判断自动生效。
  *
  * @author luck-report

@@ -2,8 +2,8 @@ package com.luck.report.servlet.javax;
 
 import com.luck.report.infra.modules.servlet.provider.ApiRequest;
 import com.luck.report.infra.modules.servlet.utils.HttpUtils;
-import com.luck.report.web.config.TokenProperties;
-import com.luck.report.web.interceptor.TokenInterceptorHandler;
+import com.luck.report.web.config.properties.TokenProperties;
+import com.luck.report.web.handler.TokenInterceptorHandler;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;

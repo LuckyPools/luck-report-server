@@ -10,6 +10,7 @@ import com.luck.report.web.utils.DownloadUtils;
 import com.luck.report.web.utils.ResultVOUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -34,7 +35,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ChatMessageController {
 
+    @Qualifier("bean.chatMessageService")
     private final ChatMessageService chatMessageService;
+    @Qualifier("bean.chatSessionService")
     private final ChatSessionService chatSessionService;
 
     /**

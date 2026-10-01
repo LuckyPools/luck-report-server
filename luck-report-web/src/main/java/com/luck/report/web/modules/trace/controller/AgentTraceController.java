@@ -6,6 +6,7 @@ import com.luck.report.web.modules.trace.domain.vo.AgentTraceReportResponse;
 import com.luck.report.web.modules.trace.domain.vo.AgentTraceReportResult;
 import com.luck.report.web.modules.trace.service.AgentTraceService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,6 +27,7 @@ public class AgentTraceController {
     /** 限流响应码，前端识别后走退避逻辑而非停止上报 */
     private static final int CODE_RATE_LIMITED = 429;
 
+    @Qualifier("bean.agentTraceService")
     private final AgentTraceService agentTraceService;
 
     /**

@@ -1,6 +1,7 @@
 package com.luck.report.web.modules.knowledge.handler.parser;
 
-import com.luck.report.web.config.KnowledgeDocumentParseProperties;
+import com.luck.report.web.config.properties.KnowledgeDocumentParseProperties;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,13 +16,13 @@ import java.util.List;
 /**
  * CSV → Markdown 表，供 TableTextSplitter（FastGPT markdownTableSplit）使用。
  */
-@Component
+@Component("bean.csvDocumentParser")
 @Order(45)
 public class CsvDocumentParser implements DocumentParser {
 
     private final KnowledgeDocumentParseProperties properties;
 
-    public CsvDocumentParser(KnowledgeDocumentParseProperties properties) {
+    public CsvDocumentParser(@Qualifier("bean.knowledgeDocumentParseProperties") KnowledgeDocumentParseProperties properties) {
         this.properties = properties;
     }
 

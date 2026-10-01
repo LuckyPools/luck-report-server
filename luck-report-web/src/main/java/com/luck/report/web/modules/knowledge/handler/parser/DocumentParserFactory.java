@@ -1,10 +1,11 @@
 package com.luck.report.web.modules.knowledge.handler.parser;
 
 import com.luck.report.core.exception.ReportBizException;
-import com.luck.report.web.config.KnowledgeDocumentParseProperties;
+import com.luck.report.web.config.properties.KnowledgeDocumentParseProperties;
 import com.luck.report.web.i18n.ReportI18n;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -16,7 +17,7 @@ import java.util.List;
  *
  * @author luck
  */
-@Component
+@Component("bean.documentParserFactory")
 public class DocumentParserFactory {
 
     private static final Logger log = LoggerFactory.getLogger(DocumentParserFactory.class);
@@ -24,7 +25,8 @@ public class DocumentParserFactory {
     private final List<DocumentParser> parsers;
     private final KnowledgeDocumentParseProperties properties;
 
-    public DocumentParserFactory(List<DocumentParser> parsers, KnowledgeDocumentParseProperties properties) {
+    public DocumentParserFactory(List<DocumentParser> parsers,
+                                 @Qualifier("bean.knowledgeDocumentParseProperties") KnowledgeDocumentParseProperties properties) {
         this.parsers = parsers;
         this.properties = properties;
     }

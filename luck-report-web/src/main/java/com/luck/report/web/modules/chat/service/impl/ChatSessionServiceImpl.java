@@ -6,6 +6,7 @@ import com.luck.report.web.modules.chat.mapper.ChatSessionMapper;
 import com.luck.report.web.modules.chat.service.ChatSessionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -23,6 +24,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ChatSessionServiceImpl implements ChatSessionService {
 
+    @Qualifier("bean.chatSessionMapper")
     private final ChatSessionMapper chatSessionMapper;
 
     @Override

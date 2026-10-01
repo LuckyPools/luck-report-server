@@ -15,7 +15,7 @@ import java.util.*;
  * @author luck
  * @Date 2024/7/18
  */
-@Component
+@Component("bean.springBeanUtils")
 public class SpringBeanUtils implements ApplicationContextAware, DisposableBean {
 
     private static final Logger log = LoggerFactory.getLogger(SpringBeanUtils.class);

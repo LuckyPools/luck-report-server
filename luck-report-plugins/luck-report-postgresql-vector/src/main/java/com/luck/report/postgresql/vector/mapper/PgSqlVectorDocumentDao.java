@@ -18,16 +18,16 @@ import java.util.stream.Collectors;
 /**
  * 向量文档 DAO
  * 使用 JdbcTemplate 操作 PostgreSQL 的 luck_vector_document 表
- * 通过 @Qualifier("vectorJdbcTemplate") 注入 plugin 内部专属 JdbcTemplate（plugin 自治）
+ * 通过 @Qualifier("bean.vectorJdbcTemplate") 注入 plugin 内部专属 JdbcTemplate（plugin 自治）
  *
  * @author luck
  */
-@Repository
+@Repository("bean.pgSqlVectorDocumentDao")
 @ConditionalOnProperty(name = "luck-report.vector.type", havingValue = "postgresql")
 public class PgSqlVectorDocumentDao {
 
     @Autowired
-    @Qualifier("vectorJdbcTemplate")
+    @Qualifier("bean.vectorJdbcTemplate")
     private JdbcTemplate jdbcTemplate;
 
     /**

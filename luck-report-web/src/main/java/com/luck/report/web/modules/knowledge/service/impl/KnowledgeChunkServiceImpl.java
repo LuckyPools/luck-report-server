@@ -6,6 +6,7 @@ import com.luck.report.web.modules.chat.service.impl.EmbeddingService;
 import com.luck.report.web.modules.knowledge.domain.vo.KnowledgeChunkVO;
 import com.luck.report.web.modules.knowledge.service.KnowledgeChunkService;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -19,7 +20,7 @@ import java.util.Map;
 /**
  * 以向量库为权威源的片段管理
  */
-@Service
+@Service("bean.knowledgeChunkService")
 @AllArgsConstructor
 public class KnowledgeChunkServiceImpl implements KnowledgeChunkService {
 
@@ -29,6 +30,7 @@ public class KnowledgeChunkServiceImpl implements KnowledgeChunkService {
     private static final String META_SPLITTER_TYPE = "splitterType";
 
     private final VectorStore vectorStore;
+    @Qualifier("bean.embeddingService")
     private final EmbeddingService embeddingService;
 
     @Override

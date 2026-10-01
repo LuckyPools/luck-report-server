@@ -8,6 +8,7 @@ import com.luck.report.web.modules.datasource.handler.DatasourceTypeHandlerRegis
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PreDestroy;
@@ -34,7 +35,7 @@ public class DynamicDatasourceManager {
 
     private final DatasourceTypeHandlerRegistry handlerRegistry;
 
-    public DynamicDatasourceManager(DatasourceTypeHandlerRegistry handlerRegistry) {
+    public DynamicDatasourceManager(@Qualifier("bean.datasourceTypeHandlerRegistry") DatasourceTypeHandlerRegistry handlerRegistry) {
         this.handlerRegistry = handlerRegistry;
     }
 
