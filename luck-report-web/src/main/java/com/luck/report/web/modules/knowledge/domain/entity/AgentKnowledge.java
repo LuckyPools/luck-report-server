@@ -30,8 +30,8 @@ public class AgentKnowledge extends DataEntity<AgentKnowledge> {
     /** 内容（当type=QA, FAQ时有内容） */
     private String content;
 
-    /** 是否生效（0:不生效, 1:生效） */
-    private Integer enabled = 1;
+    /** 是否生效：true-参与检索，false-不参与 */
+    private Boolean enabled = true;
 
     /** 向量化状态：PENDING待处理，PROCESSING处理中，COMPLETED已完成，FAILED失败 */
     private EmbeddingStatus embeddingStatus;
@@ -41,9 +41,6 @@ public class AgentKnowledge extends DataEntity<AgentKnowledge> {
 
     /** 原始文件名 */
     private String sourceFilename;
-
-    /** 文件存储路径 */
-    private String reportPath;
 
     /** 文件大小（字节） */
     private Long fileSize;
@@ -56,7 +53,4 @@ public class AgentKnowledge extends DataEntity<AgentKnowledge> {
 
     /** 嵌入模型配置ID，用于指定向量化时使用的嵌入模型 */
     private String modelId;
-
-    /** 物理资源是否已清理（0:未清理, 1:已清理） */
-    private Integer isResourceCleaned = 0;
 }

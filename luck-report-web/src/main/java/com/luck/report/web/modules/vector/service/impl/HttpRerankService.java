@@ -76,9 +76,9 @@ public class HttpRerankService implements RerankService {
             log.debug("rerank-enabled=false, skip rerank");
             return noOp.rerank(query, candidates, topN);
         }
-        ModelConfig config = resolveActiveRerankOrNull();
+        ModelConfig config = resolveEnabledRerankOrNull();
         if (config == null) {
-            log.debug("no active RERANK model, skip rerank");
+            log.debug("no enabled RERANK model, skip rerank");
             return noOp.rerank(query, candidates, topN);
         }
         try {
@@ -99,12 +99,12 @@ public class HttpRerankService implements RerankService {
         }
     }
 
-    private ModelConfig resolveActiveRerankOrNull() {
-        List<ModelConfigDTO> active = modelConfigDataService.listActiveConfigsByType(ModelType.RERANK);
-        if (active == null || active.isEmpty()) {
+    private ModelConfig resolveEnabledRerankOrNull() {
+        List<ModelConfigDTO> enabled = modelConfigDataService.listEnabledConfigsByType(ModelType.RERANK);
+        if (enabled == null || enabled.isEmpty()) {
             return null;
         }
-        ModelConfigDTO dto = active.get(0);
+        ModelConfigDTO dto = enabled.get(0);
         log.info("using RERANK model: id={}, modelName={}", dto.getId(), dto.getModelName());
         return ModelConfigConverter.toEntity(dto);
     }

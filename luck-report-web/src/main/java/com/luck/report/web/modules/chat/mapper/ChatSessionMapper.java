@@ -82,11 +82,11 @@ public interface ChatSessionMapper {
      * 更新会话置顶状态
      *
      * @param sessionId  会话ID
-     * @param isPinned   是否置顶：0-否，1-是
+     * @param pinned   是否置顶
      * @param updateTime 更新时间
      * @return 影响行数
      */
-    int updatePinStatus(@Param("sessionId") String sessionId, @Param("isPinned") Integer isPinned,
+    int updatePinStatus(@Param("sessionId") String sessionId, @Param("pinned") Boolean pinned,
                         @Param("updateTime") LocalDateTime updateTime);
 
     /**
@@ -101,8 +101,7 @@ public interface ChatSessionMapper {
                     @Param("updateTime") LocalDateTime updateTime);
 
     /**
-     * 软删除单个会话
-     * 将 status 设为 deleted 而非物理删除，保留数据可追溯
+     * 软删除单个会话（del_flag=1）
      *
      * @param sessionId  会话ID
      * @param updateTime 更新时间

@@ -6,22 +6,22 @@
     <!-- 公共字段列清单，各查询复用 -->
     <sql id="baseColumns">
         id, name, type, datasource_id, sql_content, json_content, parameters, fields,
-        description, status, create_by, create_time, update_time, update_by, del_flag
+        description, is_enabled AS enabled, create_by, create_time, update_time, update_by, del_flag
     </sql>
 
     <!-- 插入公共数据集，ID由Snowflake生成 -->
     <insert id="insert">
         INSERT INTO luck_report_dataset (id, name, type, datasource_id, sql_content, json_content,
-                parameters, fields, description, status, create_by, update_by, del_flag)
+                parameters, fields, description, is_enabled, create_by, create_time, update_by, update_time, del_flag)
         VALUES (#{id}, #{name}, #{type}, #{datasourceId}, #{sqlContent}, #{jsonContent},
-                #{parameters}, #{fields}, #{description}, #{status}, #{createBy}, #{updateBy}, #{delFlag})
+                #{parameters}, #{fields}, #{description}, #{enabled}, #{createBy}, #{createTime}, #{updateBy}, #{updateTime}, #{delFlag})
     </insert>
 
     <!-- 根据ID更新公共数据集 -->
     <update id="updateById">
         UPDATE luck_report_dataset SET name = #{name}, type = #{type}, datasource_id = #{datasourceId},
                 sql_content = #{sqlContent}, json_content = #{jsonContent}, parameters = #{parameters},
-                fields = #{fields}, description = #{description}, status = #{status}, update_by = #{updateBy}
+                fields = #{fields}, description = #{description}, is_enabled = #{enabled}, update_time = #{updateTime}, update_by = #{updateBy}
         WHERE id = #{id}
     </update>
 
@@ -31,10 +31,10 @@
         FROM luck_report_dataset WHERE id = #{id} AND del_flag = 0
     </select>
 
-    <!-- 按状态查询 -->
-    <select id="selectByStatus" resultType="com.luck.report.web.modules.dataset.domain.entity.ReportDataset">
+    <!-- 按启用状态查询 -->
+    <select id="selectByEnabled" resultType="com.luck.report.web.modules.dataset.domain.entity.ReportDataset">
         SELECT <include refid="baseColumns"/>
-        FROM luck_report_dataset WHERE status = #{status} AND del_flag = 0 ORDER BY create_time DESC
+        FROM luck_report_dataset WHERE is_enabled = #{enabled} AND del_flag = 0 ORDER BY create_time DESC
     </select>
 
     <!-- 查询所有公共数据集 -->
@@ -54,9 +54,9 @@
         UPDATE luck_report_dataset SET del_flag = 1 WHERE id = #{id}
     </update>
 
-    <!-- 更新状态 -->
-    <update id="updateStatusById">
-        UPDATE luck_report_dataset SET status = #{status}, update_time = CURRENT_TIMESTAMP WHERE id = #{id}
+    <!-- 更新启用状态 -->
+    <update id="updateEnabledById">
+        UPDATE luck_report_dataset SET is_enabled = #{enabled}, update_time = #{updateTime} WHERE id = #{id}
     </update>
 
     <!-- 按数据源ID统计引用数量（数据源删除前引用检查用） -->
@@ -79,8 +79,8 @@
         <if test="queryDTO.datasourceId != null and queryDTO.datasourceId != ''">
             AND datasource_id = #{queryDTO.datasourceId}
         </if>
-        <if test="queryDTO.status != null and queryDTO.status != ''">
-            AND status = #{queryDTO.status}
+        <if test="queryDTO.enabled != null">
+            AND is_enabled = #{queryDTO.enabled}
         </if>
         ORDER BY create_time DESC
         LIMIT #{offset}, #{pageSize}
@@ -100,8 +100,8 @@
         <if test="queryDTO.datasourceId != null and queryDTO.datasourceId != ''">
             AND datasource_id = #{queryDTO.datasourceId}
         </if>
-        <if test="queryDTO.status != null and queryDTO.status != ''">
-            AND status = #{queryDTO.status}
+        <if test="queryDTO.enabled != null">
+            AND is_enabled = #{queryDTO.enabled}
         </if>
     </select>
 

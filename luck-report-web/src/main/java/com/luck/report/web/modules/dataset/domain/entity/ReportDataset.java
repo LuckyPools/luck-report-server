@@ -42,6 +42,6 @@ public class ReportDataset extends DataEntity<ReportDataset> {
     /** 描述 */
     private String description;
 
-    /** 状态：active-启用 / inactive-禁用 */
-    private String status;
+    /** 是否启用 */
+    private Boolean enabled;
 }

@@ -101,7 +101,7 @@ public class AgentKnowledgeController {
     }
 
     /**
-     * 更新生效状态
+     * 更新是否生效
      *
      * @param id 智能体知识ID
      * @param enabled 是否生效
@@ -109,7 +109,7 @@ public class AgentKnowledgeController {
      */
     @PostMapping("/enable/{id}")
     public ResultVO<AgentKnowledgeVO> updateEnabledStatus(@PathVariable("id") String id,
-                                                              @RequestParam(value = "enabled") Boolean enabled) {
+                                                             @RequestParam(value = "enabled") Boolean enabled) {
         AgentKnowledgeVO knowledge = agentKnowledgeService.updateEnabledStatus(id, enabled);
         return ResultVOUtils.success("success.knowledge.agentUpdated", knowledge);
     }

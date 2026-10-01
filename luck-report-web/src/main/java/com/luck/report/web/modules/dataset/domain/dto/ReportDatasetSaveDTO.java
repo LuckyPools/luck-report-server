@@ -44,6 +44,6 @@ public class ReportDatasetSaveDTO {
     /** 描述（可选） */
     private String description;
 
-    /** 状态：active/inactive，默认active */
-    private String status;
+    /** 是否启用，默认 true */
+    private Boolean enabled;
 }

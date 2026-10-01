@@ -45,17 +45,14 @@ public class ReportDatasource extends DataEntity<ReportDatasource> {
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String connectionUrl;
 
-    /** 状态：active/inactive */
-    private String status;
+    /** 是否启用 */
+    private Boolean enabled;
 
     /** 连接测试状态：success/failed/unknown */
     private String testStatus;
 
     /** 描述 */
     private String description;
-
-    /** 嵌入模型配置ID，用于指定向量化时使用的嵌入模型 */
-    private String modelId;
 
     /** 已初始化的表名列表（JSON格式存储，如["table1","table2"]） */
     private String initializedTables;

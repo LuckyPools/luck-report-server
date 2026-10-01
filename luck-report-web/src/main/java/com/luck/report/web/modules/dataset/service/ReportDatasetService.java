@@ -16,17 +16,17 @@ import java.util.List;
 public interface ReportDatasetService {
 
     /**
-     * 按状态查询公共数据集列表
+     * 按启用状态查询公共数据集列表
      *
-     * @param status 状态筛选（active/inactive，可为空则查全部）
+     * @param active 是否启用（可为空则查全部）
      * @return 公共数据集VO列表（已回填所属数据源名称与状态）
      */
-    List<ReportDatasetVO> listByStatus(String status);
+    List<ReportDatasetVO> listByEnabled(Boolean enabled);
 
     /**
      * 分页条件查询公共数据集列表
      *
-     * @param queryDTO 查询条件（name模糊/type/datasourceId/status/分页参数）
+     * @param queryDTO 查询条件（name模糊/type/datasourceId/enabled/分页参数）
      * @return 分页结果（已回填所属数据源名称与状态）
      */
     PageResultVO<ReportDatasetVO> queryByPage(ReportDatasetQueryDTO queryDTO);
@@ -41,7 +41,7 @@ public interface ReportDatasetService {
 
     /**
      * 创建公共数据集
-     * 校验名称唯一、类型合法、sql类型必绑active公共数据源且SQL通过安全校验、json类型内容必须为合法JSON数组
+     * 校验名称唯一、类型合法、sql类型必绑已启用公共数据源且SQL通过安全校验、json类型内容必须为合法JSON数组
      *
      * @param dto 保存参数
      * @return 创建后的公共数据集VO
@@ -73,12 +73,12 @@ public interface ReportDatasetService {
     void deleteByIds(List<String> ids);
 
     /**
-     * 更新公共数据集状态（启用/禁用）
+     * 更新公共数据集启用状态
      *
      * @param id     公共数据集ID
-     * @param status 状态：active/inactive
+     * @param enabled 是否启用
      */
-    void updateStatus(String id, String status);
+    void updateEnabledStatus(String id, Boolean enabled);
 
     /**
      * 统计引用指定公共数据源的公共数据集数量

@@ -22,7 +22,7 @@ public class ModelConfigConverter {
                 .sort(entity.getSort())
                 .temperature(entity.getTemperature())
                 .contextWindowTokens(entity.getContextWindowTokens())
-                .isActive(entity.getIsActive())
+                .enabled(entity.getEnabled())
                 .apiKey(entity.getApiKey())
                 .modelType(entity.getModelType().getCode())
                 .apiPath(entity.getApiPath())
@@ -48,12 +48,13 @@ public class ModelConfigConverter {
         entity.setContextWindowTokens(dto.getContextWindowTokens());
         entity.setModelType(ModelType.fromCode(dto.getModelType()));
         entity.setApiPath(dto.getApiPath());
-        entity.setProxyEnabled(dto.getProxyEnabled());
         entity.setProxyHost(dto.getProxyHost());
         entity.setProxyPort(dto.getProxyPort());
         entity.setProxyUsername(dto.getProxyUsername());
         entity.setProxyPassword(dto.getProxyPassword());
-        entity.setIsActive(dto.getIsActive() != null ? dto.getIsActive() : false);
+        entity.setEnabled(dto.getEnabled() != null ? dto.getEnabled() : false);
+        entity.setProxyEnabled(dto.getProxyEnabled() != null ? dto.getProxyEnabled() : false);
+        entity.setDelFlag(0);
         entity.setCreateTime(LocalDateTime.now());
         entity.setUpdateTime(LocalDateTime.now());
         return entity;

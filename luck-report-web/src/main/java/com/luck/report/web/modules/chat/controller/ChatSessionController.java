@@ -17,7 +17,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 聊天会话控制器
@@ -101,16 +100,14 @@ public class ChatSessionController {
     /**
      * 创建新会话
      * 前端首次发送消息时调用，返回包含 UUID 的会话对象
-     * 用户 ID 由 TokenService 从第三方系统解析，前端 body 无需传递 userId
+     * 用户 ID 由 TokenService 从第三方系统解析，前端无需传递 userId
      *
-     * @param body    请求体，可选字段：title-标题
+     * @param title 可选，会话标题
      * @return 新建的会话实体
      */
     @PostMapping("/create")
-    public ResultVO<ChatSession> createSession(@RequestBody(required = false) Map<String, Object> body) {
-        String title = body != null ? (String) body.get("title") : null;
+    public ResultVO<ChatSession> createSession(@RequestParam(value = "title", required = false) String title) {
         String userId = resolveCurrentUserId();
-
         ChatSession session = chatSessionService.createSession(title, userId);
         return ResultVOUtils.success("success.chat.sessionCreated", session);
     }
@@ -119,14 +116,13 @@ public class ChatSessionController {
      * 重命名会话
      *
      * @param sessionId 会话ID
-     * @param request   请求体，包含 title 字段
+     * @param title     新标题
      * @return 操作结果
      */
     @PostMapping("/{sessionId}/rename")
     public ResultVO<Void> renameSession(
             @PathVariable String sessionId,
-            @RequestBody Map<String, String> request) {
-        String title = request.get("title");
+            @RequestParam("title") String title) {
         if (!StringUtils.hasText(title)) {
             return ResultVOUtils.error("error.chat.titleEmpty");
         }
@@ -138,19 +134,19 @@ public class ChatSessionController {
      * 置顶或取消置顶会话
      *
      * @param sessionId 会话ID
-     * @param request   请求体，包含 isPinned 字段（0-否，1-是）
+     * @param pinned    是否置顶
      * @return 操作结果
      */
     @PostMapping("/{sessionId}/pin")
     public ResultVO<Void> pinSession(
             @PathVariable String sessionId,
-            @RequestBody Map<String, Integer> request) {
-        Integer isPinned = request.get("isPinned");
-        if (isPinned == null) {
-            return ResultVOUtils.error("error.chat.isPinnedEmpty");
+            @RequestParam("pinned") Boolean pinned) {
+        if (pinned == null) {
+            return ResultVOUtils.error("error.chat.pinnedEmpty");
         }
-        chatSessionService.pinSession(sessionId, isPinned);
-        return ResultVO.success(isPinned == 1 ? "已置顶" : "已取消置顶", null);
+        chatSessionService.pinSession(sessionId, pinned);
+        return ResultVOUtils.<Void>success(
+                Boolean.TRUE.equals(pinned) ? "success.chat.pinned" : "success.chat.unpinned", null);
     }
 
     /**

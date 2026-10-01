@@ -26,7 +26,7 @@
         UPDATE luck_report_template
         <trim prefix="SET" suffixOverrides=",">
             <if test="title != null">title = #{title},</if>
-            update_time = CURRENT_TIMESTAMP,
+            update_time = #{updateTime},
         </trim>
         WHERE id = #{id} AND del_flag = 0
     </update>

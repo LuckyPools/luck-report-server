@@ -30,7 +30,7 @@ public interface ModelConfigDataService {
      *
      * @param id 要启用的配置ID
      */
-    void activateConfig(String id);
+    void enableConfig(String id);
 
     /**
      * 禁用模型配置
@@ -40,23 +40,23 @@ public interface ModelConfigDataService {
      * @param id 要禁用的配置ID
      * @throws RuntimeException 当该类型只有一个启用的模型时抛出
      */
-    void deactivateConfig(String id);
+    void disableConfig(String id);
 
     /**
-     * 根据模型类型获取所有激活的配置列表
+     * 根据模型类型获取所有启用的配置列表
      *
      * @param modelType 模型类型
      * @return ModelConfigDTO列表
      */
-    List<ModelConfigDTO> listActiveConfigsByType(ModelType modelType);
+    List<ModelConfigDTO> listEnabledConfigsByType(ModelType modelType);
 
     /**
-     * 根据模型类型统计激活的配置数量
+     * 根据模型类型统计启用的配置数量
      *
      * @param modelType 模型类型
-     * @return 激活的配置数量
+     * @return 启用的配置数量
      */
-    int countActiveConfigsByType(ModelType modelType);
+    int countEnabledConfigsByType(ModelType modelType);
 
     /**
      * 获取所有模型配置列表
@@ -100,7 +100,7 @@ public interface ModelConfigDataService {
      * @param modelType 模型类型
      * @return ModelConfigDTO对象,不存在则返回null
      */
-    ModelConfigDTO getActiveConfigByType(ModelType modelType);
+    ModelConfigDTO getEnabledConfigByType(ModelType modelType);
 
     /**
      * 根据模型ID获取对话模型配置（带缓存）

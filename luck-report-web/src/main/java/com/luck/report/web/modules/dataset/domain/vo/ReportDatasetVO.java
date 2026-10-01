@@ -36,8 +36,8 @@ public class ReportDatasetVO {
     /** 所属数据源名称（联查回填，json类型为null） */
     private String datasourceName;
 
-    /** 所属数据源状态：active/inactive（联查回填，用于前端拦截禁用数据源的数据集） */
-    private String datasourceStatus;
+    /** 所属数据源是否启用（联查回填，用于前端拦截禁用数据源的数据集） */
+    private Boolean datasourceEnabled;
 
     /** SQL语句（sql类型非空） */
     private String sqlContent;
@@ -54,8 +54,8 @@ public class ReportDatasetVO {
     /** 描述 */
     private String description;
 
-    /** 状态：active-启用 / inactive-禁用 */
-    private String status;
+    /** 是否启用 */
+    private Boolean enabled;
 
     /** 创建人 */
     private String createBy;

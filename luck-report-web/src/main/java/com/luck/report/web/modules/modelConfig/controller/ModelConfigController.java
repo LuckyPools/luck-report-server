@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 
 /**
  * 模型配置Controller
- * 提供模型配置的管理接口,包括增删改查、激活切换、连通性测试等
+ * 提供模型配置的管理接口,包括增删改查、启用切换、连通性测试等
  *
  * @author luck
  */
@@ -145,57 +145,48 @@ public class ModelConfigController {
     }
 
     /**
-     * 启用模型配置
+     * 启用/禁用模型配置
+     * 禁用时：若该类型只有一个启用的模型，则不允许禁用（重排序除外）
      *
-     * @param id 配置ID
+     * @param id      配置ID
+     * @param enabled 是否启用
      * @return ResultVO操作结果
      */
-    @PostMapping("/activate/{id}")
-    public ResultVO<String> activate(@PathVariable String id) {
+    @PostMapping("/enable/{id}")
+    public ResultVO<String> updateEnabledStatus(@PathVariable String id,
+                                                @RequestParam(value = "enabled") Boolean enabled) {
         try {
-            modelConfigDataService.activateConfig(id);
-            return ResultVOUtils.success("success.model.enabled", ReportI18n.getMessage("success.model.enabled"));
-        } catch (Exception e) {
-            return ResultVOUtils.error("error.model.enableFailed", ReportI18n.messageOf(e));
-        }
-    }
-
-    /**
-     * 禁用模型配置
-     * 如果该类型只有一个启用的模型，则不允许禁用
-     *
-     * @param id 配置ID
-     * @return ResultVO操作结果
-     */
-    @PostMapping("/deactivate/{id}")
-    public ResultVO<String> deactivate(@PathVariable String id) {
-        try {
-            modelConfigDataService.deactivateConfig(id);
+            if (Boolean.TRUE.equals(enabled)) {
+                modelConfigDataService.enableConfig(id);
+                return ResultVOUtils.success("success.model.enabled", ReportI18n.getMessage("success.model.enabled"));
+            }
+            modelConfigDataService.disableConfig(id);
             return ResultVOUtils.success("success.model.disabled", ReportI18n.getMessage("success.model.disabled"));
         } catch (Exception e) {
-            return ResultVOUtils.error("error.model.disableFailed", ReportI18n.messageOf(e));
+            return ResultVOUtils.error(
+                    Boolean.TRUE.equals(enabled) ? "error.model.enableFailed" : "error.model.disableFailed",
+                    ReportI18n.messageOf(e));
         }
     }
 
     /**
-     * 根据模型类型获取所有激活的模型配置列表
+     * 根据模型类型获取所有启用的模型配置列表
      * 用于前端对话框模型选择
      *
      * @param modelType 模型类型(CHAT/EMBEDDING/RERANK)
-     * @return ResultVO包含激活的模型配置列表
+     * @return ResultVO包含启用的模型配置列表
      */
-    @GetMapping("/list_active/{modelType}")
-    public ResultVO<List<ModelConfigDTO>> getActiveList(@PathVariable String modelType) {
+    @GetMapping("/list_enabled/{modelType}")
+    public ResultVO<List<ModelConfigDTO>> getEnabledList(@PathVariable String modelType) {
         try {
             ModelType type = ModelType.fromCode(modelType);
             if (type == null) {
                 return ResultVOUtils.error("error.model.invalidType", modelType);
             }
-            List<ModelConfigDTO> activeConfigs = modelConfigDataService.listActiveConfigsByType(type);
-            // 复制后置空 apiKey，避免污染缓存对象，同时不泄露敏感信息给前端
-            return ResultVOUtils.success("success.model.activeListLoaded", sanitizeList(activeConfigs));
+            List<ModelConfigDTO> enabledConfigs = modelConfigDataService.listEnabledConfigsByType(type);
+            return ResultVOUtils.success("success.model.enabledListLoaded", sanitizeList(enabledConfigs));
         } catch (Exception e) {
-            return ResultVOUtils.error("error.model.activeListFailed", ReportI18n.messageOf(e));
+            return ResultVOUtils.error("error.model.enabledListFailed", ReportI18n.messageOf(e));
         }
     }
 
@@ -208,9 +199,9 @@ public class ModelConfigController {
     @GetMapping("/check_ready")
     public ResultVO<ModelCheckVo> checkReady() {
         // 检查聊天模型是否已配置且启用
-        ModelConfigDTO chatModel = modelConfigDataService.getActiveConfigByType(ModelType.CHAT);
+        ModelConfigDTO chatModel = modelConfigDataService.getEnabledConfigByType(ModelType.CHAT);
         // 检查嵌入模型是否已配置且启用
-        ModelConfigDTO embeddingModel = modelConfigDataService.getActiveConfigByType(ModelType.EMBEDDING);
+        ModelConfigDTO embeddingModel = modelConfigDataService.getEnabledConfigByType(ModelType.EMBEDDING);
 
         boolean chatModelReady = chatModel != null;
         boolean embeddingModelReady = embeddingModel != null;

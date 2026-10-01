@@ -29,7 +29,7 @@ public class BusinessKnowledgeConverter {
                 .type(entity.getType() != null ? entity.getType().getValue() : null)
                 .question(entity.getQuestion())
                 .content(entity.getContent())
-                .enabled(entity.getEnabled() != null && entity.getEnabled() == 1)
+                .enabled(Boolean.TRUE.equals(entity.getEnabled()))
                 .embeddingStatus(entity.getEmbeddingStatus() != null ? entity.getEmbeddingStatus().getValue() : null)
                 .errorMsg(entity.getErrorMsg())
                 .splitterType(entity.getSplitterType())
@@ -51,10 +51,11 @@ public class BusinessKnowledgeConverter {
         knowledge.setType(KnowledgeType.fromValue(dto.getType()));
         knowledge.setQuestion(dto.getQuestion());
         knowledge.setContent(dto.getContent());
-        knowledge.setEnabled(1);
+        knowledge.setEnabled(true);
         knowledge.setEmbeddingStatus(EmbeddingStatus.PENDING);
         knowledge.setSplitterType(splitterType);
         knowledge.setModelId(dto.getModelId());
+        knowledge.setDelFlag(0);
         knowledge.setCreateTime(now);
         knowledge.setUpdateTime(now);
 

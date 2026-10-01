@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -46,19 +47,15 @@ public class ReportDatasetServiceImpl implements ReportDatasetService {
     private static final String TYPE_SQL = "sql";
     private static final String TYPE_JSON = "json";
 
-    /** 状态常量 */
-    private static final String STATUS_ACTIVE = "active";
-    private static final String STATUS_INACTIVE = "inactive";
-
     @Qualifier("bean.reportDatasetMapper")
     private final ReportDatasetMapper reportDatasetMapper;
     @Qualifier("bean.reportDatasourceMapper")
     private final ReportDatasourceMapper reportDatasourceMapper;
 
     @Override
-    public List<ReportDatasetVO> listByStatus(String status) {
-        List<ReportDataset> list = StringUtils.isNotBlank(status)
-                ? reportDatasetMapper.selectByStatus(status)
+    public List<ReportDatasetVO> listByEnabled(Boolean enabled) {
+        List<ReportDataset> list = enabled != null
+                ? reportDatasetMapper.selectByEnabled(enabled)
                 : reportDatasetMapper.selectAll();
         return toVOList(list);
     }
@@ -88,8 +85,11 @@ public class ReportDatasetServiceImpl implements ReportDatasetService {
         ReportDataset entity = buildEntity(null, dto);
         entity.setId(SnowflakeIdGenerator.generateId());
         String userId = SecurityUtils.getCurrentUserId();
+        LocalDateTime now = LocalDateTime.now();
         entity.setCreateBy(userId);
         entity.setUpdateBy(userId);
+        entity.setCreateTime(now);
+        entity.setUpdateTime(now);
         entity.setDelFlag(0);
         reportDatasetMapper.insert(entity);
         log.info("创建公共数据集: id={}, name={}, type={}", entity.getId(), entity.getName(), entity.getType());
@@ -107,6 +107,7 @@ public class ReportDatasetServiceImpl implements ReportDatasetService {
         checkNameUnique(dto.getName(), id);
         ReportDataset entity = buildEntity(id, dto);
         entity.setUpdateBy(SecurityUtils.getCurrentUserId());
+        entity.setUpdateTime(LocalDateTime.now());
         reportDatasetMapper.updateById(entity);
         log.info("更新公共数据集: id={}, name={}", id, entity.getName());
         return getById(id);
@@ -131,12 +132,12 @@ public class ReportDatasetServiceImpl implements ReportDatasetService {
     }
 
     @Override
-    public void updateStatus(String id, String status) {
-        if (!STATUS_ACTIVE.equals(status) && !STATUS_INACTIVE.equals(status)) {
-            throw new ReportBizException("error.dataset.invalidStatus", status);
+    public void updateEnabledStatus(String id, Boolean enabled) {
+        if (enabled == null) {
+            throw new ReportBizException("error.dataset.invalidEnabled");
         }
-        reportDatasetMapper.updateStatusById(id, status);
-        log.info("更新公共数据集状态: id={}, status={}", id, status);
+        reportDatasetMapper.updateEnabledById(id, enabled, LocalDateTime.now());
+        log.info("更新公共数据集启用状态: id={}, enabled={}", id, enabled);
     }
 
     @Override
@@ -175,7 +176,7 @@ public class ReportDatasetServiceImpl implements ReportDatasetService {
         if (datasource == null) {
             throw new ReportBizException("error.dataset.datasourceNotExist");
         }
-        if (!STATUS_ACTIVE.equals(datasource.getStatus())) {
+        if (!Boolean.TRUE.equals(datasource.getEnabled())) {
             throw new ReportBizException("error.dataset.datasourceDisabled");
         }
         if (StringUtils.isBlank(dto.getSqlContent())) {
@@ -253,7 +254,7 @@ public class ReportDatasetServiceImpl implements ReportDatasetService {
         entity.setParameters(dto.getParameters());
         entity.setFields(dto.getFields());
         entity.setDescription(dto.getDescription());
-        entity.setStatus(StringUtils.isBlank(dto.getStatus()) ? STATUS_ACTIVE : dto.getStatus());
+        entity.setEnabled(dto.getEnabled() != null ? dto.getEnabled() : true);
         return entity;
     }
 
@@ -307,13 +308,13 @@ public class ReportDatasetServiceImpl implements ReportDatasetService {
                 .type(dataset.getType())
                 .datasourceId(dataset.getDatasourceId())
                 .datasourceName(datasource != null ? datasource.getName() : null)
-                .datasourceStatus(datasource != null ? datasource.getStatus() : null)
+                .datasourceEnabled(datasource != null ? datasource.getEnabled() : null)
                 .sqlContent(dataset.getSqlContent())
                 .jsonContent(dataset.getJsonContent())
                 .parameters(dataset.getParameters())
                 .fields(dataset.getFields())
                 .description(dataset.getDescription())
-                .status(dataset.getStatus())
+                .enabled(dataset.getEnabled())
                 .createBy(dataset.getCreateBy())
                 .createTime(dataset.getCreateTime())
                 .updateTime(dataset.getUpdateTime())

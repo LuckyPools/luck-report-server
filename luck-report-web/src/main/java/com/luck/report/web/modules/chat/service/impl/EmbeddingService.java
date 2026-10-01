@@ -231,7 +231,7 @@ public class EmbeddingService {
     }
 
     /**
-     * 解析当前默认激活的嵌入模型配置 ID（listActive 的第一个）
+     * 解析当前默认激活的嵌入模型配置 ID（listEnabled 的第一个）
      *
      * @return 嵌入模型配置 ID
      */
@@ -262,12 +262,12 @@ public class EmbeddingService {
         }
 
         // 未指定modelId，使用默认激活的第一个嵌入模型
-        List<ModelConfigDTO> activeConfigs = modelConfigDataService.listActiveConfigsByType(ModelType.EMBEDDING);
-        if (activeConfigs == null || activeConfigs.isEmpty()) {
+        List<ModelConfigDTO> enabledConfigs = modelConfigDataService.listEnabledConfigsByType(ModelType.EMBEDDING);
+        if (enabledConfigs == null || enabledConfigs.isEmpty()) {
             throw new ReportBizException("error.embedding.noAvailableModel");
         }
 
-        ModelConfigDTO dto = activeConfigs.get(0);
+        ModelConfigDTO dto = enabledConfigs.get(0);
         log.info("使用默认嵌入模型: id={}, modelName={}", dto.getId(), dto.getModelName());
         return ModelConfigConverter.toEntity(dto);
     }

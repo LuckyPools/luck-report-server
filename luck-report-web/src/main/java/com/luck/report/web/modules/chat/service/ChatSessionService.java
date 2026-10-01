@@ -67,9 +67,9 @@ public interface ChatSessionService {
      * 置顶或取消置顶会话
      *
      * @param sessionId 会话ID，不可为空
-     * @param isPinned  是否置顶：0-否，1-是
+     * @param pinned  是否置顶
      */
-    void pinSession(String sessionId, Integer isPinned);
+    void pinSession(String sessionId, Boolean pinned);
 
     /**
      * 重命名会话

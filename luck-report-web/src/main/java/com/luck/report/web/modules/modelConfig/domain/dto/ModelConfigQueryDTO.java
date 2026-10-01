@@ -28,8 +28,8 @@ public class ModelConfigQueryDTO {
     /** 模型类型：CHAT, EMBEDDING */
     private String modelType;
 
-    /** 是否激活：true-激活，false-未激活 */
-    private Boolean isActive;
+    /** 是否启用：true-启用，false-禁用 */
+    private Boolean enabled;
 
     /** 当前页码（默认第1页） */
     @NotNull(message = "pageNum不能为空")

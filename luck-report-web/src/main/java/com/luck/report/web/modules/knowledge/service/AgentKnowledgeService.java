@@ -69,7 +69,7 @@ public interface AgentKnowledgeService {
     PageResultVO<AgentKnowledgeVO> queryByPage(AgentKnowledgeQueryDTO queryDTO);
 
     /**
-     * 更新智能体知识的生效状态
+     * 更新智能体知识是否生效
      *
      * @param id 智能体知识ID
      * @param enabled 是否生效
@@ -100,10 +100,10 @@ public interface AgentKnowledgeService {
     List<AgentKnowledge> selectByIds(List<String> ids);
 
     /**
-     * 查询所有生效且向量化完成的智能体知识ID列表
-     * 用于向量检索时动态过滤（enabled=1 且 embedding_status=COMPLETED）
+     * 查询所有已生效且向量化完成的智能体知识ID列表
+     * 用于向量检索时动态过滤（is_enabled=1 且 embedding_status=COMPLETED）
      *
-     * @return 生效的智能体知识ID列表
+     * @return 已生效的智能体知识ID列表
      */
     List<String> selectEnabledKnowledgeIds();
 

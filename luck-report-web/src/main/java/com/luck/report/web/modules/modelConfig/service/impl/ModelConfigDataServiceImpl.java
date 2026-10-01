@@ -39,13 +39,13 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
     private static final String MODEL_CONFIG_PREFIX = "luck-report:model-config:";
 
     /** 缓存键：所有激活的对话模型列表 */
-    private static final String ACTIVE_CHAT_MODELS_KEY = MODEL_CONFIG_PREFIX + "active-chat-models";
+    private static final String ACTIVE_CHAT_MODELS_KEY = MODEL_CONFIG_PREFIX + "enabled-chat-models";
 
     /** 缓存键：所有激活的嵌入模型列表 */
-    private static final String ACTIVE_EMBEDDING_MODELS_KEY = MODEL_CONFIG_PREFIX + "active-embedding-models";
+    private static final String ACTIVE_EMBEDDING_MODELS_KEY = MODEL_CONFIG_PREFIX + "enabled-embedding-models";
 
     /** 缓存键：所有激活的重排序模型列表 */
-    private static final String ACTIVE_RERANK_MODELS_KEY = MODEL_CONFIG_PREFIX + "active-rerank-models";
+    private static final String ACTIVE_RERANK_MODELS_KEY = MODEL_CONFIG_PREFIX + "enabled-rerank-models";
 
     /** 缓存键：单个模型配置（后缀为模型ID） */
     private static final String MODEL_BY_ID_PREFIX = MODEL_CONFIG_PREFIX + "id:";
@@ -84,14 +84,14 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
      */
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void activateConfig(String id) {
+    public void enableConfig(String id) {
         ModelConfig entity = modelConfigMapper.findById(id);
         if (entity == null) {
             throw new ReportBizException("error.model.configNotFound");
         }
 
         // 启用当前配置
-        entity.setIsActive(true);
+        entity.setEnabled(true);
         entity.setUpdateTime(LocalDateTime.now());
         entity.setUpdateBy(SecurityUtils.getCurrentUserId());
         modelConfigMapper.updateById(entity);
@@ -111,7 +111,7 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
      */
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void deactivateConfig(String id) {
+    public void disableConfig(String id) {
         ModelConfig entity = modelConfigMapper.findById(id);
         if (entity == null) {
             throw new ReportBizException("error.model.configNotFound");
@@ -119,14 +119,14 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
 
         // 对话/嵌入至少保留一个启用；重排序为可选能力，允许全部禁用
         if (entity.getModelType() != ModelType.RERANK) {
-            int activeCount = modelConfigMapper.countActiveByType(entity.getModelType().getCode());
-            if (activeCount <= 1 && Boolean.TRUE.equals(entity.getIsActive())) {
+            int enabledCount = modelConfigMapper.countEnabledByType(entity.getModelType().getCode());
+            if (enabledCount <= 1 && Boolean.TRUE.equals(entity.getEnabled())) {
                 throw new ReportBizException("error.model.lastEnabled");
             }
         }
 
         // 禁用当前配置
-        entity.setIsActive(false);
+        entity.setEnabled(false);
         entity.setUpdateTime(LocalDateTime.now());
         entity.setUpdateBy(SecurityUtils.getCurrentUserId());
         modelConfigMapper.updateById(entity);
@@ -137,31 +137,31 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
     }
 
     /**
-     * 根据模型类型获取所有激活的配置列表
+     * 根据模型类型获取所有启用的配置列表
      *
      * @param modelType 模型类型
      * @return ModelConfigDTO列表
      */
     @Override
-    public List<ModelConfigDTO> listActiveConfigsByType(ModelType modelType) {
+    public List<ModelConfigDTO> listEnabledConfigsByType(ModelType modelType) {
         String cacheKey = cacheKeyForType(modelType);
 
         // 先从缓存读取
         List<ModelConfigDTO> cachedList = CacheUtils.get(cacheKey);
         if (cachedList != null) {
-            log.debug("从缓存获取激活模型列表: modelType={}", modelType);
+            log.debug("从缓存获取启用模型列表: modelType={}", modelType);
             return cachedList;
         }
 
         // 从数据库查询
-        List<ModelConfig> entities = modelConfigMapper.selectActiveListByType(modelType.getCode());
+        List<ModelConfig> entities = modelConfigMapper.selectEnabledListByType(modelType.getCode());
         List<ModelConfigDTO> dtoList = entities.stream()
                 .map(ModelConfigConverter::toDTO)
                 .collect(Collectors.toList());
 
         // 存入缓存
         CacheUtils.put(cacheKey, dtoList);
-        log.info("从数据库加载激活模型列表并缓存: modelType={}, count={}", modelType, dtoList.size());
+        log.info("从数据库加载启用模型列表并缓存: modelType={}, count={}", modelType, dtoList.size());
 
         return dtoList;
     }
@@ -173,8 +173,8 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
      * @return 激活的配置数量
      */
     @Override
-    public int countActiveConfigsByType(ModelType modelType) {
-        return modelConfigMapper.countActiveByType(modelType.getCode());
+    public int countEnabledConfigsByType(ModelType modelType) {
+        return modelConfigMapper.countEnabledByType(modelType.getCode());
     }
 
     /**
@@ -280,7 +280,7 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
         oldEntity.setContextWindowTokens(dto.getContextWindowTokens());
         oldEntity.setApiPath(dto.getApiPath());
         oldEntity.setUpdateTime(LocalDateTime.now());
-        oldEntity.setProxyEnabled(dto.getProxyEnabled());
+        oldEntity.setProxyEnabled(dto.getProxyEnabled() != null ? dto.getProxyEnabled() : false);
         oldEntity.setProxyHost(dto.getProxyHost());
         oldEntity.setProxyPort(dto.getProxyPort());
         oldEntity.setProxyUsername(dto.getProxyUsername());
@@ -306,9 +306,9 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
         }
 
         // 2. 如果是激活状态,检查是否是该类型唯一激活的模型
-        if (Boolean.TRUE.equals(entity.getIsActive())) {
-            int activeCount = modelConfigMapper.countActiveByType(entity.getModelType().getCode());
-            if (activeCount <= 1) {
+        if (Boolean.TRUE.equals(entity.getEnabled())) {
+            int enabledCount = modelConfigMapper.countEnabledByType(entity.getModelType().getCode());
+            if (enabledCount <= 1) {
                 throw new ReportBizException("error.model.lastEnabledDelete");
             }
         }
@@ -347,14 +347,14 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
      * @return ModelConfigDTO对象,不存在则返回null
      */
     @Override
-    public ModelConfigDTO getActiveConfigByType(ModelType modelType) {
-        List<ModelConfigDTO> activeConfigs = listActiveConfigsByType(modelType);
-        if (activeConfigs == null || activeConfigs.isEmpty()) {
+    public ModelConfigDTO getEnabledConfigByType(ModelType modelType) {
+        List<ModelConfigDTO> enabledConfigs = listEnabledConfigsByType(modelType);
+        if (enabledConfigs == null || enabledConfigs.isEmpty()) {
             log.warn("未找到类型[{}]的激活模型配置", modelType);
             return null;
         }
         // 返回第一个激活的配置作为默认配置
-        return activeConfigs.get(0);
+        return enabledConfigs.get(0);
     }
 
     /**
@@ -387,14 +387,14 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
             CacheUtils.put(cacheKey, config);
             log.debug("从数据库加载模型配置并缓存: id={}, modelName={}", modelId, config.getModelName());
 
-            if (!Boolean.TRUE.equals(config.getIsActive())) {
+            if (!Boolean.TRUE.equals(config.getEnabled())) {
                 log.warn("模型配置未启用: ID={}, modelName={}", modelId, config.getModelName());
             }
             return config;
         }
 
         // 未传modelId，获取默认激活的第一个对话模型
-        ModelConfigDTO dto = getActiveConfigByType(ModelType.CHAT);
+        ModelConfigDTO dto = getEnabledConfigByType(ModelType.CHAT);
         if (dto == null) {
             throw new ReportBizException("error.model.noChatModel");
         }

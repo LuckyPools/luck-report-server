@@ -363,7 +363,6 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
         transactionTemplate.executeWithoutResult(status -> {
             knowledge.setDelFlag(1);
             knowledge.setUpdateBy(SecurityUtils.getCurrentUserId());
-            knowledge.setIsResourceCleaned(0);
             if (agentKnowledgeMapper.update(knowledge) <= 0) {
                 throw new ReportBizException("error.knowledge.agentDeleteFailed");
             }
@@ -419,8 +418,8 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
     }
 
     /**
-     * 更新智能体知识的生效状态
-     * 仅更新MySQL，不更新向量库；检索时通过动态过滤生效ID列表来隔离未生效数据
+     * 更新智能体知识是否生效
+     * 仅更新MySQL，不更新向量库；检索时通过动态过滤已生效ID列表来隔离未生效数据
      *
      * @param id 智能体知识ID
      * @param enabled 是否生效
@@ -434,8 +433,8 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
             throw new ReportBizException("error.knowledge.agentNotFoundId", id);
         }
 
-        // 仅更新MySQL生效状态，向量库数据保留；检索时由调用方传入生效ID列表进行动态过滤
-        knowledge.setEnabled(enabled ? 1 : 0);
+        // 仅更新MySQL生效状态，向量库数据保留；检索时由调用方传入已生效ID列表进行动态过滤
+        knowledge.setEnabled(Boolean.TRUE.equals(enabled));
         agentKnowledgeMapper.update(knowledge);
 
         return agentKnowledgeConverter.toVo(knowledge);
@@ -459,7 +458,7 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
         }
 
         // 未生效的不处理
-        if (knowledge.getEnabled() == null || knowledge.getEnabled() == 0) {
+        if (!Boolean.TRUE.equals(knowledge.getEnabled())) {
             throw new ReportBizException("error.knowledge.agentNotEnabled");
         }
 
@@ -512,10 +511,10 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
     }
 
     /**
-     * 查询所有生效的智能体知识ID列表
-     * 用于向量检索时动态过滤，只召回 enabled=1 且 embedding_status=COMPLETED 的知识
+     * 查询所有已生效的智能体知识ID列表
+     * 用于向量检索时动态过滤，只检索 is_enabled=1 且 embedding_status=COMPLETED 的知识
      *
-     * @return 生效的智能体知识ID列表
+     * @return 已生效的智能体知识ID列表
      */
     @Override
     public List<String> selectEnabledKnowledgeIds() {

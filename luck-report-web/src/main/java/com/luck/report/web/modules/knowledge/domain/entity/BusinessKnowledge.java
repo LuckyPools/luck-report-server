@@ -23,15 +23,14 @@ public class BusinessKnowledge extends DataEntity<BusinessKnowledge> {
 
     private String content;
 
-    private Integer enabled = 1;
+    /** 是否生效：true-参与检索，false-不参与 */
+    private Boolean enabled = true;
 
     private EmbeddingStatus embeddingStatus;
 
     private String errorMsg;
 
     private String sourceFilename;
-
-    private String reportPath;
 
     private Long fileSize;
 
@@ -40,6 +39,4 @@ public class BusinessKnowledge extends DataEntity<BusinessKnowledge> {
     private String splitterType = "recursive";
 
     private String modelId;
-
-    private Integer isResourceCleaned = 0;
 }

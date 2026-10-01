@@ -41,6 +41,9 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         message.setUpdateBy(SecurityUtils.getCurrentUserId());
         message.setUpdateTime(java.time.LocalDateTime.now());
         message.setDelFlag(0);
+        if (message.getMessageType() == null || message.getMessageType().isEmpty()) {
+            message.setMessageType("text");
+        }
         chatMessageMapper.insert(message);
         log.info("保存消息: id={}, sessionId={}, role={}", message.getId(), message.getSessionId(), message.getRole());
         return message;
@@ -61,6 +64,9 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             m.setUpdateBy(SecurityUtils.getCurrentUserId());
             m.setUpdateTime(now);
             m.setDelFlag(0);
+            if (m.getMessageType() == null || m.getMessageType().isEmpty()) {
+                m.setMessageType("text");
+            }
         }
         int count = chatMessageMapper.batchInsert(messages);
         log.info("批量保存消息: count={}, sessionId={}", count, messages.get(0).getSessionId());

@@ -96,6 +96,7 @@ public class ReportTemplateServiceImpl implements ReportTemplateService {
         // 防范：强制丢弃模板内容字段，模板修改只允许走 saveReport（设计器保存链路）
         reportTemplate.setTemplate(null);
         reportTemplate.setUpdateBy(SecurityUtils.getCurrentUserId());
+        reportTemplate.setUpdateTime(LocalDateTime.now());
         int rows = reportTemplateMapper.updateMeta(reportTemplate);
         log.info("更新报表元数据: id={}, title={}, rows={}", reportTemplate.getId(), reportTemplate.getTitle(), rows);
         return rows > 0;

@@ -5,12 +5,12 @@
 
     <!-- 插入智能体知识 -->
     <insert id="insert">
-        INSERT INTO luck_agent_knowledge (id, title, type, question, content, enabled,
-                embedding_status, error_msg, source_filename, file_path, file_size, file_type,
-                splitter_type, model_id, del_flag, is_resource_cleaned, create_time, update_time, create_by, update_by)
+        INSERT INTO luck_agent_knowledge (id, title, type, question, content, is_enabled,
+                embedding_status, error_msg, source_filename, file_size, file_type,
+                splitter_type, model_id, del_flag, create_time, update_time, create_by, update_by)
         VALUES (#{id}, #{title}, #{type}, #{question}, #{content}, #{enabled},
-                #{embeddingStatus}, #{errorMsg}, #{sourceFilename}, #{reportPath}, #{fileSize}, #{fileType},
-                #{splitterType}, #{modelId}, #{delFlag}, #{isResourceCleaned}, #{createTime}, #{updateTime}, #{createBy}, #{updateBy})
+                #{embeddingStatus}, #{errorMsg}, #{sourceFilename}, #{fileSize}, #{fileType},
+                #{splitterType}, #{modelId}, #{delFlag}, #{createTime}, #{updateTime}, #{createBy}, #{updateBy})
     </insert>
 
     <!-- 根据ID更新智能体知识（动态更新非空字段），updatedTime由Java侧赋值 -->
@@ -21,17 +21,15 @@
             <if test="content != null">content = #{content},</if>
             <if test="type != null">type = #{type},</if>
             <if test="question != null">question = #{question},</if>
-            <if test="enabled != null">enabled = #{enabled},</if>
+            <if test="enabled != null">is_enabled = #{enabled},</if>
             <if test="embeddingStatus != null">embedding_status = #{embeddingStatus},</if>
             <if test="errorMsg != null">error_msg = #{errorMsg},</if>
             <if test="sourceFilename != null">source_filename = #{sourceFilename},</if>
-            <if test="reportPath != null">file_path = #{reportPath},</if>
             <if test="fileSize != null">file_size = #{fileSize},</if>
             <if test="fileType != null">file_type = #{fileType},</if>
             <if test="splitterType != null">splitter_type = #{splitterType},</if>
             <if test="modelId != null">model_id = #{modelId},</if>
             <if test="delFlag != null">del_flag = #{delFlag},</if>
-            <if test="isResourceCleaned != null">is_resource_cleaned = #{isResourceCleaned},</if>
             update_time = #{updateTime},
         </trim>
         WHERE id = #{id}
@@ -39,17 +37,17 @@
 
     <!-- 根据ID查询智能体知识（排除已删除） -->
     <select id="selectById" resultType="com.luck.report.web.modules.knowledge.domain.entity.AgentKnowledge">
-        SELECT id, title, type, question, content, enabled, embedding_status,
-               error_msg, source_filename, file_path, file_size, file_type, splitter_type, model_id,
-               del_flag, is_resource_cleaned, create_time, update_time, create_by, update_by
+        SELECT id, title, type, question, content, is_enabled AS enabled, embedding_status,
+               error_msg, source_filename, file_size, file_type, splitter_type, model_id,
+               del_flag, create_time, update_time, create_by, update_by
         FROM luck_agent_knowledge WHERE id = #{id} AND del_flag = 0
     </select>
 
     <!-- 分页条件查询智能体知识，LIKE用bind拼接 -->
     <select id="selectByConditionsWithPage" resultType="com.luck.report.web.modules.knowledge.domain.entity.AgentKnowledge">
-        SELECT id, title, type, question, content, enabled, embedding_status,
-               error_msg, source_filename, file_path, file_size, file_type, splitter_type, model_id,
-               del_flag, is_resource_cleaned, create_time, update_time, create_by, update_by
+        SELECT id, title, type, question, content, is_enabled AS enabled, embedding_status,
+               error_msg, source_filename, file_size, file_type, splitter_type, model_id,
+               del_flag, create_time, update_time, create_by, update_by
         FROM luck_agent_knowledge
         WHERE del_flag = 0
         <if test="queryDTO.title != null and queryDTO.title != ''">
@@ -85,14 +83,14 @@
     <!-- 查询所有生效的智能体知识ID列表 -->
     <select id="selectEnabledKnowledgeIds" resultType="string">
         SELECT id FROM luck_agent_knowledge
-        WHERE enabled = 1 AND del_flag = 0 AND embedding_status = 'COMPLETED'
+        WHERE is_enabled = 1 AND del_flag = 0 AND embedding_status = 'COMPLETED'
     </select>
 
     <!-- 根据ID列表批量查询智能体知识 -->
     <select id="selectByIds" resultType="com.luck.report.web.modules.knowledge.domain.entity.AgentKnowledge">
-        SELECT id, title, type, question, content, enabled, embedding_status,
-               error_msg, source_filename, file_path, file_size, file_type, splitter_type, model_id,
-               del_flag, is_resource_cleaned, create_time, update_time, create_by, update_by
+        SELECT id, title, type, question, content, is_enabled AS enabled, embedding_status,
+               error_msg, source_filename, file_size, file_type, splitter_type, model_id,
+               del_flag, create_time, update_time, create_by, update_by
         FROM luck_agent_knowledge
         WHERE id IN
         <foreach collection="ids" item="id" open="(" separator="," close=")">

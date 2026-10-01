@@ -56,8 +56,7 @@ public class ChatSessionServiceImpl implements ChatSessionService {
         ChatSession session = new ChatSession();
         session.setId(UUID.randomUUID().toString());
         session.setTitle(title != null ? title : "新对话");
-        session.setStatus("active");
-        session.setIsPinned(0);
+        session.setPinned(false);
         session.setUserId(userId);
         session.setCreateBy(userId);
         session.setUpdateBy(userId);
@@ -76,9 +75,9 @@ public class ChatSessionServiceImpl implements ChatSessionService {
     }
 
     @Override
-    public void pinSession(String sessionId, Integer isPinned) {
-        chatSessionMapper.updatePinStatus(sessionId, isPinned, LocalDateTime.now());
-        log.info("更新会话置顶状态: sessionId={}, isPinned={}", sessionId, isPinned);
+    public void pinSession(String sessionId, Boolean pinned) {
+        chatSessionMapper.updatePinStatus(sessionId, Boolean.TRUE.equals(pinned), LocalDateTime.now());
+        log.info("更新会话置顶状态: sessionId={}, pinned={}", sessionId, pinned);
     }
 
     @Override

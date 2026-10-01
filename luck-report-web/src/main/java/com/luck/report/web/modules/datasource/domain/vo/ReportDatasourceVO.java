@@ -48,8 +48,8 @@ public class ReportDatasourceVO {
     /** 完整JDBC连接URL */
     private String connectionUrl;
 
-    /** 状态：active/inactive */
-    private String status;
+    /** 是否启用 */
+    private Boolean enabled;
 
     /** 连接测试状态：success/failed/unknown */
     private String testStatus;

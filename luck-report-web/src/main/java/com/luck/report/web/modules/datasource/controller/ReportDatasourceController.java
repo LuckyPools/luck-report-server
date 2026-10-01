@@ -69,19 +69,19 @@ public class ReportDatasourceController {
     }
 
     /**
-     * 获取数据源列表（支持按status、type筛选）
+     * 获取数据源列表（支持按enabled、type筛选）
      *
-     * @param status 状态筛选（可选）
-     * @param type   类型筛选（可选）
+     * @param enabled 启用状态筛选（可选）
+     * @param type    类型筛选（可选）
      * @return 数据源VO列表
      */
     @GetMapping("/list")
     public ResultVO<List<ReportDatasourceVO>> list(
-            @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "enabled", required = false) Boolean enabled,
             @RequestParam(value = "type", required = false) String type) {
         List<ReportDatasourceVO> result;
-        if (status != null && !status.isEmpty()) {
-            result = reportDatasourceService.getDatasourceByStatus(status);
+        if (enabled != null) {
+            result = reportDatasourceService.getDatasourceByEnabled(enabled);
         } else if (type != null && !type.isEmpty()) {
             result = reportDatasourceService.getDatasourceByType(type);
         } else {
@@ -206,21 +206,21 @@ public class ReportDatasourceController {
     }
 
     /**
-     * 更新数据源状态（启用/禁用）
+     * 更新数据源启用状态
      *
      * @param id      数据源ID
-     * @param status  状态：active/inactive
+     * @param enabled 是否启用
      * @return 操作结果
      */
-    @PostMapping("/update_status/{id}")
-    public ResultVO<String> updateStatus(@PathVariable String id,
-                                           @RequestParam(value = "status") String status) {
+    @PostMapping("/enable/{id}")
+    public ResultVO<String> updateEnabledStatus(@PathVariable String id,
+                                               @RequestParam(value = "enabled") Boolean enabled) {
         try {
-            reportDatasourceService.updateStatus(id, status);
-            return ResultVOUtils.success("success.datasource.statusUpdated", ReportI18n.getMessage("success.datasource.statusUpdated"));
+            reportDatasourceService.updateEnabledStatus(id, enabled);
+            return ResultVOUtils.success("success.datasource.enabledUpdated", ReportI18n.getMessage("success.datasource.enabledUpdated"));
         } catch (Exception e) {
-            log.error("更新状态失败", e);
-            return ResultVOUtils.error("error.datasource.statusFailed", ReportI18n.messageOf(e));
+            log.error("更新启用状态失败", e);
+            return ResultVOUtils.error("error.datasource.enabledFailed", ReportI18n.messageOf(e));
         }
     }
 
@@ -510,7 +510,7 @@ public class ReportDatasourceController {
         entity.setUsername(vo.getUsername());
         entity.setPassword(vo.getPassword());
         entity.setConnectionUrl(vo.getConnectionUrl());
-        entity.setStatus(vo.getStatus());
+        entity.setEnabled(vo.getEnabled());
         entity.setDescription(vo.getDescription());
         entity.setCreateBy(vo.getCreateBy());
         return entity;

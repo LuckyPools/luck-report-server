@@ -2,7 +2,6 @@ package com.luck.report.web.modules.datasource.service.impl;
 
 import com.luck.report.web.modules.datasource.domain.bo.DynamicBuildinDatasource;
 import com.luck.report.web.modules.datasource.domain.entity.ReportDatasource;
-import com.luck.report.web.modules.datasource.domain.enums.DatasourceStatusEnum;
 import com.luck.report.web.modules.datasource.mapper.ReportDatasourceMapper;
 import com.luck.report.core.definition.datasource.BuildinDatasource;
 import com.luck.report.core.definition.datasource.BuildinDatasourceRegistry;
@@ -25,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * 加载顺序：
  * 1. Spring 容器初始化所有单例 Bean（包括数据源、Mapper 等）
  * 2. SmartInitializingSingleton.afterSingletonsInstantiated() 被调用
- * 3. 从数据库查询 active 状态的数据源配置
+ * 3. 从数据库查询已启用的数据源配置
  * 4. 为每条数据源创建 DynamicBuildinDatasource 实例并缓存
  * 5. Utils 类通过 getBuildinDatasources() 获取所有内置数据源
  *
@@ -58,18 +57,18 @@ public class BuildinDatasourceLoader implements SmartInitializingSingleton, Buil
 
     /**
      * 所有单例 Bean 初始化完成后调用
-     * 从数据库加载 active 状态的数据源配置，创建 DynamicBuildinDatasource 实例
+     * 从数据库加载已启用的数据源配置，创建 DynamicBuildinDatasource 实例
      */
     @Override
     public void afterSingletonsInstantiated() {
         log.info("开始加载内置数据源...");
 
         try {
-            // 查询所有 active 状态的数据源
-            List<ReportDatasource> datasources = datasourceMapper.selectByStatus(DatasourceStatusEnum.ACTIVE.getValue());
+            // 查询所有已启用的数据源
+            List<ReportDatasource> datasources = datasourceMapper.selectByEnabled(Boolean.TRUE);
 
             if (datasources == null || datasources.isEmpty()) {
-                log.warn("数据库中没有找到 active 状态的数据源配置");
+                log.warn("数据库中没有找到已启用的数据源配置");
                 return;
             }
 
@@ -88,7 +87,7 @@ public class BuildinDatasourceLoader implements SmartInitializingSingleton, Buil
                 }
             }
 
-            log.info("内置数据源加载完成，共加载 {} 个（数据库中共 {} 个 active 数据源）", loadedCount, datasources.size());
+            log.info("内置数据源加载完成，共加载 {} 个（数据库中共 {} 个已启用数据源）", loadedCount, datasources.size());
         } catch (Exception e) {
             log.error("加载内置数据源失败: {}", e.getMessage(), e);
         }
@@ -156,13 +155,13 @@ public class BuildinDatasourceLoader implements SmartInitializingSingleton, Buil
      * @param datasource 数据源实体
      */
     public void addOrUpdateDatasource(ReportDatasource datasource) {
-        if (DatasourceStatusEnum.ACTIVE.getValue().equals(datasource.getStatus())) {
+        if (Boolean.TRUE.equals(datasource.getEnabled())) {
             DynamicBuildinDatasource buildinDatasource = new DynamicBuildinDatasource(
                     datasource, dynamicDatasourceManager);
             buildinDatasourceMap.put(datasource.getName(), buildinDatasource);
             log.info("添加/更新内置数据源: id={}, name={}", datasource.getId(), datasource.getName());
         } else {
-            // 如果状态不是 active，则移除
+            // 如果未启用，则移除
             removeDatasource(datasource.getName());
         }
     }

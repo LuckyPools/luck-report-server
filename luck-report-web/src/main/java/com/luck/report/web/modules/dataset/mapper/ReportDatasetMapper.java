@@ -40,12 +40,12 @@ public interface ReportDatasetMapper {
     ReportDataset selectById(@Param("id") String id);
 
     /**
-     * 按状态查询公共数据集列表
+     * 按启用状态查询公共数据集列表
      *
-     * @param status 状态：active/inactive
+     * @param enabled 是否启用
      * @return 公共数据集列表
      */
-    List<ReportDataset> selectByStatus(@Param("status") String status);
+    List<ReportDataset> selectByEnabled(@Param("enabled") Boolean enabled);
 
     /**
      * 查询所有公共数据集（按创建时间倒序）
@@ -71,13 +71,14 @@ public interface ReportDatasetMapper {
     int deleteById(@Param("id") String id);
 
     /**
-     * 更新公共数据集状态（启用/禁用）
+     * 更新公共数据集启用状态
      *
      * @param id     公共数据集ID
-     * @param status 状态
+     * @param enabled 是否启用
      * @return 影响行数
      */
-    int updateStatusById(@Param("id") String id, @Param("status") String status);
+    int updateEnabledById(@Param("id") String id, @Param("enabled") Boolean enabled,
+                          @Param("updateTime") java.time.LocalDateTime updateTime);
 
     /**
      * 按数据源ID查询公共数据集数量（数据源删除前引用检查用）

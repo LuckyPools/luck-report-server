@@ -59,8 +59,8 @@ public class ModelConfigDTO {
     @JsonAlias("maxTokens")
     private Integer contextWindowTokens = 128000;
 
-    /** 是否激活:true-当前使用,false-未使用 */
-    private Boolean isActive = true;
+    /** 是否启用:true-启用,false-禁用 */
+    private Boolean enabled = true;
 
     /** 是否启用代理,默认关闭(使用直连) */
     private Boolean proxyEnabled = false;

@@ -1,12 +1,12 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.luck.report.web.modules.modelConfig.mapper.ModelConfigMapper">
 
     <sql id="BaseColumns">
-        id, provider, base_url, api_key, model_name, config_name, sort, temperature, is_active, context_window_tokens,
+        id, provider, base_url, api_key, model_name, config_name, sort, temperature, is_enabled AS enabled, context_window_tokens,
         model_type, api_path, create_time, update_time, create_by, update_by, del_flag,
-        proxy_enabled, proxy_host, proxy_port, proxy_username, proxy_password
+        is_proxy_enabled AS proxyEnabled, proxy_host, proxy_port, proxy_username, proxy_password
     </sql>
 
     <select id="findAll" resultType="com.luck.report.web.modules.modelConfig.domain.entity.ModelConfig">
@@ -19,22 +19,22 @@
         FROM luck_model_config WHERE id = #{id} AND del_flag = 0
     </select>
 
-    <select id="selectActiveListByType" resultType="com.luck.report.web.modules.modelConfig.domain.entity.ModelConfig">
+    <select id="selectEnabledListByType" resultType="com.luck.report.web.modules.modelConfig.domain.entity.ModelConfig">
         SELECT <include refid="BaseColumns"/>
-        FROM luck_model_config WHERE model_type = #{modelType} AND is_active = 1 AND del_flag = 0
+        FROM luck_model_config WHERE model_type = #{modelType} AND is_enabled = 1 AND del_flag = 0
         ORDER BY sort ASC, create_time DESC
     </select>
 
-    <select id="countActiveByType" resultType="int">
-        SELECT COUNT(*) FROM luck_model_config WHERE model_type = #{modelType} AND is_active = 1 AND del_flag = 0
+    <select id="countEnabledByType" resultType="int">
+        SELECT COUNT(*) FROM luck_model_config WHERE model_type = #{modelType} AND is_enabled = 1 AND del_flag = 0
     </select>
 
     <insert id="insert">
-        INSERT INTO luck_model_config (id, provider, base_url, api_key, model_name, config_name, sort, temperature, is_active, context_window_tokens,
-               model_type, api_path, create_time, update_time, create_by, update_by, del_flag,
-               proxy_enabled, proxy_host, proxy_port, proxy_username, proxy_password)
-        VALUES (#{id}, #{provider}, #{baseUrl}, #{apiKey}, #{modelName}, #{configName}, #{sort}, #{temperature}, #{isActive}, #{contextWindowTokens},
-                #{modelType}, #{apiPath}, #{createTime}, #{updateTime}, #{createBy}, #{updateBy}, 0,
+        INSERT INTO luck_model_config (id, provider, base_url, api_key, model_name, config_name, sort, temperature, is_enabled, context_window_tokens,
+        model_type, api_path, create_time, update_time, create_by, update_by, del_flag,
+               is_proxy_enabled, proxy_host, proxy_port, proxy_username, proxy_password)
+        VALUES (#{id}, #{provider}, #{baseUrl}, #{apiKey}, #{modelName}, #{configName}, #{sort}, #{temperature}, #{enabled}, #{contextWindowTokens},
+                #{modelType}, #{apiPath}, #{createTime}, #{updateTime}, #{createBy}, #{updateBy}, #{delFlag},
                 #{proxyEnabled}, #{proxyHost}, #{proxyPort}, #{proxyUsername}, #{proxyPassword})
     </insert>
 
@@ -48,12 +48,12 @@
             <if test="configName != null">config_name = #{configName},</if>
             <if test="sort != null">sort = #{sort},</if>
             <if test="temperature != null">temperature = #{temperature},</if>
-            <if test="isActive != null">is_active = #{isActive},</if>
+            <if test="enabled != null">is_enabled = #{enabled},</if>
             <if test="contextWindowTokens != null">context_window_tokens = #{contextWindowTokens},</if>
             <if test="modelType != null">model_type = #{modelType},</if>
             <if test="apiPath != null">api_path = #{apiPath},</if>
             <if test="delFlag != null">del_flag = #{delFlag},</if>
-            <if test="proxyEnabled != null">proxy_enabled = #{proxyEnabled},</if>
+            <if test="proxyEnabled != null">is_proxy_enabled = #{proxyEnabled},</if>
             <if test="proxyHost != null">proxy_host = #{proxyHost},</if>
             <if test="proxyPort != null">proxy_port = #{proxyPort},</if>
             <if test="proxyUsername != null">proxy_username = #{proxyUsername},</if>
@@ -64,7 +64,7 @@
     </update>
 
     <update id="deleteById">
-        UPDATE luck_model_config SET del_flag = 1, update_time = CURRENT_TIMESTAMP WHERE id = #{id}
+        UPDATE luck_model_config SET del_flag = 1 WHERE id = #{id}
     </update>
 
     <select id="selectByConditionsWithPage" resultType="com.luck.report.web.modules.modelConfig.domain.entity.ModelConfig">
@@ -82,8 +82,8 @@
         <if test="queryDTO.modelType != null and queryDTO.modelType != ''">
             AND model_type = #{queryDTO.modelType}
         </if>
-        <if test="queryDTO.isActive != null">
-            AND is_active = #{queryDTO.isActive}
+        <if test="queryDTO.enabled != null">
+            AND is_enabled = #{queryDTO.enabled}
         </if>
         ORDER BY sort ASC, create_time DESC
         OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY
@@ -103,8 +103,8 @@
         <if test="queryDTO.modelType != null and queryDTO.modelType != ''">
             AND model_type = #{queryDTO.modelType}
         </if>
-        <if test="queryDTO.isActive != null">
-            AND is_active = #{queryDTO.isActive}
+        <if test="queryDTO.enabled != null">
+            AND is_enabled = #{queryDTO.enabled}
         </if>
     </select>
 

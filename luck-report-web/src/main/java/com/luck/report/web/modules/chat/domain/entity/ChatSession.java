@@ -21,11 +21,8 @@ public class ChatSession extends DataEntity<ChatSession> {
     /** 会话标题 */
     private String title;
 
-    /** 状态：active-活跃，archived-归档 */
-    private String status;
-
-    /** 是否置顶：0-否，1-是 */
-    private Integer isPinned;
+    /** 是否置顶 */
+    private Boolean pinned;
 
     /** 用户ID（字符串形式，兼容数字主键、UUID、工号等第三方用户标识） */
     private String userId;

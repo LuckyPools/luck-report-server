@@ -14,7 +14,8 @@
         UPDATE luck_logical_relation SET source_table_name = #{sourceTableName},
             source_column_name = #{sourceColumnName}, target_table_name = #{targetTableName},
             target_column_name = #{targetColumnName}, relation_type = #{relationType},
-            description = #{description} WHERE id = #{id}
+            description = #{description}, update_by = #{updateBy}, update_time = #{updateTime}
+        WHERE id = #{id}
     </update>
 
     <select id="selectById">

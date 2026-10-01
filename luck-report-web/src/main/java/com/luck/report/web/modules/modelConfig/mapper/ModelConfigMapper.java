@@ -36,7 +36,7 @@ public interface ModelConfigMapper {
      * @param modelType 模型类型(CHAT/EMBEDDING)
      * @return 激活的模型配置列表,按排序字段升序排列
      */
-    List<ModelConfig> selectActiveListByType(@Param("modelType") String modelType);
+    List<ModelConfig> selectEnabledListByType(@Param("modelType") String modelType);
 
     /**
      * 根据模型类型统计激活的配置数量
@@ -44,7 +44,7 @@ public interface ModelConfigMapper {
      * @param modelType 模型类型(CHAT/EMBEDDING)
      * @return 激活的配置数量
      */
-    int countActiveByType(@Param("modelType") String modelType);
+    int countEnabledByType(@Param("modelType") String modelType);
 
     /**
      * 插入新的模型配置

@@ -25,8 +25,8 @@ public class ReportDatasourceQueryDTO {
     /** 数据源类型 */
     private String type;
 
-    /** 状态：active/inactive */
-    private String status;
+    /** 是否启用（可选） */
+    private Boolean enabled;
 
     /** 当前页码（默认第1页） */
     @NotNull(message = "pageNum不能为空")

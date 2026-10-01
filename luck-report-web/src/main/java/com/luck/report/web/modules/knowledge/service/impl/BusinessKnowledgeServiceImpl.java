@@ -284,7 +284,6 @@ public class BusinessKnowledgeServiceImpl implements BusinessKnowledgeService {
         transactionTemplate.executeWithoutResult(status -> {
             knowledge.setDelFlag(1);
             knowledge.setUpdateBy(SecurityUtils.getCurrentUserId());
-            knowledge.setIsResourceCleaned(0);
             if (businessKnowledgeMapper.update(knowledge) <= 0) {
                 throw new ReportBizException("error.knowledge.bizDeleteFailed");
             }
@@ -332,7 +331,7 @@ public class BusinessKnowledgeServiceImpl implements BusinessKnowledgeService {
         if (knowledge == null) {
             throw new ReportBizException("error.knowledge.bizNotFoundId", id);
         }
-        knowledge.setEnabled(enabled ? 1 : 0);
+        knowledge.setEnabled(Boolean.TRUE.equals(enabled));
         businessKnowledgeMapper.update(knowledge);
         return businessKnowledgeConverter.toVo(knowledge);
     }
@@ -346,7 +345,7 @@ public class BusinessKnowledgeServiceImpl implements BusinessKnowledgeService {
         if (knowledge.getEmbeddingStatus() == EmbeddingStatus.PROCESSING) {
             throw new ReportBizException("error.knowledge.bizProcessing");
         }
-        if (knowledge.getEnabled() == null || knowledge.getEnabled() == 0) {
+        if (!Boolean.TRUE.equals(knowledge.getEnabled())) {
             throw new ReportBizException("error.knowledge.bizNotEnabled");
         }
 

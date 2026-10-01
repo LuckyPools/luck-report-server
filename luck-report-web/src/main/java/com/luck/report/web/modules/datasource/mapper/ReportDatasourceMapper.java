@@ -47,12 +47,12 @@ public interface ReportDatasourceMapper {
     List<ReportDatasource> selectAll();
 
     /**
-     * 按状态查询数据源
+     * 按启用状态查询数据源
      *
-     * @param status 状态
+     * @param enabled 是否启用
      * @return 数据源列表
      */
-    List<ReportDatasource> selectByStatus(@Param("status") String status);
+    List<ReportDatasource> selectByEnabled(@Param("enabled") Boolean enabled);
 
     /**
      * 按类型查询数据源
@@ -77,16 +77,19 @@ public interface ReportDatasourceMapper {
      * @param testStatus 测试状态
      * @return 影响行数
      */
-    int updateTestStatusById(@Param("id") String id, @Param("testStatus") String testStatus);
+    int updateTestStatusById(@Param("id") String id, @Param("testStatus") String testStatus,
+                             @Param("updateTime") java.time.LocalDateTime updateTime);
 
     /**
-     * 更新数据源状态（启用/禁用）
+     * 更新数据源启用状态
      *
      * @param id     数据源ID
-     * @param status 状态
+     * @param enabled 是否启用
+     * @param updateTime 更新时间
      * @return 影响行数
      */
-    int updateStatusById(@Param("id") String id, @Param("status") String status);
+    int updateEnabledById(@Param("id") String id, @Param("enabled") Boolean enabled,
+                          @Param("updateTime") java.time.LocalDateTime updateTime);
 
     /**
      * 根据名称查询数据源
@@ -101,9 +104,11 @@ public interface ReportDatasourceMapper {
      *
      * @param id                数据源ID
      * @param initializedTables 已初始化的表名列表（JSON格式）
+     * @param updateTime        更新时间
      * @return 影响行数
      */
-    int updateInitializedTables(@Param("id") String id, @Param("initializedTables") String initializedTables);
+    int updateInitializedTables(@Param("id") String id, @Param("initializedTables") String initializedTables,
+                                @Param("updateTime") java.time.LocalDateTime updateTime);
 
     /**
      * 根据ID列表批量查询数据源

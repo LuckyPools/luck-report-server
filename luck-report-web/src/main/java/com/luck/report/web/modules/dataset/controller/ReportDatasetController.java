@@ -43,14 +43,14 @@ public class ReportDatasetController {
     /**
      * 获取公共数据集列表（支持按状态筛选）
      *
-     * @param status 状态筛选（可选：active/inactive）
+     * @param enabled 启用状态筛选（可选）
      * @return 公共数据集VO列表
      */
     @GetMapping("/list")
     public ResultVO<List<ReportDatasetVO>> list(
-            @RequestParam(value = "status", required = false) String status) {
+            @RequestParam(value = "enabled", required = false) Boolean enabled) {
         try {
-            return ResultVOUtils.success("success.dataset.listLoaded", reportDatasetService.listByStatus(status));
+            return ResultVOUtils.success("success.dataset.listLoaded", reportDatasetService.listByEnabled(enabled));
         } catch (Exception e) {
             log.error("查询公共数据集列表失败", e);
             return ResultVOUtils.error("error.dataset.listFailed", ReportI18n.messageOf(e));
@@ -158,17 +158,17 @@ public class ReportDatasetController {
      * 更新公共数据集状态（启用/禁用）
      *
      * @param id     公共数据集ID
-     * @param status 状态：active/inactive
+     * @param enabled 是否启用
      * @return 操作结果
      */
-    @PostMapping("/update_status/{id}")
-    public ResultVO<String> updateStatus(@PathVariable String id, @RequestParam(value = "status") String status) {
+    @PostMapping("/enable/{id}")
+    public ResultVO<String> updateEnabledStatus(@PathVariable String id, @RequestParam(value = "enabled") Boolean enabled) {
         try {
-            reportDatasetService.updateStatus(id, status);
-            return ResultVOUtils.success("success.dataset.statusUpdated", ReportI18n.getMessage("success.dataset.statusUpdated"));
+            reportDatasetService.updateEnabledStatus(id, enabled);
+            return ResultVOUtils.success("success.dataset.enabledUpdated", ReportI18n.getMessage("success.dataset.enabledUpdated"));
         } catch (Exception e) {
-            log.error("更新公共数据集状态失败", e);
-            return ResultVOUtils.error("error.dataset.statusFailed", ReportI18n.messageOf(e));
+            log.error("更新公共数据集启用状态失败", e);
+            return ResultVOUtils.error("error.dataset.enabledFailed", ReportI18n.messageOf(e));
         }
     }
 }

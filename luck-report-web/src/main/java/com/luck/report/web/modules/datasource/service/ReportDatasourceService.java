@@ -26,12 +26,12 @@ public interface ReportDatasourceService {
     List<ReportDatasourceVO> getAllDatasource();
 
     /**
-     * 按状态查询数据源列表
+     * 按启用状态查询数据源列表
      *
-     * @param status 状态：active/inactive
+     * @param enabled 是否启用
      * @return 数据源VO列表
      */
-    List<ReportDatasourceVO> getDatasourceByStatus(String status);
+    List<ReportDatasourceVO> getDatasourceByEnabled(Boolean enabled);
 
     /**
      * 按类型查询数据源列表
@@ -119,12 +119,12 @@ public interface ReportDatasourceService {
     void initTableSchema(String id, List<String> tables, String modelId) throws Exception;
 
     /**
-     * 更新数据源状态（启用/禁用）
+     * 更新数据源启用状态
      *
      * @param id     数据源ID
-     * @param status 状态：active/inactive
+     * @param enabled 是否启用
      */
-    void updateStatus(String id, String status);
+    void updateEnabledStatus(String id, Boolean enabled);
 
     /**
      * 获取数据源的逻辑外键列表
@@ -211,7 +211,7 @@ public interface ReportDatasourceService {
 
     /**
      * 跨数据源搜索Schema
-     * 遍历所有active状态的数据源，通过向量检索召回与查询相关的表结构
+     * 遍历所有已启用数据源，通过向量检索召回与查询相关的表结构
      * 返回每个匹配数据源的基本信息和格式化的Schema提示词，供Agent快速定位合适的数据源
      *
      * @param query 用户自然语言查询

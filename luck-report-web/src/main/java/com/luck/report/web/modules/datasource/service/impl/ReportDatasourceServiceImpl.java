@@ -13,7 +13,6 @@ import com.luck.report.web.modules.datasource.domain.dto.SchemaDTO;
 import com.luck.report.web.modules.datasource.domain.vo.SchemaSearchResultVO;
 import com.luck.report.web.modules.datasource.domain.dto.TableDTO;
 import com.luck.report.web.modules.datasource.domain.entity.ReportDatasource;
-import com.luck.report.web.modules.datasource.domain.enums.DatasourceStatusEnum;
 import com.luck.report.web.modules.datasource.domain.enums.DatasourceTestStatusEnum;
 import com.luck.report.web.modules.datasource.domain.entity.LogicalRelation;
 import com.luck.report.web.modules.datasource.domain.vo.ReportDatasourceVO;
@@ -77,8 +76,8 @@ public class ReportDatasourceServiceImpl implements ReportDatasourceService {
     }
 
     @Override
-    public List<ReportDatasourceVO> getDatasourceByStatus(String status) {
-        List<ReportDatasource> list = reportDatasourceMapper.selectByStatus(status);
+    public List<ReportDatasourceVO> getDatasourceByEnabled(Boolean enabled) {
+        List<ReportDatasource> list = reportDatasourceMapper.selectByEnabled(enabled);
         return list.stream().map(this::toVO).collect(Collectors.toList());
     }
 
@@ -104,8 +103,8 @@ public class ReportDatasourceServiceImpl implements ReportDatasourceService {
         }
 
         // 设置默认值
-        if (reportDatasource.getStatus() == null) {
-            reportDatasource.setStatus(DatasourceStatusEnum.ACTIVE.getValue());
+        if (reportDatasource.getEnabled() == null) {
+            reportDatasource.setEnabled(true);
         }
         if (reportDatasource.getTestStatus() == null) {
             reportDatasource.setTestStatus(DatasourceTestStatusEnum.UNKNOWN.getValue());
@@ -120,8 +119,11 @@ public class ReportDatasourceServiceImpl implements ReportDatasourceService {
 
         reportDatasource.setId(SnowflakeIdGenerator.generateId());
         String userId = SecurityUtils.getCurrentUserId();
+        LocalDateTime now = LocalDateTime.now();
         reportDatasource.setCreateBy(userId);
         reportDatasource.setUpdateBy(userId);
+        reportDatasource.setCreateTime(now);
+        reportDatasource.setUpdateTime(now);
         reportDatasource.setDelFlag(0);
 
         reportDatasourceMapper.insert(reportDatasource);
@@ -155,6 +157,7 @@ public class ReportDatasourceServiceImpl implements ReportDatasourceService {
         }
 
         reportDatasource.setUpdateBy(SecurityUtils.getCurrentUserId());
+        reportDatasource.setUpdateTime(LocalDateTime.now());
         reportDatasourceMapper.updateById(reportDatasource);
         // 更新后重建连接池
         dynamicDatasourceManager.removeDatasourcePool(id);
@@ -218,10 +221,10 @@ public class ReportDatasourceServiceImpl implements ReportDatasourceService {
             boolean success = dynamicDatasourceManager.testConnection(reportDatasource);
             log.info("数据源连接测试: id={}, name={}, result={}", id, reportDatasource.getName(), success);
             // 更新测试状态
-            reportDatasourceMapper.updateTestStatusById(id, success ? DatasourceTestStatusEnum.SUCCESS.getValue() : DatasourceTestStatusEnum.FAILED.getValue());
+            reportDatasourceMapper.updateTestStatusById(id, success ? DatasourceTestStatusEnum.SUCCESS.getValue() : DatasourceTestStatusEnum.FAILED.getValue(), LocalDateTime.now());
             return success;
         } catch (Exception e) {
-            reportDatasourceMapper.updateTestStatusById(id, DatasourceTestStatusEnum.FAILED.getValue());
+            reportDatasourceMapper.updateTestStatusById(id, DatasourceTestStatusEnum.FAILED.getValue(), LocalDateTime.now());
             log.error("数据源连接测试异常: id={}, error={}", id, e.getMessage());
             return false;
         }
@@ -371,7 +374,7 @@ public class ReportDatasourceServiceImpl implements ReportDatasourceService {
         // 保存已初始化的表名列表到数据源记录，用于前端回显
         try {
             String initializedTablesJson = objectMapper.writeValueAsString(tables);
-            reportDatasourceMapper.updateInitializedTables(id, initializedTablesJson);
+            reportDatasourceMapper.updateInitializedTables(id, initializedTablesJson, LocalDateTime.now());
             log.info("保存已初始化表列表: datasourceId={}, tables={}", id, tables);
         } catch (Exception e) {
             log.warn("保存已初始化表列表失败: datasourceId={}, error={}", id, e.getMessage());
@@ -379,20 +382,18 @@ public class ReportDatasourceServiceImpl implements ReportDatasourceService {
     }
 
     @Override
-    public void updateStatus(String id, String status) {
-        reportDatasourceMapper.updateStatusById(id, status);
+    public void updateEnabledStatus(String id, Boolean enabled) {
+        reportDatasourceMapper.updateEnabledById(id, enabled, LocalDateTime.now());
         // 同步更新内置数据源缓存
         ReportDatasource reportDatasource = reportDatasourceMapper.selectById(id);
         if (reportDatasource != null) {
-            if (DatasourceStatusEnum.ACTIVE.getValue().equals(status)) {
-                // 状态变为 active，添加到缓存
+            if (Boolean.TRUE.equals(enabled)) {
                 buildinDatasourceLoader.addOrUpdateDatasource(reportDatasource);
             } else {
-                // 状态变为非 active，从缓存移除
                 buildinDatasourceLoader.removeDatasource(reportDatasource.getName());
             }
         }
-        log.info("更新数据源状态: id={}, status={}", id, status);
+        log.info("更新数据源启用状态: id={}, enabled={}", id, enabled);
     }
 
     @Override
@@ -439,6 +440,7 @@ public class ReportDatasourceServiceImpl implements ReportDatasourceService {
         logicalRelation.setId(relationId);
         logicalRelation.setDatasourceId(datasourceId);
         logicalRelation.setUpdateBy(SecurityUtils.getCurrentUserId());
+        logicalRelation.setUpdateTime(LocalDateTime.now());
         logicalRelationMapper.updateById(logicalRelation);
         log.info("更新逻辑外键: datasourceId={}, relationId={}", datasourceId, relationId);
         return logicalRelationMapper.selectById(relationId);
@@ -530,7 +532,7 @@ public class ReportDatasourceServiceImpl implements ReportDatasourceService {
                 .databaseName(reportDatasource.getDatabaseName())
                 .username(reportDatasource.getUsername())
                 .connectionUrl(reportDatasource.getConnectionUrl())
-                .status(reportDatasource.getStatus())
+                .enabled(reportDatasource.getEnabled())
                 .testStatus(reportDatasource.getTestStatus())
                 .description(reportDatasource.getDescription())
                 .initializedTables(reportDatasource.getInitializedTables())
@@ -828,7 +830,7 @@ public class ReportDatasourceServiceImpl implements ReportDatasourceService {
         List<SchemaSearchResultVO> results = new ArrayList<>();
         for (String dsId : hitDsIds) {
             ReportDatasource reportDatasource = datasourceMap.get(dsId);
-            if (reportDatasource == null) {
+            if (reportDatasource == null || !Boolean.TRUE.equals(reportDatasource.getEnabled())) {
                 continue;
             }
 

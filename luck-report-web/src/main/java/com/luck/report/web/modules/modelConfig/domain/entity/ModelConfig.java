@@ -42,8 +42,8 @@ public class ModelConfig extends DataEntity<ModelConfig> {
     /** 温度参数，控制生成随机性，0~1 */
     private Double temperature;
 
-    /** 是否激活：true-当前使用，false-未使用 */
-    private Boolean isActive;
+    /** 是否启用：true-启用，false-禁用 */
+    private Boolean enabled;
 
     /** 上下文窗口大小（token），供 Agent 压缩判断；不作为 API 输出上限 */
     private Integer contextWindowTokens;

@@ -76,7 +76,7 @@ public class BusinessKnowledgeController {
 
     @PostMapping("/enable/{id}")
     public ResultVO<BusinessKnowledgeVO> updateEnabledStatus(@PathVariable("id") String id,
-                                                             @RequestParam(value = "enabled") Boolean enabled) {
+                                                                @RequestParam(value = "enabled") Boolean enabled) {
         BusinessKnowledgeVO knowledge = businessKnowledgeService.updateEnabledStatus(id, enabled);
         return ResultVOUtils.success("success.knowledge.bizStatusUpdated", knowledge);
     }

@@ -28,8 +28,8 @@ public class ReportDatasetQueryDTO {
     /** 绑定的公共数据源ID（可选） */
     private String datasourceId;
 
-    /** 状态：active/inactive（可选） */
-    private String status;
+    /** 是否启用（可选） */
+    private Boolean enabled;
 
     /** 当前页码（默认第1页） */
     @NotNull(message = "pageNum不能为空")
