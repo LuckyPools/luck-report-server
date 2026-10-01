@@ -23,7 +23,7 @@ import java.util.List;
  * 消息存储流程（方案A：Loop 结束后批量存）：
  * 1. 用户发消息 → 前端 MemoryManager 追加到内存
  * 2. Agentic Loop 运行 → 全程前端内存管理
- * 3. Loop 结束 → 前端调用 POST /sessions/{sessionId}/messages/batch 批量保存
+ * 3. Loop 结束 → 前端调用 POST /sessions/{sessionId}/messages/save_batch 批量保存
  * 4. 进入旧对话 → 前端调用 GET /sessions/{sessionId}/messages/list 加载历史
  *
  * @author luck
@@ -90,7 +90,7 @@ public class ChatMessageController {
      * @param batchDTO  批量消息请求体
      * @return 保存成功的消息数量
      */
-    @PostMapping("/{sessionId}/messages/batch")
+    @PostMapping("/{sessionId}/messages/save_batch")
     public ResultVO<Integer> batchSaveMessages(
             @PathVariable String sessionId,
             @RequestBody ChatMessageBatchDTO batchDTO) {
@@ -125,8 +125,10 @@ public class ChatMessageController {
      * @param id 消息ID
      * @return 操作结果
      */
-    @DeleteMapping("/messages/delete/{id}")
-    public ResultVO<Void> deleteMessage(@PathVariable String id) {
+    @DeleteMapping("/{sessionId}/messages/delete/{id}")
+    public ResultVO<Void> deleteMessage(@PathVariable String sessionId,
+                                        @PathVariable String id) {
+        // sessionId 仅用于路径一致性，删除按消息 id
         chatMessageService.deleteMessage(id);
         return ResultVOUtils.<Void>success("success.chat.messageDeleted", null);
     }

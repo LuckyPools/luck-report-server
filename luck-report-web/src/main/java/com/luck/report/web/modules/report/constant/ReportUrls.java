@@ -14,8 +14,8 @@ public final class ReportUrls {
      * 管理端路径段（设计器/管理/配置等，需 admin 角色）。
      */
     private static final String[] MANAGE_URLS = {
-            "/manage", "/designer", "/datasource", "/reportDataset", "/reportDatasource",
-            "/model-config", "/business-knowledge", "/agent-knowledge", "/vector",
+            "/manage", "/designer", "/datasource", "/report_dataset", "/report_datasource",
+            "/model_config", "/business_knowledge", "/agent_knowledge", "/vector",
             "/role", "/chat", "/sessions", "/import"
     };
 

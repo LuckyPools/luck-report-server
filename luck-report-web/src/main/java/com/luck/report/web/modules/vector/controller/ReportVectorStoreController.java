@@ -46,7 +46,7 @@ public class ReportVectorStoreController {
         return ResultVO.success(reportVectorSearchService.search(request));
     }
 
-    @PostMapping("/add")
+    @PostMapping("/create")
     public ResultVO<Boolean> addDocument(@RequestBody VectorAddRequest request) {
         if (request.getContent() == null || request.getContent().isEmpty()) {
             return ResultVO.error(400, "Document content cannot be empty");
@@ -66,7 +66,7 @@ public class ReportVectorStoreController {
         return ResultVO.success(true);
     }
 
-    @PostMapping("/add-batch")
+    @PostMapping("/create_batch")
     public ResultVO<Boolean> addDocuments(@RequestBody List<VectorAddRequest> requests) {
         if (requests == null || requests.isEmpty()) {
             return ResultVO.error(400, "Document list cannot be empty");
@@ -98,7 +98,7 @@ public class ReportVectorStoreController {
         return ResultVO.success(result);
     }
 
-    @PostMapping("/add-component-doc")
+    @PostMapping("/create_component_doc")
     public ResultVO<Boolean> addComponentDoc(@RequestBody ComponentDocAddRequest request) {
         if (request.getName() == null || request.getName().isEmpty()) {
             return ResultVO.error(400, "Component name cannot be empty");

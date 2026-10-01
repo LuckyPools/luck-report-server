@@ -30,7 +30,7 @@ public class ResourceLoaderController {
     /**
      * 工具配置接口
      */
-    @RequestMapping("/tools")
+    @RequestMapping("/load_tools")
     public Map<String, Object> tools() {
         return resourceLoaderService.buildToolsConfig();
     }

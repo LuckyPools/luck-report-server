@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
  */
 @AllArgsConstructor
 @RestController("bean.modelConfigController")
-@RequestMapping("${luck-report.servletPrefix:}/model-config")
+@RequestMapping("${luck-report.servletPrefix:}/model_config")
 public class ModelConfigController {
 
     private final ModelConfigDataService modelConfigDataService;
@@ -55,7 +55,7 @@ public class ModelConfigController {
      * @param queryDTO 查询条件
      * @return 分页结果
      */
-    @PostMapping("/query/page")
+    @PostMapping("/page")
     public PageResultVO<ModelConfigDTO> queryByPage(@Valid @RequestBody ModelConfigQueryDTO queryDTO) {
         try {
             PageResultVO<ModelConfigDTO> pageResult = modelConfigDataService.queryByPage(queryDTO);
@@ -88,7 +88,7 @@ public class ModelConfigController {
      * @param config ModelConfigDTO对象
      * @return ResultVO操作结果
      */
-    @PostMapping("/add")
+    @PostMapping("/create")
     public ResultVO<String> add(@Valid @RequestBody ModelConfigDTO config) {
         try {
             modelConfigDataService.addConfig(config);
@@ -104,9 +104,11 @@ public class ModelConfigController {
      * @param config ModelConfigDTO对象
      * @return ResultVO操作结果
      */
-    @PutMapping("/update")
-    public ResultVO<String> update(@Valid @RequestBody ModelConfigDTO config) {
+    @PutMapping("/update/{id}")
+    public ResultVO<String> update(@PathVariable String id,
+                                   @Valid @RequestBody ModelConfigDTO config) {
         try {
+            config.setId(id);
             modelConfigDataService.updateConfigInDb(config);
             return ResultVOUtils.success("success.model.updated", ReportI18n.getMessage("success.model.updated"));
         } catch (Exception e) {
@@ -130,7 +132,7 @@ public class ModelConfigController {
         }
     }
 
-    @DeleteMapping("/delete/batch")
+    @DeleteMapping("/batch/delete")
     public ResultVO<String> deleteBatch(@RequestBody List<String> ids) {
         try {
             modelConfigDataService.deleteConfigBatch(ids);
@@ -180,7 +182,7 @@ public class ModelConfigController {
      * @param modelType 模型类型(CHAT/EMBEDDING/RERANK)
      * @return ResultVO包含激活的模型配置列表
      */
-    @GetMapping("/active-list/{modelType}")
+    @GetMapping("/list_active/{modelType}")
     public ResultVO<List<ModelConfigDTO>> getActiveList(@PathVariable String modelType) {
         try {
             ModelType type = ModelType.fromCode(modelType);
@@ -201,7 +203,7 @@ public class ModelConfigController {
      *
      * @return ResultVO包含模型检查结果
      */
-    @GetMapping("/check-ready")
+    @GetMapping("/check_ready")
     public ResultVO<ModelCheckVo> checkReady() {
         // 检查聊天模型是否已配置且启用
         ModelConfigDTO chatModel = modelConfigDataService.getActiveConfigByType(ModelType.CHAT);

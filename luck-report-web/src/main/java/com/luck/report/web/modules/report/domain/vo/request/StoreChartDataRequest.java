@@ -3,7 +3,7 @@ package com.luck.report.web.modules.report.domain.vo.request;
 /**
  * 图表数据存储请求 VO。
  * <p>
- * 用于 {@code /chart/storeData} 接口，前端在图表渲染完成后将 base64 图片数据回传至后端。
+ * 用于 {@code /chart/store_data} 接口，前端在图表渲染完成后将 base64 图片数据回传至后端。
  * <p>前端表单字段名带下划线前缀（{@code _chartId} 等），setter 与字段名保持一致以兼容 form 表单绑定。
  *
  * @author luck-report

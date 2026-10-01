@@ -11,7 +11,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * HTML 预览报表视图对象，用于 {@code /html/loadHtml} 与 {@code /html/loadData} 接口返回。
+ * HTML 预览报表视图对象，用于 {@code /html/load_html} 与 {@code /html/load_data} 接口返回。
  * <p>字段名与前端 {@code PreviewReportData} 契约保持一致，避免破坏调用方。
  *
  * @author luck-report

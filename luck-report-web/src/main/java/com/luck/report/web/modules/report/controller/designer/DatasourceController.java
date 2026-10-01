@@ -39,7 +39,7 @@ public class DatasourceController {
     /**
      * 加载内置数据源
      */
-    @RequestMapping("/loadBuildinDatasources")
+    @RequestMapping("/load_builtin_datasources")
     public ResultVO<List<String>> loadBuildinDatasources() {
         return ResultVO.success(datasourceService.loadBuildinDatasources());
     }
@@ -47,7 +47,7 @@ public class DatasourceController {
     /**
      * 加载Bean方法
      */
-    @RequestMapping("/loadMethods")
+    @RequestMapping("/load_methods")
     public ResultVO<List<String>> loadMethods(@RequestParam("beanId") String beanId) {
         return ResultVO.success(datasourceService.loadMethods(beanId));
     }
@@ -55,7 +55,7 @@ public class DatasourceController {
     /**
      * 构建类字段
      */
-    @RequestMapping("/buildClass")
+    @RequestMapping("/build_class")
     public ResultVO<List<Field>> buildClass(@RequestParam("clazz") String clazz) {
         return ResultVO.success(datasourceService.buildClass(clazz));
     }
@@ -63,7 +63,7 @@ public class DatasourceController {
     /**
      * 构建数据库表
      */
-    @RequestMapping("/buildDatabaseTables")
+    @RequestMapping("/build_database_tables")
     public ResultVO<List<Map<String, String>>> buildDatabaseTables(BuildDatabaseTablesRequest req) throws ReportServiceException {
         return ResultVO.success(datasourceService.buildDatabaseTables(req));
     }
@@ -71,7 +71,7 @@ public class DatasourceController {
     /**
      * 构建字段
      */
-    @RequestMapping("/buildFields")
+    @RequestMapping("/build_fields")
     public ResultVO<List<Field>> buildFields(BuildFieldsRequest req) {
         ApiRequest apiRequest = HttpUtils.getRequest();
         return ResultVO.success(datasourceService.buildFields(req, apiRequest));
@@ -80,7 +80,7 @@ public class DatasourceController {
     /**
      * 预览数据
      */
-    @RequestMapping("/previewData")
+    @RequestMapping("/preview_data")
     public ResultVO<DataResult> previewData(PreviewDataRequest req) throws ReportServiceException, IOException {
         ApiRequest apiRequest = HttpUtils.getRequest();
         return ResultVO.success(datasourceService.previewData(req, apiRequest));
@@ -90,7 +90,7 @@ public class DatasourceController {
      * 测试数据库连接
      * 使用 @RequestParam 接收 multipart/form-data 参数
      */
-    @RequestMapping("/testConnection")
+    @RequestMapping("/test_connection")
     public ResultVO<Map<String, Object>> testConnection(
             @RequestParam(value = "username", required = false) String username,
             @RequestParam(value = "password", required = false) String password,

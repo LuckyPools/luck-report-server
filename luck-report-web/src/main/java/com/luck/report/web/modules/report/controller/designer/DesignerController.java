@@ -41,7 +41,7 @@ public class DesignerController {
     /**
      * 脚本验证
      */
-    @RequestMapping("/scriptValidation")
+    @RequestMapping("/validate_script")
     @ResponseBody
     public ResultVO<List<ErrorInfo>> scriptValidation(@RequestParam("content") String content) {
         return ResultVO.success(designerService.scriptValidation(content));
@@ -50,7 +50,7 @@ public class DesignerController {
     /**
      * 条件脚本验证
      */
-    @RequestMapping("/conditionScriptValidation")
+    @RequestMapping("/validate_condition_script")
     @ResponseBody
     public ResultVO<List<ErrorInfo>> conditionScriptValidation(@RequestParam("content") String content) {
         return ResultVO.success(designerService.conditionScriptValidation(content));
@@ -59,7 +59,7 @@ public class DesignerController {
     /**
      * 解析数据集名称
      */
-    @RequestMapping("/parseDatasetName")
+    @RequestMapping("/parse_dataset_name")
     @ResponseBody
     public ResultVO<Map<String, String>> parseDatasetName(@RequestParam("expr") String expr) {
         Map<String, String> result = new java.util.HashMap<>(2);
@@ -72,7 +72,7 @@ public class DesignerController {
      * - reportPath: 报表唯一路径（如 file:xxx.ureport.xml / db:123），作为 ReportScopedCache 的 key
      * - content: 报表 XML 内容
      */
-    @RequestMapping("/savePreviewFile")
+    @RequestMapping("/save_preview_report")
     @ResponseBody
     public ResultVO<Void> savePreviewFile(@RequestParam("reportPath") String reportPath,
                                           @RequestParam("content") String content) throws IOException {
@@ -83,7 +83,7 @@ public class DesignerController {
     /**
      * 加载报表
      */
-    @RequestMapping(value = "/loadReport")
+    @RequestMapping(value = "/load_report")
     @ResponseBody
     public ResultVO<ReportDefinitionVo> loadReport(@RequestParam("reportPath") String reportPath) {
         return ResultVO.success(designerService.loadReport(reportPath));
@@ -96,7 +96,7 @@ public class DesignerController {
      * @param content 报表 XML 全文
      * @param reportPath 可选上下文路径，仅用于解析日志/命名，不触发读写
      */
-    @RequestMapping("/parseReportXml")
+    @RequestMapping("/parse_xml")
     @ResponseBody
     public ResultVO<ReportDefinitionVo> parseReportXml(
             @RequestParam("content") String content,
@@ -107,7 +107,7 @@ public class DesignerController {
     /**
      * 删除报表文件
      */
-    @RequestMapping("/deleteReportFile")
+    @RequestMapping("/delete_report")
     @ResponseBody
     public ResultVO<Void> deleteReportFile(@RequestParam("reportPath") String reportPath) {
         designerService.deleteReportFile(reportPath);
@@ -122,7 +122,7 @@ public class DesignerController {
      *
      * 兼容旧版：仅传 file 时，title 缺省为空字符串
      */
-    @RequestMapping("/saveReportFile")
+    @RequestMapping("/save_report")
     @ResponseBody
     public ResultVO<ReportFile> saveReportFile(@RequestParam(value = "fileName", required = false) String fileName,
                                          @RequestParam("reportPath") String reportPath,
@@ -136,7 +136,7 @@ public class DesignerController {
      * <p>仅返回 provider 基础信息（name/prefix/disabled），不包含任何文件。
      * 用于：管理页下拉、报表来源过滤等"仅需 provider 元数据"的场景。
      */
-    @RequestMapping("/loadReportProviders")
+    @RequestMapping("/load_providers")
     @ResponseBody
     public ResultVO<List<ReportProviderVo>> loadReportProviders() {
         return ResultVO.success(designerService.listReportProviders());
@@ -146,7 +146,7 @@ public class DesignerController {
      * 分页查询报表列表
      * <p>用于设计器的"打开报表"弹窗、"另存为"弹窗等需要分页加载报表的场景。
      */
-    @PostMapping("/queryReports")
+    @PostMapping("/page_reports")
     @ResponseBody
     public PageResultVO<ReportFile> queryReports(@Valid @RequestBody ReportQueryDTO queryDTO) {
         return designerService.queryReports(queryDTO);
@@ -158,7 +158,7 @@ public class DesignerController {
      * 前端按 {@code vo.prefix} 识别 provider。
      * 用于：设计器的"打开报表"弹窗、"另存为"弹窗等需要展示文件树的场景。
      */
-    @RequestMapping("/loadReportFiles")
+    @RequestMapping("/load_reports")
     @ResponseBody
     public ResultVO<List<ReportProviderDetailVo>> loadReportFiles(@RequestParam("path") String path) {
         return ResultVO.success(designerService.loadReportFiles(path));
@@ -170,7 +170,7 @@ public class DesignerController {
      * - 使用 classpath:template/template.ureport.xml 空白模板在指定 provider 下创建报表
      * - 完整文件路径 = provider + fileName（例如 file:xxx.ureport.xml）
      */
-    @RequestMapping("/createReport")
+    @RequestMapping("/create_report")
     @ResponseBody
     public ResultVO<ReportFile> createReport(@RequestParam("fileName") String fileName,
                                              @RequestParam("provider") String providerPrefix) {
@@ -185,7 +185,7 @@ public class DesignerController {
      *
      * 注意：newFilePath 必须与 sourceFilePath 属于同一 provider。
      */
-    @RequestMapping("/copyReport")
+    @RequestMapping("/copy_report")
     @ResponseBody
     public ResultVO<ReportFile> copyReport(@RequestParam("sourceFilePath") String sourceFilePath,
                                           @RequestParam("newFilePath") String newFilePath,

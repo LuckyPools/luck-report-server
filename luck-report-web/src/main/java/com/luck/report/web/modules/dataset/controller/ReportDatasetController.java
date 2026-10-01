@@ -32,7 +32,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController("bean.reportDatasetController")
-@RequestMapping("${luck-report.servletPrefix:}/reportDataset")
+@RequestMapping("${luck-report.servletPrefix:}/report_dataset")
 @AllArgsConstructor
 public class ReportDatasetController {
 
@@ -61,7 +61,7 @@ public class ReportDatasetController {
      * @param queryDTO 查询条件
      * @return 分页结果
      */
-    @PostMapping("/query/page")
+    @PostMapping("/page")
     public PageResultVO<ReportDatasetVO> queryByPage(@Valid @RequestBody ReportDatasetQueryDTO queryDTO) {
         try {
             return reportDatasetService.queryByPage(queryDTO);
@@ -141,7 +141,7 @@ public class ReportDatasetController {
         }
     }
 
-    @DeleteMapping("/delete/batch")
+    @DeleteMapping("/batch/delete")
     public ResultVO<String> deleteBatch(@RequestBody List<String> ids) {
         try {
             reportDatasetService.deleteByIds(ids);
@@ -159,7 +159,7 @@ public class ReportDatasetController {
      * @param status 状态：active/inactive
      * @return 操作结果
      */
-    @PostMapping("/status/{id}")
+    @PostMapping("/update_status/{id}")
     public ResultVO<String> updateStatus(@PathVariable String id, @RequestParam(value = "status") String status) {
         try {
             reportDatasetService.updateStatus(id, status);

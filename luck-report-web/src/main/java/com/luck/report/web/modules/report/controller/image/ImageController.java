@@ -5,6 +5,7 @@ import com.luck.report.infra.modules.servlet.utils.HttpUtils;
 import com.luck.report.core.cache.ResourceCache;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,7 +26,7 @@ public class ImageController {
     /**
      * 获取图片资源
      */
-    @RequestMapping(value = {"", "/"})
+    @GetMapping("/get_image")
     public void getImage(@RequestParam(value = "_key", required = false) String key) throws IOException {
         ApiResponse resp = HttpUtils.getResponse();
         if (StringUtils.isNotBlank(key)) {

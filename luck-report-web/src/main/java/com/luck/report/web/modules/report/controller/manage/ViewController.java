@@ -19,9 +19,9 @@ import java.io.IOException;
  *   <li>{@code /report/preview} - 报表预览</li>
  *   <li>{@code /report/manage} - 报表管理（工作台首页）</li>
  *   <li>{@code /report/datasource} - 数据源管理</li>
- *   <li>{@code /report/model-config} - 模型管理</li>
- *   <li>{@code /report/business-knowledge} - 业务知识库</li>
- *   <li>{@code /report/agent-knowledge} - Agent 知识库</li>
+ *   <li>{@code /report/model_config} - 模型管理</li>
+ *   <li>{@code /report/business_knowledge} - 业务知识库</li>
+ *   <li>{@code /report/agent_knowledge} - Agent 知识库</li>
  * </ul>
  * <p>
  * 同时保留兼容路径 {@code /view/**} 供第三方 iframe 嵌入使用：
@@ -95,18 +95,18 @@ public class ViewController {
      * <ul>
      *   <li>{@code /manage} - 报表管理</li>
      *   <li>{@code /datasource} - 数据源管理</li>
-     *   <li>{@code /model-config} - 模型管理</li>
-     *   <li>{@code /business-knowledge} - 业务知识库</li>
-     *   <li>{@code /agent-knowledge} - Agent 知识库</li>
+     *   <li>{@code /model_config} - 模型管理</li>
+     *   <li>{@code /business_knowledge} - 业务知识库</li>
+     *   <li>{@code /agent_knowledge} - Agent 知识库</li>
      *   <li>上述路径的 {@code /**} 子路径（含片段管理页）</li>
      * </ul>
      */
     @GetMapping({
         "/manage", "/manage/**",
         "/datasource", "/datasource/**",
-        "/model-config", "/model-config/**",
-        "/business-knowledge", "/business-knowledge/**",
-        "/agent-knowledge", "/agent-knowledge/**"
+        "/model_config", "/model_config/**",
+        "/business_knowledge", "/business_knowledge/**",
+        "/agent_knowledge", "/agent_knowledge/**"
     })
     public void manage(NativeWebRequest webRequest) throws IOException {
         viewRenderer.render("index", webRequest, servletPrefix);

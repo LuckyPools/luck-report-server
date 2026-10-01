@@ -68,7 +68,7 @@ public class DynamicBuildinDatasource implements BuildinDatasource {
 
     /**
      * 返回数据源ID
-     * 用于Agent调用table-relations接口时传递数据源唯一标识
+     * 用于Agent调用 table_relations 接口时传递数据源唯一标识
      *
      * @return 数据源ID（String类型）
      */

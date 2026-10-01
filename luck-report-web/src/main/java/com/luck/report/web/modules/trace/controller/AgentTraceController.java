@@ -35,7 +35,7 @@ public class AgentTraceController {
      * @param request 上报请求体，AgentTraceReportRequest，可为空
      * @return ResultVO&lt;AgentTraceReportResponse&gt;，data 携带落盘结果或关闭标记
      */
-    @PostMapping("/report")
+    @PostMapping("/submit")
     public ResultVO<AgentTraceReportResponse> report(@RequestBody(required = false) AgentTraceReportRequest request) {
         AgentTraceReportResult result = agentTraceService.reportLogs(request);
 

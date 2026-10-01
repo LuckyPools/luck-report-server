@@ -38,7 +38,7 @@ public class HtmlPreviewController {
     /**
      * 加载 HTML 预览内容
      */
-    @RequestMapping("/loadHtml")
+    @RequestMapping("/load_html")
     public ResultVO<HtmlReportVo> loadHtml(@RequestParam("reportPath") String reportPath,
                                            @RequestParam(value = "mode", required = false) String mode,
                                            @RequestParam(value = "_i", required = false) String pageIndex) {
@@ -49,7 +49,7 @@ public class HtmlPreviewController {
     /**
      * 加载打印页 HTML
      */
-    @RequestMapping("/loadPrintPages")
+    @RequestMapping("/load_print_pages")
     public ResultVO<Map<String, String>> loadPrintPages(@RequestParam(value = "mode", required = false) String mode,
                                                          @RequestParam("reportPath") String reportPath) {
         ApiRequest req = HttpUtils.getRequest();
@@ -61,7 +61,7 @@ public class HtmlPreviewController {
     /**
      * 加载报表纸张信息
      */
-    @RequestMapping("/loadPagePaper")
+    @RequestMapping("/load_page_paper")
     public ResultVO<Paper> loadPagePaper(@RequestParam(value = "mode", required = false) String mode,
                                          @RequestParam("reportPath") String reportPath) {
         return ResultVO.success(htmlPreviewService.loadPagePaper(reportPath, mode));
@@ -70,7 +70,7 @@ public class HtmlPreviewController {
     /**
      * 加载数据（不渲染 HTML，只返回分页信息和图表数据）
      */
-    @RequestMapping("/loadData")
+    @RequestMapping("/load_data")
     public ResultVO<HtmlReportVo> loadData(@RequestParam("reportPath") String reportPath,
                                            @RequestParam(value = "mode", required = false) String mode,
                                            @RequestParam(value = "_i", required = false) String pageIndex) {
@@ -81,7 +81,7 @@ public class HtmlPreviewController {
     /**
      * 批量加载查询表单选项：按报表文件 + 数据集引用执行数据集，返回 label/value 选项
      */
-    @RequestMapping("/loadSearchFormOptions")
+    @RequestMapping("/load_search_form_options")
     public ResultVO<SearchFormOptionsVo> loadSearchFormOptions(@RequestBody SearchFormOptionsRequest request) {
         ApiRequest req = HttpUtils.getRequest();
         return ResultVO.success(searchFormOptionService.loadOptions(request, req));

@@ -31,9 +31,9 @@ import java.util.List;
  *   <li>{@code GET  /role/list}                全量角色列表（第三方 + 内置匿名角色，管理页表格，不分页）</li>
  *   <li>{@code GET  /role/reports}             某 provider 下所有非目录报表（穿梭框左侧）</li>
  *   <li>{@code GET  /role/bindings/detail/{code}}     某角色在某 provider 下的已绑 file_path（穿梭框右侧）</li>
- *   <li>{@code POST /role/bindings}            保存某角色在某 provider 下的报表绑定</li>
+ *   <li>{@code POST /role/bindings/save}            保存某角色在某 provider 下的报表绑定</li>
  *   <li>{@code DELETE /role/bindings/delete/{code}}   物理删除某角色全部绑定（含 '*'）</li>
- *   <li>{@code GET  /role/auth/check-admin}    轻量管理员检查（前端用）</li>
+ *   <li>{@code GET  /role/auth/check_admin}    轻量管理员检查（前端用）</li>
  * </ul>
  * <p>API 风格参考 {@code modules/modelConfig/ModelConfigController}（REST + ResultVO）。
  * <p>provider 列表复用 {@code DesignerController.loadReportProviders}，
@@ -62,7 +62,7 @@ public class ReportRoleController {
 
     /**
      * 列出某 provider 下所有非目录报表（穿梭框左侧用，不分页）。
-     * <p>与 {@code /manage/queryReports} 的关键区别：本接口一次性返回全量，
+     * <p>与 {@code /manage/query_reports} 的关键区别：本接口一次性返回全量，
      * 供 a-transfer 当全集数据源用，再由 a-transfer 自带的 pagination 做客户端分页展示。
      * <p>底层调 {@link com.luck.report.core.provider.report.ReportProvider#getReportFiles()} 一次拿全，
      * 再过滤目录项；阈值 {@code TRANSFER_REPORT_LIMIT=10000}，超过记录 warn 日志。
@@ -83,7 +83,7 @@ public class ReportRoleController {
     }
 
     /** 保存某角色在某 provider 下的报表绑定（覆盖式物理删+插，可选 '*' 通配） */
-    @PostMapping("/bindings")
+    @PostMapping("/bindings/save")
     public ResultVO<Void> saveBindings(@Valid @RequestBody ReportRoleBindingDTO req) {
         roleDataService.saveRoleBindings(req.getRoleCode(), req.getRoleName(),
                 req.getProvider(), req.getReportPaths(),
@@ -102,7 +102,7 @@ public class ReportRoleController {
      * 轻量管理员检查（前端用，决定是否显示"角色报表"菜单）。
      * <p>enabled=false 时直接返回 true（dev 模式不挡门）。
      */
-    @GetMapping("/auth/check-admin")
+    @GetMapping("/auth/check_admin")
     public ResultVO<Boolean> checkAdmin() {
         if (props == null || !props.isEnabled()) {
             return ResultVO.success(true);

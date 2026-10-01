@@ -27,7 +27,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController("bean.businessKnowledgeController")
-@RequestMapping("${luck-report.servletPrefix:}/business-knowledge")
+@RequestMapping("${luck-report.servletPrefix:}/business_knowledge")
 @AllArgsConstructor
 public class BusinessKnowledgeController {
 
@@ -86,13 +86,13 @@ public class BusinessKnowledgeController {
                 : ResultVOUtils.<Boolean>error("error.knowledge.bizDeleteFailed");
     }
 
-    @DeleteMapping("/delete/batch")
+    @DeleteMapping("/batch/delete")
     public ResultVO<Boolean> deleteKnowledgeBatch(@RequestBody List<String> ids) {
         businessKnowledgeService.deleteKnowledgeBatch(ids);
         return ResultVOUtils.success("success.knowledge.bizDeleted", true);
     }
 
-    @PostMapping("/query/page")
+    @PostMapping("/page")
     public PageResultVO<BusinessKnowledgeVO> queryByPage(@Valid @RequestBody BusinessKnowledgeQueryDTO queryDTO) {
         try {
             return businessKnowledgeService.queryByPage(queryDTO);
@@ -102,19 +102,19 @@ public class BusinessKnowledgeController {
         }
     }
 
-    @PostMapping("/retry-embedding/{id}")
+    @PostMapping("/retry_embedding/{id}")
     public ResultVO<Boolean> retryEmbedding(@PathVariable("id") String id) {
         businessKnowledgeService.retryEmbedding(id);
         return ResultVOUtils.success("success.knowledge.bizRetried", true);
     }
 
-    @GetMapping("/detail/{id}/chunks")
+    @GetMapping("/{id}/chunks/list")
     public ResultVO<List<KnowledgeChunkVO>> listChunks(@PathVariable("id") String id) {
         return ResultVOUtils.success("success.knowledge.bizDetailLoaded",
                 businessKnowledgeService.listChunks(id));
     }
 
-    @PutMapping("/detail/{id}/chunks/{vectorId}")
+    @PutMapping("/{id}/chunks/update/{vectorId}")
     public ResultVO<KnowledgeChunkVO> updateChunk(@PathVariable("id") String id,
                                                   @PathVariable("vectorId") String vectorId,
                                                   @Valid @RequestBody UpdateKnowledgeChunkDTO dto) {
@@ -122,7 +122,7 @@ public class BusinessKnowledgeController {
                 businessKnowledgeService.updateChunk(id, vectorId, dto));
     }
 
-    @DeleteMapping("/detail/{id}/chunks/{vectorId}")
+    @DeleteMapping("/{id}/chunks/delete/{vectorId}")
     public ResultVO<Void> deleteChunk(@PathVariable("id") String id,
                                       @PathVariable("vectorId") String vectorId) {
         businessKnowledgeService.deleteChunk(id, vectorId);

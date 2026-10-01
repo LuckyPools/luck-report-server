@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 查询表单选项加载结果视图对象，用于 {@code /html/loadSearchFormOptions} 接口返回。
+ * 查询表单选项加载结果视图对象，用于 {@code /html/load_search_form_options} 接口返回。
  * <p>字段名与前端 {@code SearchFormOptionsResult} 契约保持一致，避免破坏调用方。
  *
  * @author luck-report

@@ -8,7 +8,7 @@ import java.io.Serializable;
 /**
  * 报表提供者（Provider）视图对象。
  *
- * <p>对应 {@code /designer/loadReportProviders} 接口的列表项，
+ * <p>对应 {@code /designer/load_providers} 接口的列表项，
  * 字段与前端 {@code ReportProviderVO} 对齐：
  * <ul>
  *   <li>name: provider 展示名（如"服务器文件系统"、"数据库"）</li>
@@ -17,7 +17,7 @@ import java.io.Serializable;
  * </ul>
  *
  * <p>需要同时获取 provider 信息与文件列表时，使用 {@link ReportProviderDetailVo}，
- * 对应 {@code /designer/loadReportFiles} 接口。
+ * 对应 {@code /designer/load_reports} 接口。
  *
  * @author luck-report
  * @since 1.0.0

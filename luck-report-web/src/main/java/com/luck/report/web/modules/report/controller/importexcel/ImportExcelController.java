@@ -34,7 +34,7 @@ public class ImportExcelController {
      * @param file 上传的 Excel 文件，参数名 _excel_file
      * @return 导入结果
      */
-    @RequestMapping({"", "/"})
+    @PostMapping("/import_excel")
     public ResultVO<Map<String, Object>> importExcel(@RequestParam("_excel_file") MultipartFile file) {
         return ResultVO.success(importExcelService.importExcel(file));
     }
@@ -45,7 +45,7 @@ public class ImportExcelController {
      * @param file 上传的 Excel 文件，参数名 _excel_file
      * @return Sheet 摘要列表，每项含 index 和 name
      */
-    @PostMapping("/getExcelSheet")
+    @PostMapping("/get_sheet")
     public ResultVO<List<Map<String, Object>>> getExcelSheet(@RequestParam("_excel_file") MultipartFile file) {
         return ResultVO.success(importExcelService.getExcelSheet(file));
     }
@@ -68,7 +68,7 @@ public class ImportExcelController {
      * @param outputDateFormat  输出 JSON 中的日期格式
      * @return JSON 数组字符串
      */
-    @PostMapping("/parseToJson")
+    @PostMapping("/parse_json")
     public ResultVO<String> parseExcelToJson(
             @RequestParam("_excel_file") MultipartFile file,
             @RequestParam(value = "sheetIndex", required = false) Integer sheetIndex,

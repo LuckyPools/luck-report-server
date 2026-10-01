@@ -4,7 +4,7 @@ import java.util.List;
 
 /**
  * 查询表单选项加载请求 VO。
- * <p>用于 {@code /html/loadSearchFormOptions} 接口：按报表文件 + 数据集引用批量执行
+ * <p>用于 {@code /html/load_search_form_options} 接口：按报表文件 + 数据集引用批量执行
  * 数据集并返回 label/value 选项，供查询表单选项组件（select/radio/checkbox）渲染。
  *
  * @author luck-report

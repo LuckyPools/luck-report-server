@@ -3,7 +3,7 @@ package com.luck.report.web.modules.report.domain.vo.request;
 /**
  * 数据库连接测试请求 VO。
  * <p>
- * 用于 {@code /datasource/testConnection} 接口，包含 JDBC 直连所需的全部参数。
+ * 用于 {@code /datasource/test_connection} 接口，包含 JDBC 直连所需的全部参数。
  *
  * @author luck-report
  * @since 1.0.0

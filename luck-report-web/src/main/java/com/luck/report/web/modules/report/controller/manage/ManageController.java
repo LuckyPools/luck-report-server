@@ -48,21 +48,21 @@ public class ManageController {
     /**
      * 分页查询报表列表
      */
-    @PostMapping("/queryReports")
+    @PostMapping("/query_reports")
     public PageResultVO<ReportFile> queryReports(@Valid @RequestBody ReportQueryDTO queryDTO) {
         return reportManageService.queryReports(queryDTO);
     }
 
     /** 报表元数据详情（不含模板 XML） */
-    @GetMapping("/detail")
-    public ResultVO<ReportFile> getDetail(@RequestParam String file) {
-        return reportManageService.getReportDetail(file);
+    @GetMapping("/get_report")
+    public ResultVO<ReportFile> getReport(@RequestParam String file) {
+        return reportManageService.getReport(file);
     }
 
     /**
      * 删除报表
      */
-    @RequestMapping("/deleteReport")
+    @RequestMapping("/delete_report")
     public ResultVO<Void> deleteReport(@RequestParam String file) {
         return reportManageService.deleteReport(file);
     }
@@ -70,17 +70,17 @@ public class ManageController {
     /**
      * 更新报表元数据（名称等，不含模板内容）
      */
-    @RequestMapping("/updateReport")
+    @RequestMapping("/update_report")
     public ResultVO<ReportFile> updateReport(@Valid @RequestBody ReportUpdateDTO updateDTO) {
         return reportManageService.updateReport(updateDTO);
     }
 
     /**
      * 导出报表模板源文件（XML），供前端下载。
-     * <p>接收完整 reportPath（带 provider 前缀），通过 {@link HttpServletResponse} 写出字节流。
-     * 与 queryReports 中的 list 不同：本接口返回 XML 源文件而非渲染结果。
+     * <p>接收完整 reportPath（带 provider 前缀），写出字节流。
+     * 与 query_reports 列表接口不同：本接口返回 XML 源文件而非渲染结果。
      */
-    @RequestMapping("/exportTemplate")
+    @RequestMapping("/export_template")
     public void exportTemplate(@RequestParam("reportPath") String reportPath) throws IOException {
         ApiResponse resp = HttpUtils.getResponse();
         ResultVO<ReportExportTemplateVo> vo = reportManageService.exportTemplate(reportPath);
@@ -108,7 +108,7 @@ public class ManageController {
     /**
      * 导入报表模板。XML 含 reportId 且已存在、未确认时返回 409。
      */
-    @PostMapping(value = "/importTemplate", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/import_template", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResultVO<ReportFile> importTemplate(@RequestParam("provider") String provider,
                                                @RequestPart("file") MultipartFile file,
                                                @RequestParam(value = "confirmOverwrite", required = false, defaultValue = "false")

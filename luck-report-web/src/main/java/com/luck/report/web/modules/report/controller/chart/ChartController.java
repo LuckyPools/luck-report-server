@@ -25,7 +25,7 @@ public class ChartController {
      * 存储图表数据
      * 使用 @RequestParam 接收 multipart/form-data 参数
      */
-    @RequestMapping("/storeData")
+    @RequestMapping("/store_data")
     public ResultVO<Void> storeData(
             @RequestParam("_chartId") String chartId,
             @RequestParam("_base64Data") String base64Data,

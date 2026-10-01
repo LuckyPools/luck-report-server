@@ -308,7 +308,7 @@ public class ReportManageService implements ApplicationContextAware {
     }
 
     /** 按完整路径取报表元数据（不含模板 XML） */
-    public ResultVO<ReportFile> getReportDetail(String file) {
+    public ResultVO<ReportFile> getReport(String file) {
         try {
             if (file == null || file.trim().isEmpty()) {
                 return ResultVO.error(400, "Report file path cannot be empty");

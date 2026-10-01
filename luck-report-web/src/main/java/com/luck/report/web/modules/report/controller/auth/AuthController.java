@@ -39,7 +39,7 @@ public class AuthController {
      * <p>直接传入 HttpServletRequest，由 TokenService 实现类决定如何生成 token。
      * <p>第三方系统可在 TokenService 实现中从 Session/Header/请求参数中提取所需信息。
      */
-    @PostMapping("/getToken")
+    @PostMapping("/get_token")
     public ResultVO<Map<String, Object>> getToken() {
         ApiRequest request = HttpUtils.getRequest();
         String token = tokenService.generateToken(request);

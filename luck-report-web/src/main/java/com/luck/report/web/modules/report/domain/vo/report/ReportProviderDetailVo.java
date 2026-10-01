@@ -12,7 +12,7 @@ import java.util.List;
  * 报表提供者详情 VO。
  *
  * <p>在 {@link ReportProviderVo} 基础上附加指定路径下的报表文件列表，
- * 用于 {@code /designer/loadReportProviders?path=xxx} 接口。
+ * 用于 {@code /designer/load_reports?path=xxx} 接口。
  *
  * <p>响应结构为 {@code Map<prefix, ReportProviderDetailVo>}，key 为 provider 前缀。
  *

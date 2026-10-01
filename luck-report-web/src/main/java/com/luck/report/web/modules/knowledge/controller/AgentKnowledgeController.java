@@ -29,7 +29,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController("bean.agentKnowledgeController")
-@RequestMapping("${luck-report.servletPrefix:}/agent-knowledge")
+@RequestMapping("${luck-report.servletPrefix:}/agent_knowledge")
 @AllArgsConstructor
 public class AgentKnowledgeController {
 
@@ -125,7 +125,7 @@ public class AgentKnowledgeController {
                 : ResultVOUtils.<Boolean>error("error.knowledge.agentDeleteFailed");
     }
 
-    @DeleteMapping("/delete/batch")
+    @DeleteMapping("/batch/delete")
     public ResultVO<Boolean> deleteKnowledgeBatch(@RequestBody List<String> ids) {
         agentKnowledgeService.deleteKnowledgeBatch(ids);
         return ResultVOUtils.success("success.knowledge.agentDeleted", true);
@@ -137,7 +137,7 @@ public class AgentKnowledgeController {
      * @param queryDTO 查询条件
      * @return 分页结果
      */
-    @PostMapping("/query/page")
+    @PostMapping("/page")
     public PageResultVO<AgentKnowledgeVO> queryByPage(@Valid @RequestBody AgentKnowledgeQueryDTO queryDTO) {
         try {
             return agentKnowledgeService.queryByPage(queryDTO);
@@ -153,19 +153,19 @@ public class AgentKnowledgeController {
      * @param id 智能体知识ID
      * @return 重试结果
      */
-    @PostMapping("/retry-embedding/{id}")
+    @PostMapping("/retry_embedding/{id}")
     public ResultVO<Boolean> retryEmbedding(@PathVariable("id") String id) {
         agentKnowledgeService.retryEmbedding(id);
         return ResultVOUtils.success("success.knowledge.agentRetried", true);
     }
 
-    @GetMapping("/detail/{id}/chunks")
+    @GetMapping("/{id}/chunks/list")
     public ResultVO<List<KnowledgeChunkVO>> listChunks(@PathVariable("id") String id) {
         return ResultVOUtils.success("success.knowledge.agentDetailLoaded",
                 agentKnowledgeService.listChunks(id));
     }
 
-    @PutMapping("/detail/{id}/chunks/{vectorId}")
+    @PutMapping("/{id}/chunks/update/{vectorId}")
     public ResultVO<KnowledgeChunkVO> updateChunk(@PathVariable("id") String id,
                                                   @PathVariable("vectorId") String vectorId,
                                                   @Valid @RequestBody UpdateKnowledgeChunkDTO dto) {
@@ -173,7 +173,7 @@ public class AgentKnowledgeController {
                 agentKnowledgeService.updateChunk(id, vectorId, dto));
     }
 
-    @DeleteMapping("/detail/{id}/chunks/{vectorId}")
+    @DeleteMapping("/{id}/chunks/delete/{vectorId}")
     public ResultVO<Void> deleteChunk(@PathVariable("id") String id,
                                       @PathVariable("vectorId") String vectorId) {
         agentKnowledgeService.deleteChunk(id, vectorId);

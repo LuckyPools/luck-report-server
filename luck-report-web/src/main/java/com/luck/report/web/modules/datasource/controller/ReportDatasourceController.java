@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @RestController("bean.datasourceController")
-@RequestMapping("${luck-report.servletPrefix:}/reportDatasource")
+@RequestMapping("${luck-report.servletPrefix:}/report_datasource")
 @AllArgsConstructor
 public class ReportDatasourceController {
 
@@ -94,7 +94,7 @@ public class ReportDatasourceController {
      * @param queryDTO 查询条件
      * @return 分页结果
      */
-    @PostMapping("/query/page")
+    @PostMapping("/page")
     public PageResultVO<ReportDatasourceVO> queryByPage(@Valid @RequestBody ReportDatasourceQueryDTO queryDTO) {
         try {
             return reportDatasourceService.queryByPage(queryDTO);
@@ -173,7 +173,7 @@ public class ReportDatasourceController {
         }
     }
 
-    @DeleteMapping("/delete/batch")
+    @DeleteMapping("/batch/delete")
     public ResultVO<String> deleteBatch(@RequestBody List<String> ids) {
         try {
             reportDatasourceService.deleteDatasourceBatch(ids);
@@ -190,7 +190,7 @@ public class ReportDatasourceController {
      * @param id 数据源ID
      * @return 测试结果
      */
-    @PostMapping("/test/{id}")
+    @PostMapping("/test_connection/{id}")
     public ResultVO<Boolean> testConnection(@PathVariable String id) {
         try {
             boolean success = reportDatasourceService.testConnection(id);
@@ -210,7 +210,7 @@ public class ReportDatasourceController {
      * @param status  状态：active/inactive
      * @return 操作结果
      */
-    @PostMapping("/status/{id}")
+    @PostMapping("/update_status/{id}")
     public ResultVO<String> updateStatus(@PathVariable String id,
                                            @RequestParam(value = "status") String status) {
         try {
@@ -266,7 +266,7 @@ public class ReportDatasourceController {
      * @param request 初始化请求，包含表名列表
      * @return 初始化结果
      */
-    @PostMapping("/{id}/init-schema")
+    @PostMapping("/{id}/init_schema")
     public ResultVO<String> initSchema(@PathVariable String id,
                                          @RequestBody InitSchemaRequestDTO request) {
         try {
@@ -284,7 +284,7 @@ public class ReportDatasourceController {
      * @param id 数据源ID
      * @return 逻辑外键列表
      */
-    @GetMapping("/{id}/logical-relations/list")
+    @GetMapping("/{id}/logical_relations/list")
     public ResultVO<List<LogicalRelation>> getLogicalRelations(@PathVariable String id) {
         try {
             List<LogicalRelation> relations = reportDatasourceService.getLogicalRelations(id);
@@ -302,7 +302,7 @@ public class ReportDatasourceController {
      * @param dto 创建逻辑外键DTO
      * @return 添加后的逻辑外键
      */
-    @PostMapping("/{id}/logical-relations/create")
+    @PostMapping("/{id}/logical_relations/create")
     public ResultVO<LogicalRelation> addLogicalRelation(@PathVariable String id,
                                                             @Valid @RequestBody CreateLogicalRelationDTO dto) {
         try {
@@ -329,7 +329,7 @@ public class ReportDatasourceController {
      * @param dto        更新逻辑外键DTO
      * @return 更新后的逻辑外键
      */
-    @PutMapping("/{id}/logical-relations/update/{relationId}")
+    @PutMapping("/{id}/logical_relations/update/{relationId}")
     public ResultVO<LogicalRelation> updateLogicalRelation(@PathVariable String id,
                                                                @PathVariable String relationId,
                                                                @RequestBody UpdateLogicalRelationDTO dto) {
@@ -356,7 +356,7 @@ public class ReportDatasourceController {
      * @param relationId 逻辑外键ID
      * @return 删除结果
      */
-    @DeleteMapping("/{id}/logical-relations/delete/{relationId}")
+    @DeleteMapping("/{id}/logical_relations/delete/{relationId}")
     public ResultVO<String> deleteLogicalRelation(@PathVariable String id,
                                                     @PathVariable String relationId) {
         try {
@@ -375,7 +375,7 @@ public class ReportDatasourceController {
      * @param logicalRelations 逻辑外键列表
      * @return 保存后的逻辑外键列表
      */
-    @PutMapping("/{id}/logical-relations/save")
+    @PutMapping("/{id}/logical_relations/save")
     public ResultVO<List<LogicalRelation>> saveLogicalRelations(@PathVariable String id,
                                                                     @RequestBody List<LogicalRelation> logicalRelations) {
         try {
@@ -388,14 +388,13 @@ public class ReportDatasourceController {
     }
 
     /**
-     * 构建SchemaDTO
-     * 通过向量检索召回与查询相关的表结构，合并逻辑外键
+     * 构建 Schema：向量检索召回相关表结构并合并逻辑外键
      *
      * @param id    数据源ID
      * @param query 用户自然语言查询
      * @return SchemaDTO
      */
-    @PostMapping("/{id}/schema-dto")
+    @PostMapping("/{id}/build_schema")
     public ResultVO<SchemaDTO> buildSchemaDTO(@PathVariable String id,
                                                  @RequestParam(value = "query") String query) {
         try {
@@ -417,7 +416,7 @@ public class ReportDatasourceController {
      * @param query  用户自然语言查询
      * @return SchemaDTO 结构化数据（包含表结构、字段、外键关系）
      */
-    @PostMapping("/table-relations")
+    @PostMapping("/table_relations")
     public ResultVO<SchemaDTO> getTableRelations(
         @RequestParam(value = "name", required = false) String name,
         @RequestParam(value = "id", required = false) String id,
@@ -453,7 +452,7 @@ public class ReportDatasourceController {
      * @param query 用户自然语言查询
      * @return 搜索结果列表，每项包含数据源ID、名称、类型和Schema提示词
      */
-    @PostMapping("/search-schema")
+    @PostMapping("/search_schema")
     public ResultVO<List<SchemaSearchResultVO>> searchSchema(
             @RequestParam(value = "query") String query) {
         try {
@@ -472,7 +471,7 @@ public class ReportDatasourceController {
      *
      * @return 内置数据源列表，每项包含name和id
      */
-    @GetMapping("/buildin/list")
+    @GetMapping("/builtin/list")
     public ResultVO<List<Map<String, Object>>> getBuildinDatasources() {
         try {
             Collection<BuildinDatasource> datasources = Utils.getBuildinDatasources();
