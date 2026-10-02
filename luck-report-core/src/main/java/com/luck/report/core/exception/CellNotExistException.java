@@ -26,8 +26,9 @@ public class CellNotExistException extends ReportException {
         super("Cell [" + cellName + "] not exist.");
     }
 
-
-    /** errorArgs 依次对应 {0}、{1} */
+    /**
+     * errorArgs 依次对应 {0}、{1}
+     */
     public CellNotExistException(String errorCode, Object... errorArgs) {
         super(errorCode, errorArgs);
     }

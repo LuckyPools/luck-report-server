@@ -64,10 +64,7 @@ public interface ReportProvider {
     }
 
     /**
-     * 分页查询报表文件，将过滤与分页下沉到 Provider 实现，避免在调用方拉取全量数据。
-     * <p>默认实现：调用 {@link #getReportFiles()} 在内存中过滤并分页，保证向后兼容；
-     * 数据量大的实现（如 db:）应重写此方法以利用底层存储的分页/索引能力。
-     * <p>params 参数的 key 由各实现类自行定义，常见的有 path（目录路径）、name（名称模糊匹配）、includeDirectory（是否包含目录项）等。
+     * 分页查询报表文件，将过滤与分页下沉到 Provider 实现，避免在调用方拉取全量数据。默认实现：调用 {@link #getReportFiles()} 在内存中过滤并分页，保证向后兼容；数据量大的实现（如 db:）应重写此方法以利用底层存储的分页/索引能力。params 参数的 key 由各实现类自行定义，常见的有 path（目录路径）、name（名称模糊匹配）、includeDirectory（是否包含目录项）等。
      *
      * @param pageNum 当前页码（从 1 开始）
      * @param pageSize 每页大小
@@ -106,24 +103,17 @@ public interface ReportProvider {
     }
 
     /**
-     * 保存报表文件（带展示名）
-     * - db: provider 等需要 title 的 provider 可重写此方法
+     * 保存报表文件（带展示名）；- db: provider 等需要 title 的 provider 可重写此方法
      *
      * @param title    报表展示名（db: provider 用作 title）
      * @param reportPath 报表唯一路径（带 provider 前缀）
      * @param content  报表 XML 内容
-     * @return 保存后的 ReportFile 描述：
-     *         - name：展示名（file / classpath 存储时为去掉 {@value #REPORT_FILE_SUFFIX} 后缀的文件名；db 存储时为 title）
-     *         - path：不带 provider 前缀的原始路径，保留 {@value #REPORT_FILE_SUFFIX} 后缀（file / classpath 存储时为相对文件名；db 存储时为数据库主键 id）
-     *         - directory：始终为 false
-     *         - updateDate：本次保存时间
-     *         只读 provider（如 classpath）可返回 {@code new ReportFile()} 占位
+     * @return 保存后的 ReportFile 描述：         - name：展示名（file / classpath 存储时为去掉 {@value #REPORT_FILE_SUFFIX} 后缀的文件名；db 存储时为 title）         - path：不带 provider 前缀的原始路径，保留 {@value #REPORT_FILE_SUFFIX} 后缀（file / classpath 存储时为相对文件名；db 存储时为数据库主键 id）         - directory：始终为 false         - updateDate：本次保存时间         只读 provider（如 classpath）可返回 {@code new ReportFile()} 占位
      */
     ReportFile saveReport(String title, String reportPath, String content);
 
     /**
-     * 去除报表文件后缀 {@value #REPORT_FILE_SUFFIX}，用于统一 {@link ReportFile#name} 的格式约定。
-     * <p>约定：{@link ReportFile#name} 不带 {@value #REPORT_FILE_SUFFIX} 后缀（用于前端展示），{@link ReportFile#path} 保留后缀。
+     * 去除报表文件后缀 {@value #REPORT_FILE_SUFFIX}，用于统一 {@link ReportFile#name} 的格式约定。约定：{@link ReportFile#name} 不带 {@value #REPORT_FILE_SUFFIX} 后缀（用于前端展示），{@link ReportFile#path} 保留后缀。
      *
      * @param name 原始名称（可能带后缀、可能为 null）
      * @return 去掉后缀后的字符串；入参为 null 时返回 null
@@ -162,10 +152,7 @@ public interface ReportProvider {
     }
 
     /**
-     * 更新报表元数据（名称等描述性信息，不含模板内容）。
-     * <p>默认实现返回 null 表示不支持，只读 provider（如 classpath）无需重写。
-     * <p>模板内容（XML）的修改必须走 saveReport（设计器保存链路），
-     * 实现方不得在本方法中更新模板内容字段。
+     * 更新报表元数据（名称等描述性信息，不含模板内容）。默认实现返回 null 表示不支持，只读 provider（如 classpath）无需重写。模板内容（XML）的修改必须走 saveReport（设计器保存链路），实现方不得在本方法中更新模板内容字段。
      *
      * @param reportPath 报表唯一路径（带 provider 前缀）
      * @param title      新的报表展示名称

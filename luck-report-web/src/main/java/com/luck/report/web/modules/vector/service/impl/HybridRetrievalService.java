@@ -25,7 +25,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 双路召回 + RRF + 可选 Rerank。学 Dify：hybrid 时向量阈值置 0；学 FastGPT：加权 RRF。
+ * 双路召回 + RRF + 可选 Rerank。学 Dify
  */
 @Service("bean.hybridRetrievalService")
 public class HybridRetrievalService {

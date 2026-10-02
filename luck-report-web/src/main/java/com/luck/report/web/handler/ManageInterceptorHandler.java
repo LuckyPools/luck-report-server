@@ -19,16 +19,13 @@ public class ManageInterceptorHandler {
     }
 
     public boolean preHandle(ApiRequest apiReq) {
-        // 1. 总开关关闭时跳过
         if (tokenProperties == null || !tokenProperties.isEnabled()) {
             return true;
         }
 
-        // 2. 获取用户角色
         List<String> userRoles = tokenService.getCurrentUserRoles(apiReq);
         List<String> adminRoles = tokenProperties.getAdminRoles();
 
-        // 3. 校验是否为管理员
         boolean isAdmin = userRoles != null && adminRoles != null && !adminRoles.isEmpty()
                 && userRoles.stream().anyMatch(adminRoles::contains);
 

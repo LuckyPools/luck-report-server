@@ -140,8 +140,8 @@ public class HeaderFooterBuilder {
     }
 
     /**
-     * 将报表表达式转换为占位符
-     * 例如: "第"+page()+"页,共"+pages()+"页" -> "第$[PAGE]页,共$[PAGES]页"
+     * 将报表表达式转换为占位符；例如: "第"+page()+"页,共"+pages()+"页" -> "第$[PAGE]页,共$[PAGES]页"
+     *
      * @param content 原始内容
      * @return 转换后的内容
      */

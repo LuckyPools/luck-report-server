@@ -24,15 +24,13 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.List;
 
 /**
- * 冻结行列锚点解析工具
- * 将 Paper 上配置的"锚点单元格名"解析为物理行/列号，供 HTML/Excel 渲染冻结使用
- * 优先从展开后的 cellsMap 查找（支持展开后计算），找不到时 fallback 从锚点名直接解析行列号
+ * 冻结行列锚点解析工具；将 Paper 上配置的"锚点单元格名"解析为物理行/列号，供 HTML/Excel 渲染冻结使用；优先从展开后的 cellsMap 查找（支持展开后计算），找不到时 fallback 从锚点名直接解析行列号
  */
 public class FreezeUtils {
 
     /**
-     * 根据冻结行锚点单元格名，解析其物理行号（即冻结前 N 行的 N）
-     * 优先从 cellsMap 查找（支持展开后计算），找不到时 fallback 从锚点名直接解析行号
+     * 根据冻结行锚点单元格名，解析其物理行号（即冻结前 N 行的 N）；优先从 cellsMap 查找（支持展开后计算），找不到时 fallback 从锚点名直接解析行号
+     *
      * @param report 展开后的报表对象，不可空
      * @param freezeRowCellName 冻结行锚点单元格名，可空（空返回0）
      * @return 冻结行数（1-based 行号）；锚点为空返回0
@@ -41,10 +39,8 @@ public class FreezeUtils {
         if (StringUtils.isBlank(freezeRowCellName)) {
             return 0;
         }
-        // 优先从展开后的 cellsMap 查找锚点单元格
         List<Cell> cells = report.getCellsMap().get(freezeRowCellName);
         if (cells != null && !cells.isEmpty()) {
-            // 展开后同名单元格可能有多个实例（向下展开），取 rowNumber 最小者作为冻结边界
             int minRowNumber = Integer.MAX_VALUE;
             for (Cell cell : cells) {
                 int rowNumber = cell.getRow().getRowNumber();
@@ -54,13 +50,12 @@ public class FreezeUtils {
             }
             return minRowNumber;
         }
-        // cellsMap 中找不到锚点单元格（可能被合并/删除），从锚点名直接解析行号
         return parseRowFromCellName(freezeRowCellName);
     }
 
     /**
-     * 根据冻结列锚点单元格名，解析其物理列号（即冻结前 N 列的 N）
-     * 优先从 cellsMap 查找（支持展开后计算），找不到时 fallback 从锚点名直接解析列号
+     * 根据冻结列锚点单元格名，解析其物理列号（即冻结前 N 列的 N）；优先从 cellsMap 查找（支持展开后计算），找不到时 fallback 从锚点名直接解析列号
+     *
      * @param report 展开后的报表对象，不可空
      * @param freezeColCellName 冻结列锚点单元格名，可空（空返回0）
      * @return 冻结列数（1-based 列号）；锚点为空返回0
@@ -69,10 +64,8 @@ public class FreezeUtils {
         if (StringUtils.isBlank(freezeColCellName)) {
             return 0;
         }
-        // 优先从展开后的 cellsMap 查找锚点单元格
         List<Cell> cells = report.getCellsMap().get(freezeColCellName);
         if (cells != null && !cells.isEmpty()) {
-            // 展开后同名单元格可能有多个实例（向右展开），取 columnNumber 最小者作为冻结边界
             int minColNumber = Integer.MAX_VALUE;
             for (Cell cell : cells) {
                 int colNumber = cell.getColumn().getColumnNumber();
@@ -82,7 +75,6 @@ public class FreezeUtils {
             }
             return minColNumber;
         }
-        // cellsMap 中找不到锚点单元格（可能被合并/删除），从锚点名直接解析列号
         return parseColFromCellName(freezeColCellName);
     }
 
@@ -100,7 +92,6 @@ public class FreezeUtils {
         int limit = Math.min(physicalCount, rows.size());
         for (int i = 0; i < limit; i++) {
             Row row = rows.get(i);
-            // 遇到 forPaging 行终止，与 Excel 导出遍历的 return 语义保持一致
             if (row.isForPaging()) {
                 break;
             }

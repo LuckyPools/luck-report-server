@@ -10,8 +10,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Redis 缓存服务实现，基于 Spring Data Redis 提供分布式缓存能力。
- * 由 RedisCacheConfiguration 自动装配，CacheUtils 在运行时选取首个非 disabled 的 ReportCache 实例。
+ * Redis 缓存服务实现
  *
  * @author luckyPools
  * @since 2017年3月8日
@@ -22,9 +21,6 @@ public class RedisCache implements ReportCache {
 
     private final RedisTemplate<String, Object> redisTemplate;
 
-    /**
-     * 默认过期时间，单位：秒
-     */
     private long defaultExpireSeconds = DEFAULT_EXPIRE_SECONDS;
 
     /**
@@ -58,7 +54,6 @@ public class RedisCache implements ReportCache {
                 connection.ping();
                 return false;
             } finally {
-                // 归还连接到连接池，避免连接泄漏
                 connection.close();
             }
         } catch (Exception e) {

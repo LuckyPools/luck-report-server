@@ -11,29 +11,23 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * JSON 工具类
- * <p>
- * 封装 Jackson ObjectMapper 的常用操作，内部维护单例 MAPPER 复用，
- * 参照既有 JsonFunction / DatasourceService 的 ObjectMapper 使用模式收敛至此。
- * </p>
+ * JSON 工具类；封装 Jackson ObjectMapper 的常用操作，内部维护单例 MAPPER 复用，参照既有 JsonFunction / DatasourceService 的 ObjectMapper 使用模式收敛至此。
  *
  * @author luck-report
  * @since 2.0.5
  */
 public final class JsonUtils {
 
-    /** Jackson ObjectMapper 单例（线程安全） */
+    /**
+     * Jackson ObjectMapper 单例（线程安全）
+     */
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private JsonUtils() {
-        // 私有构造器，防止实例化
     }
 
     /**
-     * 将 JSON 数组字符串反序列化为 List<Map>
-     * <p>
-     * 用于静态数据集取数：把 dataset.content 解析为 List<Map<String,Object>> 供 Dataset 使用
-     * </p>
+     * 将 JSON 数组字符串反序列化为 List<Map>；用于静态数据集取数：把 dataset.content 解析为 List<Map<String,Object>> 供 Dataset 使用
      *
      * @param json JSON 数组字符串，可为空
      * @return 反序列化后的 List；入参为空时返回空 List
@@ -52,10 +46,7 @@ public final class JsonUtils {
     }
 
     /**
-     * 提取 JSON 数组中所有对象的 key 集合
-     * <p>
-     * 用于静态数据集字段提取：遍历所有对象 key，用 LinkedHashSet 去重并保持首次出现顺序
-     * </p>
+     * 提取 JSON 数组中所有对象的 key 集合；用于静态数据集字段提取：遍历所有对象 key，用 LinkedHashSet 去重并保持首次出现顺序
      *
      * @param json JSON 数组字符串，可为空
      * @return 去重后的 key 列表；入参为空或解析失败时返回空 List
@@ -67,7 +58,6 @@ public final class JsonUtils {
         try {
             List<Map<String, Object>> list = MAPPER.readValue(json, new TypeReference<List<Map<String, Object>>>() {
             });
-            // LinkedHashSet 保持首次出现顺序，避免不同对象 key 顺序不一致导致字段顺序抖动
             Set<String> keySet = new LinkedHashSet<>();
             for (Map<String, Object> map : list) {
                 if (map != null) {
@@ -76,7 +66,6 @@ public final class JsonUtils {
             }
             return new ArrayList<>(keySet);
         } catch (Exception e) {
-            // 字段提取失败不影响取数流程，返回空列表由上层处理
             return new ArrayList<>();
         }
     }

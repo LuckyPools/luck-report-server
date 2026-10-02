@@ -10,19 +10,13 @@ import java.util.regex.Pattern;
 
 /**
  * 句子分块器
- * 移植自 data-agent 的 SentenceSplitter，适配为独立 TextSplitter 实现
- * 按句子边界切分，支持重叠和巨型句子拆分
  *
  * @author luck
  */
 public class SentenceTextSplitter implements TextSplitter {
 
     /**
-     * 正则说明：
-     * 1. ([^。！？；.!?;\n]+) : 非分隔符内容
-     * 2. (?:[。！？；.!?;]|\n+) : 分隔符（标点或换行）
-     * 3. ["'）\)\]]* : 可能跟随的后引号/括号
-     * 4. \s* : 尾随空白
+     * 句子切分正则
      */
     private static final Pattern SENTENCE_PATTERN = Pattern
             .compile("([^。！？；.!?;\\n]+(?:[。！？；.!?;]|\\n+)[\"'）\\)\\]]*\\s*)");
@@ -62,7 +56,6 @@ public class SentenceTextSplitter implements TextSplitter {
         for (String sentence : sentences) {
             int sentenceLen = sentence.length();
 
-            // 处理巨型句子（单句本身超长）
             if (sentenceLen > this.chunkSize) {
                 if (!currentChunk.isEmpty()) {
                     result.add(joinSentences(currentChunk));
@@ -83,7 +76,6 @@ public class SentenceTextSplitter implements TextSplitter {
                 continue;
             }
 
-            // 普通句子处理
             if (currentSize + sentenceLen > this.chunkSize && !currentChunk.isEmpty()) {
                 result.add(joinSentences(currentChunk));
                 handleOverlap(currentChunk);

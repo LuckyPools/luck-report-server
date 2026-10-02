@@ -7,7 +7,6 @@ import java.io.IOException;
 
 /**
  * 知识库文档解析器
- * 将上传文件抽取为纯文本，再交给 {@link TextSplitter} 切分
  *
  * @author luck
  */

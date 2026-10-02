@@ -13,9 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 默认内置参数提供者：提供用户身份相关参数。
- * <p>使用 @Order(Ordered.HIGHEST_PRECEDENCE) 保证最先执行，
- * 第三方 Provider 可用更低优先级覆盖同名参数。
+ * 默认内置参数提供者
  *
  * @author luck-report
  * @since 2.2.0

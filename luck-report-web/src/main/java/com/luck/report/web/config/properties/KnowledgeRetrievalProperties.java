@@ -4,67 +4,99 @@ import com.luck.report.infra.modules.vector.domain.enums.RetrievalMethod;
 
 /**
  * 知识库 RAG 检索参数配置（Phase 1）
- * <p>前缀：{@code luck-report.vector.retrieval}（由 {@link com.luck.report.web.config.KnowledgeChunkConfiguration} 绑定）。
  *
  * @author luck
  */
 public class KnowledgeRetrievalProperties {
 
-    /** 向量初筛条数（裁剪前），默认 30 */
+    /**
+     * 向量初筛条数（裁剪前），默认 30
+     */
     private int recallTopK = 30;
 
-    /** 同知识最多保留的高分 chunk 数（分条返回），默认 3 */
+    /**
+     * 同知识最多保留的高分 chunk 数（分条返回），默认 3
+     */
     private int mergeTopN = 3;
 
-    /** 最多保留的知识条数（按知识最高分），默认 5；展开后条数 ≤ finalTopK × mergeTopN */
+    /**
+     * 最多保留的知识条数（按知识最高分），默认 5；展开后条数 ≤ finalTopK × mergeTopN
+     */
     private int finalTopK = 5;
 
-    /** 余弦相似度阈值，默认 0.35（宽召回） */
+    /**
+     * 余弦相似度阈值，默认 0.35（宽召回）
+     */
     private double threshold = 0.35;
 
-    /** MySQL 整篇兜底 content 最大字符数 */
+    /**
+     * MySQL 整篇兜底 content 最大字符数
+     */
     private int fallbackContentMaxChars = 4000;
 
-    /** 合并后单条 content 硬上限 */
+    /**
+     * 合并后单条 content 硬上限
+     */
     private int mergedContentMaxChars = 6000;
 
     /**
      * 创建知识时若 modelId 与默认嵌入模型不一致是否直接拒绝。
-     * false：仅打告警日志（Phase 1 默认）
      */
     private boolean rejectMismatchedModel = false;
 
-    /** semantic | full_text | hybrid，默认 semantic 兼容现网 */
+    /**
+     * semantic | full_text | hybrid，默认 semantic 兼容现网
+     */
     private String method = "semantic";
 
-    /** 混合时向量路召回条数，默认 40 */
+    /**
+     * 混合时向量路召回条数，默认 40
+     */
     private int vectorRecallTopK = 40;
 
-    /** 混合时全文路召回条数，默认 40 */
+    /**
+     * 混合时全文路召回条数，默认 40
+     */
     private int fulltextRecallTopK = 40;
 
-    /** 加权 RRF 向量权重，默认 0.5（对齐 FastGPT embeddingWeight） */
+    /**
+     * 加权 RRF 向量权重，默认 0.5（对齐 FastGPT embeddingWeight）
+     */
     private double embeddingWeight = 0.5;
 
-    /** RRF 常数 k，默认 60 */
+    /**
+     * RRF 常数 k，默认 60
+     */
     private int rrfK = 60;
 
-    /** 融合后进入 Rerank / 截断前的候选上限 */
+    /**
+     * 融合后进入 Rerank / 截断前的候选上限
+     */
     private int fusionTopN = 20;
 
-    /** 精排总开关；需同时存在激活的 RERANK 模型才会 HTTP 精排 */
+    /**
+     * 精排总开关；需同时存在激活的 RERANK 模型才会 HTTP 精排
+     */
     private boolean rerankEnabled = true;
 
-    /** Rerank 后（或未开 Rerank 时融合后）保留条数，默认 3 */
+    /**
+     * Rerank 后（或未开 Rerank 时融合后）保留条数，默认 3
+     */
     private int rerankTopN = 3;
 
-    /** 精排结果与原 RRF 再融合时精排侧权重（FastGPT rerankWeight），默认 0.5 */
+    /**
+     * 精排结果与原 RRF 再融合时精排侧权重（FastGPT rerankWeight），默认 0.5
+     */
     private double rerankWeight = 0.5;
 
-    /** Rerank HTTP 超时毫秒 */
+    /**
+     * Rerank HTTP 超时毫秒
+     */
     private int rerankTimeoutMs = 10000;
 
-    /** 送入 Rerank 的单条 content 最大字符数 */
+    /**
+     * 送入 Rerank 的单条 content 最大字符数
+     */
     private int rerankDocMaxChars = 2000;
 
     public int getRecallTopK() {

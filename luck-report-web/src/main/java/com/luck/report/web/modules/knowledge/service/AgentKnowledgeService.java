@@ -14,7 +14,6 @@ import java.util.List;
 
 /**
  * 智能体知识服务接口
- * 提供智能体知识的增删改查和向量化管理功能
  *
  * @author luck
  */
@@ -92,7 +91,6 @@ public interface AgentKnowledgeService {
 
     /**
      * 根据ID列表批量查询智能体知识实体
-     * 用于向量检索结果回填原文内容
      *
      * @param ids 智能体知识ID列表
      * @return 智能体知识实体列表
@@ -101,7 +99,6 @@ public interface AgentKnowledgeService {
 
     /**
      * 查询所有已生效且向量化完成的智能体知识ID列表
-     * 用于向量检索时动态过滤（is_enabled=1 且 embedding_status=COMPLETED）
      *
      * @return 已生效的智能体知识ID列表
      */
@@ -109,7 +106,6 @@ public interface AgentKnowledgeService {
 
     /**
      * 回填智能体知识原文内容
-     * 同一知识保留 Top-N 分块，分条返回（各块保留自身 score），由前端负责拼接注入 LLM
      *
      * @param results 向量检索结果列表
      */

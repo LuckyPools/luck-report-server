@@ -8,8 +8,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 
 /**
- * 报表系统自动配置类（Spring Boot 2）
- * 业务系统集成 luck-report-spring-boot2-starter 时自动加载报表相关配置
+ * 报表系统自动配置（Spring Boot 2）
+ *
  * @author luck
  */
 @Configuration

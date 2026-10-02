@@ -17,7 +17,6 @@ package com.luck.report.core.build;
 
 import java.util.List;
 
-
 /**
  * @author Jacky.gao
  * @since 2016年11月1日

@@ -12,9 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 /**
- * javax.servlet（Spring Boot 2.x）适配器 SPI 实现。
- * <p>通过 {@link RequestContextHolder} 获取当前线程绑定的 request / response，
- * 并包装为 {@link ApiRequest} / {@link ApiResponse}。
+ * javax.servlet（Spring Boot 2.x）适配器 SPI 实现
  *
  * @author luck-report
  * @since 2.0.0

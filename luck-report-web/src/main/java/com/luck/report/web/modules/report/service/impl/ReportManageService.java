@@ -33,7 +33,6 @@ import com.luck.report.core.exception.ReportBizException;
 
 /**
  * 报表管理服务，负责报表的查询与删除等管理类业务。
- * <p>Bean 名：{@code bean.reportManageService}，避免与第三方系统 Bean 冲突。
  *
  * @author luck-report
  * @since 1.0.0
@@ -43,12 +42,13 @@ public class ReportManageService implements ApplicationContextAware {
 
     private static final Logger logger = LoggerFactory.getLogger(ReportManageService.class);
 
-    /** 系统中所有启用的 ReportProvider 列表。 */
+    /**
+     * 系统中所有启用的 ReportProvider 列表。
+     */
     private final List<ReportProvider> reportProviders = new ArrayList<>();
 
     /**
      * 分页查询报表列表。
-     * <p>过滤与分页下沉到 {@link ReportProvider#pageReportFiles(int, int, Map)}，避免在调用方拉取全量数据。
      *
      * @param queryDTO 查询条件
      * @return 分页结果
@@ -66,7 +66,6 @@ public class ReportManageService implements ApplicationContextAware {
                 return PageResultVO.error("Report provider not found");
             }
 
-            // 透传给 Provider 的参数：路径、名称模糊匹配、是否包含目录项
             Map<String, Object> params = new HashMap<>(4);
             if (directory != null && !directory.isEmpty()) {
                 params.put("path", directory);
@@ -74,7 +73,6 @@ public class ReportManageService implements ApplicationContextAware {
             if (reportName != null && !reportName.isEmpty()) {
                 params.put("name", reportName);
             }
-            // 管理列表场景下不展示目录项，仅展示报表文件
             params.put("includeDirectory", Boolean.FALSE);
 
             ReportFilePage result = targetProvider.pageReportFiles(pageNum, pageSize, params);
@@ -98,7 +96,6 @@ public class ReportManageService implements ApplicationContextAware {
                 return ResultVO.error(400, "Report file path cannot be empty");
             }
 
-            // 根据 file 的 prefix 找到对应的 ReportProvider
             ReportProvider targetProvider = null;
             String providerPrefix = null;
             for (ReportProvider provider : reportProviders) {
@@ -113,7 +110,6 @@ public class ReportManageService implements ApplicationContextAware {
                 return ResultVO.error(400, "Report provider not found");
             }
 
-            // 从 file 中提取实际的文件路径
             String actualPath = file.substring(providerPrefix.length());
             String correctPath = file;
 
@@ -137,9 +133,7 @@ public class ReportManageService implements ApplicationContextAware {
     }
 
     /**
-     * 导入报表模板。按 XML reportId 识别：已存在且未确认返回 409；确认后覆盖模板并保留标题；
-     * 不存在则按该 id 新建；无 reportId 则按文件名新建。
-     * 导入前可按 {@link ReportImportType} 做旧版结构转换。
+     * 导入报表模板。按 XML reportId 识别
      */
     public ResultVO<ReportFile> importTemplate(String providerPrefix, String fileName, String content,
                                                boolean confirmOverwrite, ReportImportType importType) {
@@ -226,7 +220,7 @@ public class ReportManageService implements ApplicationContextAware {
     }
 
     /**
-     * 方法说明：按导入类型对 XML 做结构转换
+     * 按导入类型转换报表 XML
      *
      * @param content 原始 XML
      * @param importType 导入类型，非空
@@ -245,8 +239,7 @@ public class ReportManageService implements ApplicationContextAware {
     }
 
     /**
-     * 导出报表：根据完整文件路径读取源文件内容（XML），并返回文件名与字节内容，
-     * 供前端下载。
+     * 导出报表
      *
      * @param reportPath 报表完整路径（带 provider 前缀），如 file:xxx.ureport.xml / db:123
      * @return 包含下载文件名与字节内容的结果
@@ -263,7 +256,6 @@ public class ReportManageService implements ApplicationContextAware {
             } catch (Exception e) {
                 return ResultVO.error(404, "Report provider not found: " + reportPath);
             }
-            // 优先用 ReportFile.getName() 作为下载文件名（已自动补 .ureport.xml 后缀）
             String downloadName;
             try {
                 ReportFile rf = provider.getReportFile(reportPath);
@@ -307,7 +299,9 @@ public class ReportManageService implements ApplicationContextAware {
         }
     }
 
-    /** 按完整路径取报表元数据（不含模板 XML） */
+    /**
+     * 按完整路径取报表元数据（不含模板 XML）
+     */
     public ResultVO<ReportFile> getReport(String file) {
         try {
             if (file == null || file.trim().isEmpty()) {
@@ -333,8 +327,6 @@ public class ReportManageService implements ApplicationContextAware {
 
     /**
      * 更新报表元数据（名称等描述性信息）。
-     * <p>仅更新元数据字段，模板内容（XML）不在本接口的可更新范围内；
-     * 模板内容修改必须走设计器保存链路（saveReport）。
      *
      * @param updateDTO 更新参数（file + title，title 已通过 Bean Validation 校验）
      * @return 更新后的 ReportFile；provider 不支持元数据更新时返回错误码
@@ -359,7 +351,6 @@ public class ReportManageService implements ApplicationContextAware {
                 return ResultVO.error(404, "Report provider not found: " + file);
             }
 
-            // 模板内容字段不透传给 provider，从入口防范模板被篡改
             ReportFile updated = provider.updateReport(file, title);
             if (updated == null) {
                 return ResultVO.error(400, "Current report provider does not support updating report metadata");
@@ -402,7 +393,6 @@ public class ReportManageService implements ApplicationContextAware {
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        // 防止重复初始化
         if (!reportProviders.isEmpty()) {
             return;
         }
@@ -416,7 +406,7 @@ public class ReportManageService implements ApplicationContextAware {
     }
 
     /**
-     * 暴露给同包或同模块的内部辅助：获取当前已注入的 provider 列表副本。
+     * 暴露给同包或同模块的内部辅助
      */
     public List<ReportProvider> getReportProviders() {
         return Collections.unmodifiableList(reportProviders);

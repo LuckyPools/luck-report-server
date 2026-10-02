@@ -17,7 +17,6 @@ public class ReportCacheConfiguration {
 
     /**
      * 配置 LocalCacheService Bean
-     * 用于在本地缓存报表数据
      *
      * @param disableLocalReportCache 是否禁用本地报表缓存
      * @return HttpSessionReportCache实例
@@ -34,7 +33,6 @@ public class ReportCacheConfiguration {
 
     /**
      * 配置 ReportCacheKeyResolver Bean
-     * 使用session会话生成缓存键前缀，隔离用户数据
      *
      * @param disableSessionCacheKeyResolver 是否禁用session缓存键生成器
      * @return HttpSessionReportCache实例

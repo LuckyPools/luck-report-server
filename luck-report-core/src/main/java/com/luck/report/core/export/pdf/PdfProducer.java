@@ -219,7 +219,6 @@ public class PdfProducer implements Producer {
         }
     }
 
-
     private int buildCellHeight(Cell cell, List<Row> rows) {
         int height = cell.getRow().getRealHeight();
         int rowSpan = cell.getPageRowSpan();
@@ -230,7 +229,6 @@ public class PdfProducer implements Producer {
                 height += rows.get(i).getRealHeight();
             }
         }
-        // 行高与 HTML（height: Npt）、纸张边距同为 pt，不可再 pixelToPoint
         return height;
     }
 
@@ -396,8 +394,7 @@ public class PdfProducer implements Producer {
     }
 
     /**
-     * 判断当前报表是否包含悬浮元素（图片或文本）。
-     * 仅当存在非空列表时返回 true，避免对旧报表产生任何影响。
+     * 判断当前报表是否包含悬浮元素（图片或文本）。仅当存在非空列表时返回 true，避免对旧报表产生任何影响。
      */
     private boolean hasFloatElements(Report report) {
         List<FloatImage> floatImages = report.getFloatImages();
@@ -408,8 +405,7 @@ public class PdfProducer implements Producer {
     }
 
     /**
-     * 将悬浮图片解析为输入流，支持 base64 与 URL（text）两种来源。
-     * 对 URL 图片使用 {@link ImageUtils#getImageBase64Data}，有 image-not-exist 兜底机制。
+     * 将悬浮图片解析为输入流，支持 base64 与 URL（text）两种来源。对 URL 图片使用 {@link ImageUtils#getImageBase64Data}，有 image-not-exist 兜底机制。
      */
     private InputStream buildFloatImageInputStream(FloatImage fi) {
         Source source = fi.getSource();
@@ -424,14 +420,12 @@ public class PdfProducer implements Producer {
                 return null;
             }
         }
-        // source=text（URL）：通过 ImageProvider SPI 加载，有 image-not-exist 兜底
         try {
             String base64Data = ImageUtils.getImageBase64Data(ImageType.image, value, 0, 0);
             if (StringUtils.isNotBlank(base64Data)) {
                 return ImageUtils.base64DataToInputStream(base64Data);
             }
         } catch (Exception e) {
-            // ignore
         }
         return null;
     }
@@ -439,8 +433,7 @@ public class PdfProducer implements Producer {
     private static final Logger log = Logger.getLogger(PdfProducer.class.getName());
 
     /**
-     * 在当前 PDF 页面上绘制悬浮元素。
-     * top/left 为页内相对坐标（相对每页内容区左上角），repeatPrint=true 每页渲染，repeatPrint=false 仅第1页。
+     * 在当前 PDF 页面上绘制悬浮元素。top/left 为页内相对坐标（相对每页内容区左上角），repeatPrint=true 每页渲染，repeatPrint=false 仅第1页。
      *
      * @param writer            PdfWriter
      * @param report            报表对象
@@ -472,7 +465,6 @@ public class PdfProducer implements Producer {
                 }
             }
         }
-        // 按 layer 升序绘制（值越大越靠上，后绘制覆盖先绘制）
         elements.sort((a, b) -> {
             int za = a.getLayer() == null ? 0 : a.getLayer();
             int zb = b.getLayer() == null ? 0 : b.getLayer();
@@ -506,7 +498,6 @@ public class PdfProducer implements Producer {
                     FloatImage fi = (FloatImage) el;
                     float widthPt = elWidth != null ? UnitUtils.pixelToPoint(elWidth.intValue()) : 0;
                     float heightPt = elHeight != null ? UnitUtils.pixelToPoint(elHeight.intValue()) : 0;
-                    // 使用缓存避免重复下载/解码同一图片
                     String cacheKey = fi.getName() != null ? fi.getName() : String.valueOf(System.identityHashCode(fi));
                     byte[] bytes = imageDataCache != null ? imageDataCache.get(cacheKey) : null;
                     if (bytes == null) {
@@ -536,7 +527,6 @@ public class PdfProducer implements Producer {
                         pdfImg.setAbsolutePosition(x, y);
                         cb.addImage(pdfImg);
                     } catch (Exception e) {
-                        // 诊断：输出 value 开头与解码后字节魔数，定位是 Data URI 前缀未剥还是格式不支持
                         String valPreview = fi.buildValue();
                         String valHead = valPreview != null && valPreview.length() > 60
                                 ? valPreview.substring(0, 60) : valPreview;
@@ -570,7 +560,6 @@ public class PdfProducer implements Producer {
                     float urx = x + (widthPt > 0 ? widthPt : 200);
                     float ury = y + heightPt;
 
-                    // 背景颜色：在文本区域绘制填充矩形
                     String bgcolor = ft.getBgcolor();
                     if (StringUtils.isNotEmpty(bgcolor)) {
                         String[] bgColors = bgcolor.split(",");
@@ -587,13 +576,11 @@ public class PdfProducer implements Producer {
                         }
                     }
 
-                    // 边框：四边独立绘制
                     drawPdfBorder(cb, ft.getTopBorder(), x, ury, urx, ury);
                     drawPdfBorder(cb, ft.getBottomBorder(), x, y, urx, y);
                     drawPdfBorder(cb, ft.getLeftBorder(), x, y, x, ury);
                     drawPdfBorder(cb, ft.getRightBorder(), urx, y, urx, ury);
 
-                    // 水平对齐
                     int align = Element.ALIGN_LEFT;
                     if (ft.getAlign() != null) {
                         String a = ft.getAlign();
@@ -604,14 +591,11 @@ public class PdfProducer implements Producer {
                         }
                     }
 
-                    // 垂直对齐：通过调整文本区域顶部 y 坐标实现
-                    // ColumnText 从 top 往下绘制文本，调整 top 即可控制垂直位置
                     String value = ft.getValue();
                     Phrase phrase = new Phrase(value != null ? value : "", font);
                     float availableHeight = ury - y;
                     float columnTop = ury; // 默认 top 对齐：文本从顶部开始
                     if (ft.getValign() != null && !"top".equals(ft.getValign())) {
-                        // 测量文本高度
                         float textHeight = fontSizePt;
                         ColumnText simCt = new ColumnText(cb);
                         simCt.setSimpleColumn(phrase, x, 0, urx, 10000f, fontSizePt, align);

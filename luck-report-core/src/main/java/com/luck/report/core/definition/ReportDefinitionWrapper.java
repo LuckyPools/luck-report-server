@@ -14,8 +14,7 @@ public class ReportDefinitionWrapper implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 是否已构建父子引用关系
-     * 注意：此字段没有 getter/setter，JSON 序列化时会被忽略
+     * 是否已构建父子引用关系；注意：此字段没有 getter/setter，JSON 序列化时会被忽略
      */
     private boolean built;
 

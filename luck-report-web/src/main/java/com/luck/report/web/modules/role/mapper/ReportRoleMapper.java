@@ -7,7 +7,6 @@ import java.util.List;
 
 /**
  * 角色 × 报表 绑定关系 Mapper。
- * <p>SQL 定义在 resources/luck-report/sql/{dbType}/ReportRoleMapper.xml 中，支持多数据库方言。
  *
  * @author luck-report
  * @since 1.2.0
@@ -42,7 +41,6 @@ public interface ReportRoleMapper {
 
     /**
      * 物理删除某角色在指定 provider 前缀下的全部绑定。
-     * <p>reportPath 走 LIKE 'providerPrefix%'，用于穿梭框保存时"按 provider 覆盖"。
      *
      * @param roleCode       角色编码
      * @param providerPrefix provider 前缀（含冒号），如 'file:' / 'db:'
@@ -71,8 +69,6 @@ public interface ReportRoleMapper {
 
     /**
      * 某角色的全部绑定数（含 '*'）。
-     * <p>与 {@link #countAllBindingByRole} 配合可计算 bindingCount（不含 '*'）：
-     * <pre>bindingCount = countBindingsByRole - countAllBindingByRole</pre>
      *
      * @param roleCode 角色编码
      * @return 命中数

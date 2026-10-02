@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 
 /**
  * 模型配置数据服务实现类
- * 提供模型配置的基础CRUD操作实现
  *
  * @author luck
  */
@@ -35,19 +34,29 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class ModelConfigDataServiceImpl implements ModelConfigDataService {
 
-    /** 缓存键前缀：模型配置 */
+    /**
+     * 缓存键前缀：模型配置
+     */
     private static final String MODEL_CONFIG_PREFIX = "luck-report:model-config:";
 
-    /** 缓存键：所有激活的对话模型列表 */
+    /**
+     * 缓存键：所有激活的对话模型列表
+     */
     private static final String ACTIVE_CHAT_MODELS_KEY = MODEL_CONFIG_PREFIX + "enabled-chat-models";
 
-    /** 缓存键：所有激活的嵌入模型列表 */
+    /**
+     * 缓存键：所有激活的嵌入模型列表
+     */
     private static final String ACTIVE_EMBEDDING_MODELS_KEY = MODEL_CONFIG_PREFIX + "enabled-embedding-models";
 
-    /** 缓存键：所有激活的重排序模型列表 */
+    /**
+     * 缓存键：所有激活的重排序模型列表
+     */
     private static final String ACTIVE_RERANK_MODELS_KEY = MODEL_CONFIG_PREFIX + "enabled-rerank-models";
 
-    /** 缓存键：单个模型配置（后缀为模型ID） */
+    /**
+     * 缓存键：单个模型配置（后缀为模型ID）
+     */
     private static final String MODEL_BY_ID_PREFIX = MODEL_CONFIG_PREFIX + "id:";
 
     @Qualifier("bean.modelConfigMapper")
@@ -55,7 +64,6 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
 
     /**
      * 清除所有模型配置相关的缓存
-     * 当模型配置发生变更时调用，清空所有模型配置缓存
      */
     private void clearModelConfigCache() {
         Set<String> keys = CacheUtils.keys(MODEL_CONFIG_PREFIX);
@@ -78,7 +86,6 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
 
     /**
      * 启用模型配置
-     * 将指定ID的配置设置为启用状态，不禁用同类型的其他配置
      *
      * @param id 要启用的配置ID
      */
@@ -90,21 +97,17 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
             throw new ReportBizException("error.model.configNotFound");
         }
 
-        // 启用当前配置
         entity.setEnabled(true);
         entity.setUpdateTime(LocalDateTime.now());
         entity.setUpdateBy(SecurityUtils.getCurrentUserId());
         modelConfigMapper.updateById(entity);
 
-        // 清空模型配置缓存
         clearModelConfigCache();
         log.info("已启用模型配置: id={}, modelName={}", id, entity.getModelName());
     }
 
     /**
      * 禁用模型配置
-     * 将指定ID的配置设置为禁用状态
-     * 如果该类型只有一个启用的模型，则不允许禁用，至少保留一个可用模型
      *
      * @param id 要禁用的配置ID
      * @throws RuntimeException 当该类型只有一个启用的模型时抛出
@@ -117,7 +120,6 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
             throw new ReportBizException("error.model.configNotFound");
         }
 
-        // 对话/嵌入至少保留一个启用；重排序为可选能力，允许全部禁用
         if (entity.getModelType() != ModelType.RERANK) {
             int enabledCount = modelConfigMapper.countEnabledByType(entity.getModelType().getCode());
             if (enabledCount <= 1 && Boolean.TRUE.equals(entity.getEnabled())) {
@@ -125,13 +127,11 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
             }
         }
 
-        // 禁用当前配置
         entity.setEnabled(false);
         entity.setUpdateTime(LocalDateTime.now());
         entity.setUpdateBy(SecurityUtils.getCurrentUserId());
         modelConfigMapper.updateById(entity);
 
-        // 清空模型配置缓存
         clearModelConfigCache();
         log.info("已禁用模型配置: id={}, modelName={}", id, entity.getModelName());
     }
@@ -146,20 +146,17 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
     public List<ModelConfigDTO> listEnabledConfigsByType(ModelType modelType) {
         String cacheKey = cacheKeyForType(modelType);
 
-        // 先从缓存读取
         List<ModelConfigDTO> cachedList = CacheUtils.get(cacheKey);
         if (cachedList != null) {
             log.debug("从缓存获取启用模型列表: modelType={}", modelType);
             return cachedList;
         }
 
-        // 从数据库查询
         List<ModelConfig> entities = modelConfigMapper.selectEnabledListByType(modelType.getCode());
         List<ModelConfigDTO> dtoList = entities.stream()
                 .map(ModelConfigConverter::toDTO)
                 .collect(Collectors.toList());
 
-        // 存入缓存
         CacheUtils.put(cacheKey, dtoList);
         log.info("从数据库加载启用模型列表并缓存: modelType={}, count={}", modelType, dtoList.size());
 
@@ -206,14 +203,12 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
         entity.setCreateBy(userId);
         entity.setUpdateBy(userId);
         modelConfigMapper.insert(entity);
-        // 清空模型配置缓存
         clearModelConfigCache();
         log.info("新增模型配置: id={}, modelName={}", entity.getId(), dto.getModelName());
     }
 
     /**
      * 清理DTO中的字符串字段
-     * 去除字符串两端的空格
      *
      * @param dto ModelConfigDTO对象
      */
@@ -238,26 +233,21 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
     @Override
     public ModelConfig updateConfigInDb(ModelConfigDTO dto) {
         clean(dto);
-        // 1. 查旧数据
         ModelConfig entity = modelConfigMapper.findById(dto.getId());
         if (entity == null) {
             throw new ReportBizException("error.model.configNotFound");
         }
 
-        // 不准更改模型类型
         if (!entity.getModelType().getCode().equals(dto.getModelType())) {
             throw new ReportBizException("error.model.typeImmutable");
         }
 
-        // 2. 合并字段
         mergeDtoToEntity(dto, entity);
         entity.setUpdateTime(LocalDateTime.now());
         entity.setUpdateBy(SecurityUtils.getCurrentUserId());
 
-        // 3. 更新数据库
         modelConfigMapper.updateById(entity);
 
-        // 清空模型配置缓存
         clearModelConfigCache();
         log.info("更新模型配置: id={}, modelName={}", dto.getId(), dto.getModelName());
 
@@ -286,7 +276,6 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
         oldEntity.setProxyUsername(dto.getProxyUsername());
         oldEntity.setProxyPassword(dto.getProxyPassword());
 
-        // apiKey 为空时不更新（保留原密文）；非空则按明文加密后覆盖
         if (dto.getApiKey() != null && !dto.getApiKey().isEmpty()) {
             oldEntity.setApiKey(SensitiveConfigCipher.encrypt(dto.getApiKey()));
         }
@@ -299,13 +288,11 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
      */
     @Override
     public void deleteConfig(String id) {
-        // 1. 先查询是否存在
         ModelConfig entity = modelConfigMapper.findById(id);
         if (entity == null) {
             throw new ReportBizException("error.model.configNotFound");
         }
 
-        // 2. 如果是激活状态,检查是否是该类型唯一激活的模型
         if (Boolean.TRUE.equals(entity.getEnabled())) {
             int enabledCount = modelConfigMapper.countEnabledByType(entity.getModelType().getCode());
             if (enabledCount <= 1) {
@@ -313,7 +300,6 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
             }
         }
 
-        // 3. 执行删除逻辑
         entity.setDelFlag(1);
         entity.setUpdateTime(LocalDateTime.now());
         entity.setUpdateBy(SecurityUtils.getCurrentUserId());
@@ -322,7 +308,6 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
             throw new ReportBizException("error.model.deleteFailed");
         }
 
-        // 清空模型配置缓存
         clearModelConfigCache();
         log.info("删除模型配置: id={}, modelName={}", id, entity.getModelName());
     }
@@ -341,7 +326,6 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
 
     /**
      * 根据模型类型获取激活的配置
-     * 从激活的模型列表中获取第一个作为默认配置
      *
      * @param modelType 模型类型
      * @return ModelConfigDTO对象,不存在则返回null
@@ -353,14 +337,11 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
             log.warn("未找到类型[{}]的激活模型配置", modelType);
             return null;
         }
-        // 返回第一个激活的配置作为默认配置
         return enabledConfigs.get(0);
     }
 
     /**
      * 根据模型ID获取对话模型配置（带缓存）
-     * 如果未传modelId，则使用默认激活的第一个对话模型
-     * 优先从缓存读取，缓存不存在时从数据库查询并写入缓存
      *
      * @param modelId 模型配置ID，可为null
      * @return Index 对话模型配置
@@ -369,7 +350,6 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
     @Override
     public ModelConfig getChatConfig(String modelId) {
         if (modelId != null) {
-            // 根据ID获取指定模型配置，优先从缓存读取
             String cacheKey = MODEL_BY_ID_PREFIX + modelId;
             ModelConfig cachedConfig = CacheUtils.get(cacheKey, ModelConfig.class);
             if (cachedConfig != null) {
@@ -377,13 +357,11 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
                 return cachedConfig;
             }
 
-            // 缓存不存在，从数据库查询
             ModelConfig config = modelConfigMapper.findById(modelId);
             if (config == null) {
                 throw new ReportBizException("error.model.configNotFoundId", modelId);
             }
 
-            // 写入缓存
             CacheUtils.put(cacheKey, config);
             log.debug("从数据库加载模型配置并缓存: id={}, modelName={}", modelId, config.getModelName());
 
@@ -393,7 +371,6 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
             return config;
         }
 
-        // 未传modelId，获取默认激活的第一个对话模型
         ModelConfigDTO dto = getEnabledConfigByType(ModelType.CHAT);
         if (dto == null) {
             throw new ReportBizException("error.model.noChatModel");

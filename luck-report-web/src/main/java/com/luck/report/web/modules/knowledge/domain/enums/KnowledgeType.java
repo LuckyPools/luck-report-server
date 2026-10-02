@@ -6,20 +6,25 @@ import com.luck.report.core.exception.ReportBizException;
 
 /**
  * 知识类型枚举类
- * 用于标识智能体知识的类型
  *
  * @author luck
  */
 @Getter
 public enum KnowledgeType {
 
-    /** 文档类型 */
+    /**
+     * 文档类型
+     */
     DOCUMENT("DOCUMENT"),
 
-    /** 问答对类型 */
+    /**
+     * 问答对类型
+     */
     QA("QA"),
 
-    /** 常见问题类型 */
+    /**
+     * 常见问题类型
+     */
     FAQ("FAQ");
 
     private final String value;

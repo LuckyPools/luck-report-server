@@ -8,8 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 重复表头/表尾：跟组（正文左父格落在 band 行）vs 整块（每页复制全部展开行）。
- * 供分页扫描单趟复用，避免额外全表遍历。
+ * 重复表头/表尾：跟组（正文左父格落在 band 行）vs 整块（每页复制全部展开行）。供分页扫描单趟复用，避免额外全表遍历。
  */
 public final class RepeatBandPagingSupport {
 
@@ -20,7 +19,9 @@ public final class RepeatBandPagingSupport {
         return findLeftParentBandRow(bodyRow, band) != null;
     }
 
-    /** 正文行左父格链上第一个落在指定 band 的行。 */
+    /**
+     * 正文行左父格链上第一个落在指定 band 的行。
+     */
     public static Row findLeftParentBandRow(Row bodyRow, Band band) {
         if (bodyRow == null || band == null) {
             return null;
@@ -68,8 +69,7 @@ public final class RepeatBandPagingSupport {
     }
 
     /**
-     * 跟组：以本页首条正文的左父 band 行为准；再按模板 rowKey 从该位置往前补齐各槽。
-     * 避免扫描槽位未替换时页顶一直停在第一组。
+     * 跟组：以本页首条正文的左父 band 行为准；再按模板 rowKey 从该位置往前补齐各槽。避免扫描槽位未替换时页顶一直停在第一组。
      */
     public static List<Row> resolveGroupHeaders(List<Row> pageBodyRows, List<Row> templateHeaders,
                                                List<Row> reportRows, List<Row> fallback) {
@@ -87,7 +87,6 @@ public final class RepeatBandPagingSupport {
             }
             return copyRowList(fallback);
         }
-        // 单槽模板：直接用左父所在行，避免 rowKey 未对齐时一直落到第一组
         if (slots.size() == 1 && anchor != null) {
             List<Row> one = new ArrayList<Row>();
             one.add(anchor);

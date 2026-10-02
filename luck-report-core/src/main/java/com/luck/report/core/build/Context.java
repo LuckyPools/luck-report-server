@@ -252,7 +252,6 @@ public class Context {
         return report.getRow(rowNumber);
     }
 
-
     public Column getColumn(int columnNumber) {
         return report.getColumn(columnNumber);
     }
@@ -452,7 +451,9 @@ public class Context {
         return variableMap.get(key);
     }
 
-    /** 同名实例数量变化时返回 null，由调用方重建 */
+    /**
+     * 同名实例数量变化时返回 null，由调用方重建
+     */
     public Map<Cell, Integer> getDataSeqIndexCache(String cellName, int siblingCount) {
         Integer cachedCount = dataSeqSiblingCountCache.get(cellName);
         if (cachedCount == null || cachedCount.intValue() != siblingCount) {
@@ -466,7 +467,9 @@ public class Context {
         dataSeqIndexCache.put(cellName, indexMap);
     }
 
-    /** 同名实例数量变化时返回 null，由调用方重建 */
+    /**
+     * 同名实例数量变化时返回 null，由调用方重建
+     */
     public Map<Cell, Integer> getDataRowIndexCache(String cellName, int siblingCount) {
         Integer cachedCount = dataRowSiblingCountCache.get(cellName);
         if (cachedCount == null || cachedCount.intValue() != siblingCount) {

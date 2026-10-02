@@ -4,19 +4,24 @@ import java.util.Map;
 
 /**
  * 向量文档添加请求 VO
- * 前端或管理端通过此 VO 向向量库添加文档
  *
  * @author luck
  */
 public class VectorAddRequest {
 
-    /** 文本内容 */
+    /**
+     * 文本内容
+     */
     private String content;
 
-    /** 向量类型，如 COMPONENT / TEMPLATE / TABLE / COLUMN / agentKnowledge / businessKnowledge */
+    /**
+     * 向量类型，如 COMPONENT / TEMPLATE / TABLE / COLUMN / agentKnowledge / businessKnowledge
+     */
     private String vectorType;
 
-    /** 元数据 */
+    /**
+     * 元数据
+     */
     private Map<String, Object> metadata;
 
     public String getContent() {

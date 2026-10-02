@@ -5,16 +5,30 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * 向量文档（content + vector + metadata）。
- * metadata 常用键：vectorType、componentType、datasourceId。
+ * 向量文档（content + vector + metadata）
  *
  * @author luck
  */
 public class VectorDocument {
 
+    /**
+     * 文档 ID
+     */
     private String id;
+
+    /**
+     * 文档内容
+     */
     private String content;
+
+    /**
+     * 向量；写入前必须已生成
+     */
     private float[] vector;
+
+    /**
+     * 元数据，常用键：vectorType、componentType、datasourceId
+     */
     private Map<String, Object> metadata;
 
     public VectorDocument(String content, Map<String, Object> metadata) {

@@ -1,6 +1,8 @@
 package com.luck.report.infra.modules.vector.domain.enums;
 
-/** 检索模式：SEMANTIC / FULL_TEXT / HYBRID */
+/**
+ * 检索模式：SEMANTIC / FULL_TEXT / HYBRID
+ */
 public enum RetrievalMethod {
     SEMANTIC,
     FULL_TEXT,

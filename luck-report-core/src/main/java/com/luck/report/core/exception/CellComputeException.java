@@ -30,8 +30,9 @@ public class CellComputeException extends ReportException {
         super(msg);
     }
 
-
-    /** errorArgs 依次对应 {0}、{1} */
+    /**
+     * errorArgs 依次对应 {0}、{1}
+     */
     public CellComputeException(String errorCode, Object... errorArgs) {
         super(errorCode, errorArgs);
     }

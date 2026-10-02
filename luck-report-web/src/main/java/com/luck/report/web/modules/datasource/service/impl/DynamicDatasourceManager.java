@@ -21,8 +21,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 用户数据源管理器
- * 为每个用户配置的数据源维护独立的 HikariCP 连接池，支持动态创建、获取、删除和连接测试
- * 与主数据源（spring.datasource.*）分离，不共享连接池
  *
  * @author luck
  */
@@ -30,7 +28,9 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service("bean.dynamicDatasourceManager")
 public class DynamicDatasourceManager {
 
-    /** 数据源ID -> HikariDataSource 映射 */
+    /**
+     * 数据源ID -> HikariDataSource 映射
+     */
     private final Map<String, HikariDataSource> datasourcePoolMap = new ConcurrentHashMap<>();
 
     private final DatasourceTypeHandlerRegistry handlerRegistry;
@@ -41,8 +41,6 @@ public class DynamicDatasourceManager {
 
     /**
      * 创建数据源连接池
-     * 根据Datasource配置创建HikariDataSource并缓存
-     * 注意：调用方应先调用removeDatasourcePool清理旧连接池
      *
      * @param datasource 数据源实体
      * @return 创建的HikariDataSource
@@ -60,7 +58,6 @@ public class DynamicDatasourceManager {
         config.setMaximumPoolSize(10);
         config.setMinimumIdle(2);
         config.setPoolName("datasource-" + datasource.getId() + "-pool");
-        // 连接超时设置
         config.setConnectionTimeout(10000);
         config.setIdleTimeout(600000);
         config.setMaxLifetime(1800000);
@@ -73,9 +70,6 @@ public class DynamicDatasourceManager {
 
     /**
      * 获取数据源连接池
-     * 如果缓存中没有，则自动创建
-     * 注意：不能使用computeIfAbsent，因为createDatasourcePool内部会调用remove修改同一个map，
-     * ConcurrentHashMap不允许在computeIfAbsent的lambda中修改当前map，会抛RecursiveUpdate异常
      *
      * @param datasource 数据源实体
      * @return HikariDataSource
@@ -85,7 +79,6 @@ public class DynamicDatasourceManager {
         if (existing != null && !existing.isClosed()) {
             return existing;
         }
-        // 先移除已关闭的旧连接池，再创建新的
         removeDatasourcePool(datasource.getId());
         HikariDataSource ds = createDatasourcePool(datasource);
         datasourcePoolMap.put(datasource.getId(), ds);
@@ -104,7 +97,6 @@ public class DynamicDatasourceManager {
 
     /**
      * 删除数据源连接池
-     * 关闭连接池并从缓存中移除
      *
      * @param datasourceId 数据源ID
      */
@@ -118,25 +110,21 @@ public class DynamicDatasourceManager {
 
     /**
      * 测试数据源连接
-     * 尝试获取连接，成功返回true，失败返回false
      *
      * @param datasource 数据源实体
      * @return 连接是否成功
      */
     public boolean testConnection(ReportDatasource datasource) {
-        // 先移除旧连接池，确保使用最新配置测试
         removeDatasourcePool(datasource.getId());
 
         try {
             HikariDataSource ds = createDatasourcePool(datasource);
             try (Connection conn = ds.getConnection()) {
-                // 执行简单查询验证连接可用
                 conn.isValid(5);
                 return true;
             }
         } catch (Exception e) {
             log.warn("数据源连接测试失败: id={}, name={}, error={}", datasource.getId(), datasource.getName(), e.getMessage());
-            // 测试失败后移除连接池
             removeDatasourcePool(datasource.getId());
             return false;
         }
@@ -144,7 +132,6 @@ public class DynamicDatasourceManager {
 
     /**
      * 获取数据源的表列表
-     * 通过JDBC DatabaseMetaData获取
      *
      * @param datasource 数据源实体
      * @return 表名列表
@@ -159,7 +146,6 @@ public class DynamicDatasourceManager {
             DatasourceTypeHandler handler = handlerRegistry.getRequired(datasource.getType());
             String schema = handler.extractSchemaName(datasource);
 
-            // 获取表列表，只取TABLE类型
             try (ResultSet rs = metaData.getTables(datasource.getDatabaseName(), schema, "%", new String[]{"TABLE"})) {
                 while (rs.next()) {
                     String tableName = rs.getString("TABLE_NAME");
@@ -176,7 +162,6 @@ public class DynamicDatasourceManager {
 
     /**
      * 获取表的字段列表
-     * 通过JDBC DatabaseMetaData获取
      *
      * @param datasource 数据源实体
      * @param tableName  表名
@@ -207,7 +192,6 @@ public class DynamicDatasourceManager {
 
     /**
      * 获取表的字段详细信息（含类型和注释）
-     * 用于构建Schema文档存入向量数据库
      *
      * @param datasource 数据源实体
      * @param tableName  表名
@@ -268,7 +252,6 @@ public class DynamicDatasourceManager {
 
     /**
      * 获取表的主键列表
-     * 通过JDBC DatabaseMetaData.getPrimaryKeys获取
      *
      * @param datasource 数据源实体
      * @param tableName  表名
@@ -299,7 +282,6 @@ public class DynamicDatasourceManager {
 
     /**
      * 获取表的物理外键列表
-     * 通过JDBC DatabaseMetaData.getImportedKeys获取
      *
      * @param datasource 数据源实体
      * @return 外键列表，每条格式: "sourceTable.sourceCol=targetTable.targetCol"
@@ -314,7 +296,6 @@ public class DynamicDatasourceManager {
             DatasourceTypeHandler handler = handlerRegistry.getRequired(datasource.getType());
             String schema = handler.extractSchemaName(datasource);
 
-            // 获取所有表
             List<String> tableNames = new ArrayList<>();
             try (ResultSet rs = metaData.getTables(datasource.getDatabaseName(), schema, "%", new String[]{"TABLE"})) {
                 while (rs.next()) {
@@ -325,7 +306,6 @@ public class DynamicDatasourceManager {
                 }
             }
 
-            // 对每张表查询其导入的外键关系
             Set<String> seen = new HashSet<>();
             for (String tableName : tableNames) {
                 try (ResultSet rs = metaData.getImportedKeys(datasource.getDatabaseName(), schema, tableName)) {
@@ -336,7 +316,6 @@ public class DynamicDatasourceManager {
                         String fkColumn = rs.getString("FKCOLUMN_NAME");
                         if (pkTable != null && fkTable != null) {
                             String fkStr = fkTable + "." + fkColumn + "=" + pkTable + "." + pkColumn;
-                            // 去重
                             if (seen.add(fkStr)) {
                                 foreignKeys.add(fkStr);
                             }
@@ -351,7 +330,6 @@ public class DynamicDatasourceManager {
 
     /**
      * 获取表的示例数据
-     * 执行SELECT * FROM tableName LIMIT sampleSize获取每列的示例值
      *
      * @param datasource 数据源实体
      * @param tableName  表名
@@ -364,7 +342,6 @@ public class DynamicDatasourceManager {
         Map<String, List<String>> sampleData = new HashMap<>();
 
         try (Connection conn = ds.getConnection()) {
-            // 获取列名列表
             DatabaseMetaData metaData = conn.getMetaData();
             DatasourceTypeHandler handler = handlerRegistry.getRequired(datasource.getType());
             String schema = handler.extractSchemaName(datasource);
@@ -383,9 +360,7 @@ public class DynamicDatasourceManager {
                 return sampleData;
             }
 
-            // 执行查询获取示例数据
             String quotedTableName = tableName;
-            // 不同数据库的引用符不同
             if ("mysql".equalsIgnoreCase(datasource.getType()) || "h2".equalsIgnoreCase(datasource.getType())) {
                 quotedTableName = "`" + tableName + "`";
             } else {
@@ -403,7 +378,6 @@ public class DynamicDatasourceManager {
                                 sampleData.computeIfAbsent(colName, k -> new ArrayList<>()).add(value);
                             }
                         } catch (Exception e) {
-                            // 某些类型可能无法转为String，跳过
                         }
                     }
                 }

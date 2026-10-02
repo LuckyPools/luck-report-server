@@ -46,10 +46,6 @@ import java.util.Set;
 
 /**
  * 查询表单选项加载服务。
- * <p>按报表文件 + 数据集引用批量执行数据集，提取标签/值字段映射为选项返回。
- * 支持 JDBC / 内置 / Spring Bean / 静态 JSON 四类数据源，与 {@code ReportBuilder#buildDatasets}
- * 的数据源分发逻辑保持一致，但只执行被引用的单个数据集。
- * <p>Bean 名：{@code bean.searchFormOptionService}，避免与第三方系统 Bean 冲突。
  *
  * @author luck-report
  * @since 2.1.0
@@ -132,11 +128,12 @@ public class SearchFormOptionService implements ApplicationContextAware {
         return mapToOptions(data, ref.getLabelField(), ref.getValueField());
     }
 
-    /** 按数据源类型执行单个数据集，返回行列表 */
+    /**
+     * 按数据源类型执行单个数据集，返回行列表
+     */
     private List<?> executeDataset(DatasourceDefinition dsDef, DatasetDefinition datasetDef,
                                    Map<String, Object> parameters) {
         if (dsDef instanceof StaticDatasourceDefinition) {
-            // 静态数据源：JSON content 直接反序列化，无查询参数概念
             JsonDatasetDefinition jsonDataset = (JsonDatasetDefinition) datasetDef;
             return JsonUtils.fromJsonList(jsonDataset.getContent());
         }
@@ -147,7 +144,6 @@ public class SearchFormOptionService implements ApplicationContextAware {
             Dataset ds = beanDef.buildDataset(springDs.getName(), targetBean, parameters);
             return ds.getData();
         }
-        // JDBC / 内置数据源均按 SQL 数据集执行，差异只在连接获取方式
         SqlDatasetDefinition sqlDataset = (SqlDatasetDefinition) datasetDef;
         Connection conn = null;
         try {
@@ -159,13 +155,14 @@ public class SearchFormOptionService implements ApplicationContextAware {
                 try {
                     conn.close();
                 } catch (Exception ignore) {
-                    // 关闭连接失败不影响选项返回
                 }
             }
         }
     }
 
-    /** 获取数据库连接：优先 DatasourceProvider，其次内置数据源，JDBC 数据源兜底自建连接 */
+    /**
+     * 获取数据库连接：优先 DatasourceProvider，其次内置数据源，JDBC 数据源兜底自建连接
+     */
     private Connection openConnection(DatasourceDefinition dsDef) {
         String dsName = dsDef.getName();
         if (datasourceProviderMap.containsKey(dsName)) {
@@ -191,7 +188,9 @@ public class SearchFormOptionService implements ApplicationContextAware {
         throw new ReportBizException("error.search.unsupportedDatasource", dsDef.getClass().getName());
     }
 
-    /** 行列表映射为 label/value 选项 */
+    /**
+     * 行列表映射为 label/value 选项
+     */
     private List<SearchFormOption> mapToOptions(List<?> data, String labelField, String valueField) {
         List<SearchFormOption> list = new ArrayList<>();
         if (data == null) {
@@ -215,7 +214,6 @@ public class SearchFormOptionService implements ApplicationContextAware {
 
     /**
      * 平铺行列表按 valueField / parentField 建树，返回带 children 的层级选项。
-     * <p>parentField 值等于某行 valueField 值则为其子节点；找不到父行（或成环）的行按根节点输出。
      */
     private List<SearchFormOption> buildTreeOptions(List<?> data, String labelField,
                                                               String valueField, String parentField) {
@@ -223,7 +221,6 @@ public class SearchFormOptionService implements ApplicationContextAware {
         if (data == null) {
             return list;
         }
-        // 第一遍：行转 Option，按 value 建索引（后出现的同值行不覆盖先出现的）
         Map<String, SearchFormOption> index = new LinkedHashMap<>();
         Map<SearchFormOption, String> parentValues = new LinkedHashMap<>();
         for (Object row : data) {
@@ -243,7 +240,6 @@ public class SearchFormOptionService implements ApplicationContextAware {
             Object parentValue = map.get(parentField);
             parentValues.put(option, parentValue == null ? null : String.valueOf(parentValue));
         }
-        // 第二遍：挂父子关系；父值命中索引则挂 children，否则留在根列表
         List<SearchFormOption> roots = new ArrayList<>();
         for (SearchFormOption option : list) {
             String parentValue = parentValues.get(option);
@@ -252,7 +248,6 @@ public class SearchFormOptionService implements ApplicationContextAware {
                 continue;
             }
             SearchFormOption parent = index.get(parentValue);
-            // 成环检测：沿父链向上走，若回到自身则按根输出
             if (parent == null) {
                 roots.add(option);
             } else if (isInCycle(option, parentValue, index, parentValues)) {
@@ -268,7 +263,9 @@ public class SearchFormOptionService implements ApplicationContextAware {
         return roots;
     }
 
-    /** 判断 option 沿父链向上是否构成环（回到自身） */
+    /**
+     * 判断 option 沿父链向上是否构成环（回到自身）
+     */
     private boolean isInCycle(SearchFormOption option, String startParentValue,
                               Map<String, SearchFormOption> index,
                               Map<SearchFormOption, String> parentValues) {

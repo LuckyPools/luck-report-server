@@ -12,30 +12,27 @@ import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 /**
- * 敏感配置落库加解密（AES-128-GCM）。
- * <p>
- * 用于数据源密码、模型 API Key 等需可逆解密的字段。
- * 密文格式：{@code __LUCK__} + Base64URL(nonce[12] ‖ ciphertext ‖ tag[16])。
- * 无魔数前缀视为历史明文，原样返回。
- * </p>
- * <p>
- * 选用 AES-128 而非 256：项目目标 JDK 8，避免部分环境未开启 JCE unlimited 时出现
- * {@code Illegal key size}。
- * </p>
+ * 敏感配置落库加解密（AES-128-GCM）。用于数据源密码、模型 API Key 等需可逆解密的字段。密文格式：{@code __LUCK__} + Base64URL(nonce[12] ‖ ciphertext ‖ tag[16])。无魔数前缀视为历史明文，原样返回。选用 AES-128 而非 256：项目目标 JDK 8，避免部分环境未开启 JCE unlimited 时出现{@code Illegal key size}。
  *
  * @author luck
  */
 public final class SensitiveConfigCipher {
 
-    /** 密文魔数前缀 */
+    /**
+     * 密文魔数前缀
+     */
     public static final String MAGIC_PREFIX = "__LUCK__";
 
-    /** 内置默认种子（勿改，否则无法解密已有密文） */
+    /**
+     * 内置默认种子（勿改，否则无法解密已有密文）
+     */
     private static final String DEFAULT_SEED = "LuckReport@DatasourcePassword#Key-v1";
     private static final String TRANSFORMATION = "AES/GCM/NoPadding";
     private static final int NONCE_LENGTH = 12;
     private static final int TAG_BITS = 128;
-    /** AES-128 密钥长度 */
+    /**
+     * AES-128 密钥长度
+     */
     private static final int KEY_LENGTH = 16;
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
@@ -71,8 +68,7 @@ public final class SensitiveConfigCipher {
     }
 
     /**
-     * 由 Base64 配置值解析密钥；空串返回 null（表示走默认钥）。
-     * <p>支持 16 字节（AES-128）或 32 字节（截取前 16 字节，便于误配 256 位密钥时仍可用）。
+     * 由 Base64 配置值解析密钥；空串返回 null（表示走默认钥）。支持 16 字节（AES-128）或 32 字节（截取前 16 字节，便于误配 256 位密钥时仍可用）。
      *
      * @param base64 Base64 编码的密钥
      * @return 16 字节密钥；blank 时 null
@@ -99,7 +95,9 @@ public final class SensitiveConfigCipher {
         return key;
     }
 
-    /** 内置默认密钥：SHA-256(种子) 的前 16 字节 */
+    /**
+     * 内置默认密钥：SHA-256(种子) 的前 16 字节
+     */
     public static byte[] deriveDefaultKey() {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -186,7 +184,6 @@ public final class SensitiveConfigCipher {
             try {
                 return doDecrypt(nonce, cipherText, previousKey);
             } catch (GeneralSecurityException ignored) {
-                // fall through
             }
         }
         throw new IllegalStateException("敏感配置解密失败", primaryFailure);

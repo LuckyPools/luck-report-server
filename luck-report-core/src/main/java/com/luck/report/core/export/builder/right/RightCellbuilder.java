@@ -56,7 +56,6 @@ public class RightCellbuilder {
         cell.setDuplicateRange(duplicateRange);
     }
 
-
     private void buildColumnsBlankCells(CellDefinition cell, List<CellDefinition> cells, Range range) {
         Map<String, BlankCellInfo> blankCellNamesMap = cell.getNewBlankCellsMap();
         int start = range.getStart(), end = range.getEnd();
@@ -87,7 +86,6 @@ public class RightCellbuilder {
             buildColumnsBlankCells(cell, cells, new Range(end, nextEnd));
         }
     }
-
 
     private Range buildColumnRange(List<Range> rangeList) {
         Range colRange = new Range();
@@ -121,7 +119,6 @@ public class RightCellbuilder {
         }
         return range;
     }
-
 
     private void buildChildrenBlankCells(CellDefinition cell, List<CellDefinition> cells, Range childRange) {
         int startColNumber = cell.getColumnNumber();

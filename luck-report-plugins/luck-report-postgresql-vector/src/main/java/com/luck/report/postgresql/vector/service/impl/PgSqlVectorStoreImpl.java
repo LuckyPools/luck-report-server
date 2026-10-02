@@ -18,24 +18,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * 基于 PostgreSQL + vector 的向量存储实现（纯向量操作）
- * 使用 vector 扩展进行向量存储和相似度检索，支持元数据过滤
- * SQL 操作委托给 PgSqlVectorDocumentDao，由 plugin 自治的 bean.vectorJdbcTemplate 直接绑定 vector 数据源
- *
- * 设计原则：
- * 1. 只负责向量数据的存储、检索、删除
- * 2. 不负责文本转向量（这是 AgentVectorStore 的职责）
- * 3. 调用 add() 前，VectorDocument.vector 必须已填充
- * 4. 调用 search() 前，queryVector 必须已生成
- *
- * 前置条件：
- * 1. PostgreSQL 安装 vector 扩展：CREATE EXTENSION IF NOT EXISTS vector;
- * 2. 创建向量文档表（见 vector_document.sql）
- *
- * 检索策略：
- * - 先通过 SQL WHERE 过滤 metadata（缩小候选集）
- * - 再使用 vector 的 <=> 操作符进行余弦距离排序
- * - 最后按相似度阈值过滤
+ * 基于 PostgreSQL + vector 的向量存储实现
  *
  * @author luck
  */
@@ -44,15 +27,14 @@ import java.util.stream.Collectors;
 public class PgSqlVectorStoreImpl implements VectorStore {
 
     private static final Logger log = LoggerFactory.getLogger(PgSqlVectorStoreImpl.class);
+
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
     private PgSqlVectorDocumentDao vectorDocumentDao;
 
-
     /**
-     * 添加向量到 PostgreSQL
-     * 要求：documents 中的 vector 必须非空，否则抛出 IllegalArgumentException
+     * 添加向量
      *
      * @param documents 向量文档列表，vector 必须已生成
      * @throws IllegalArgumentException 如果 documents 中的 vector 为空
@@ -63,7 +45,6 @@ public class PgSqlVectorStoreImpl implements VectorStore {
             return;
         }
 
-        // 验证向量必须非空（职责分离：不再自动生成向量）
         for (VectorDocument doc : documents) {
             if (doc.getVector() == null || doc.getVector().length == 0) {
                 throw new IllegalArgumentException(
@@ -74,7 +55,6 @@ public class PgSqlVectorStoreImpl implements VectorStore {
             }
         }
 
-        // 逐条插入 PostgreSQL（通过 Mapper）
         for (VectorDocument doc : documents) {
             VectorDocumentRow row = toRow(doc);
             vectorDocumentDao.insertOrUpdate(row);
@@ -84,8 +64,7 @@ public class PgSqlVectorStoreImpl implements VectorStore {
     }
 
     /**
-     * 按文档ID删除（第一层：基础接口）
-     * 所有向量库都支持此操作
+     * 按文档 ID 删除
      *
      * @param ids 文档ID列表
      * @return 是否删除成功
@@ -101,8 +80,7 @@ public class PgSqlVectorStoreImpl implements VectorStore {
     }
 
     /**
-     * 按向量类型删除（第二层：常用接口）
-     * PostgreSQL 实现：DELETE FROM luck_vector_document WHERE vector_type = ?
+     * 按向量类型删除
      *
      * @param vectorType 知识类型（COMPONENT/TEMPLATE/DATASOURCE/BUSINESS）
      * @return 是否删除成功
@@ -119,8 +97,7 @@ public class PgSqlVectorStoreImpl implements VectorStore {
     }
 
     /**
-     * 按向量类型 + metadata 组合删除（第三层：高级接口）
-     * PostgreSQL 实现：DELETE FROM luck_vector_document WHERE vector_type = ? AND metadata @> jsonb
+     * 按向量类型与 metadata 组合删除
      *
      * @param vectorType 知识类型
      * @param metaKey metadata 字段名
@@ -139,7 +116,6 @@ public class PgSqlVectorStoreImpl implements VectorStore {
         }
 
         try {
-            // 构建 metadata JSON：单个字段
             Map<String, Object> metadataFilter = new HashMap<>();
             metadataFilter.put(metaKey, metaValue);
             String metadataJson = objectMapper.writeValueAsString(metadataFilter);
@@ -175,7 +151,6 @@ public class PgSqlVectorStoreImpl implements VectorStore {
 
     /**
      * 统一向量检索入口
-     * 根据 VectorSearchParam 的字段组合过滤条件，委托 DAO 动态拼接 SQL
      *
      * @param param 检索参数，queryVector 必须已生成
      * @return 检索结果列表，按相似度降序排列
@@ -189,7 +164,7 @@ public class PgSqlVectorStoreImpl implements VectorStore {
             );
         }
 
-        // idMetaKey 非空但 validIds 为空：无生效知识，直接返回空列表，不检索向量库
+        // idMetaKey 非空且 validIds 为空时返回空列表
         if (param.getIdMetaKey() != null && (param.getValidIds() == null || param.getValidIds().isEmpty())) {
             log.info("无生效知识，跳过检索: vectorType={}, idMetaKey={}", param.getVectorType(), param.getIdMetaKey());
             return new ArrayList<>();
@@ -197,7 +172,6 @@ public class PgSqlVectorStoreImpl implements VectorStore {
 
         String queryVectorStr = vectorToString(param.getQueryVector());
 
-        // 序列化 metadataEquals 为 JSON（支持多字段等值过滤）
         String metadataJson = serializeMetadataEquals(param.getMetadataEquals());
 
         List<VectorDocumentRow> rows = vectorDocumentDao.search(
@@ -261,8 +235,7 @@ public class PgSqlVectorStoreImpl implements VectorStore {
     }
 
     /**
-     * 将 VectorDocument 转换为 VectorDocumentRow
-     * 用于 Mapper 的插入操作
+     * 将 VectorDocument 转为 VectorDocumentRow
      *
      * @param doc 向量文档
      * @return 数据库行对象

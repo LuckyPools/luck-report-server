@@ -4,7 +4,6 @@ import java.io.Serializable;
 
 /**
  * 图表数据视图对象，用于返回给前端展示。
- * 仅包含前端渲染图表所需的字段，不包含 base64Data 等大数据字段。
  *
  * @author luckyPools
  * @since 2026年05月16日

@@ -83,9 +83,13 @@ public class Cell implements ReportCell {
     private boolean existPageFunction;
     private List<Object> bindData;
     private Range duplicateRange;
-    /** 同名模板格共享的向下复制计划（按名字缓存在 Report） */
+    /**
+     * 同名模板格共享的向下复制计划（按名字缓存在 Report）
+     */
     private ExpandDuplicatorPlan downDuplicatorPlan;
-    /** 同名模板格共享的向右复制计划 */
+    /**
+     * 同名模板格共享的向右复制计划
+     */
     private ExpandDuplicatorPlan rightDuplicatorPlan;
     private boolean forPaging;
     private String linkUrl;
@@ -126,7 +130,6 @@ public class Cell implements ReportCell {
      * 当前单元格所在列所有子格
      */
     private Map<String, List<Cell>> columnChildrenCellsMap = new HashMap<String, List<Cell>>();
-
 
     private Set<String> increaseSpanCellNames;
     private Map<String, BlankCellInfo> newBlankCellsMap;
@@ -227,7 +230,6 @@ public class Cell implements ReportCell {
             leftParentCell.addRowChild(child);
         }
     }
-
 
     public void addColumnChild(Cell child) {
         String name = child.getName();
@@ -355,7 +357,6 @@ public class Cell implements ReportCell {
                 this.data = item.getNewValue();
                 this.formatData = item.getNewValue();
             }
-            // 渲染标记：非null才覆盖(未配置不覆盖)，遵循条件属性"有值才覆盖"规则
             Boolean renderFlag = item.getRenderFlag();
             if (renderFlag != null) {
                 this.renderFlag = renderFlag;
@@ -651,7 +652,6 @@ public class Cell implements ReportCell {
             }
         }
     }
-
 
     public static void main(String[] args) {
         FontMetrics fontMetrics = new JLabel().getFontMetrics(new Font("宋体", Font.PLAIN, 12));

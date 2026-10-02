@@ -32,7 +32,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-
 /**
  * @author Jacky.gao
  * @since 2017年1月1日
@@ -77,10 +76,7 @@ public class CellCoordinateExpression extends CellExpression {
     }
 
     /**
-     * 按坐标取出目标格的值；目标格和坐标格未算完时按名字先算完
-     *
-     * <p>目标名正在计算时跳过 {@code processTargetCell}（避免同名坐标自引用如
-     * {@code D2[A2:-1]} 被误判为循环依赖），只收集已 processed 实例的值。
+     * 按坐标取出目标格的值；目标格和坐标格未算完时按名字先算完；目标名正在计算时跳过 {@code processTargetCell}（避免同名坐标自引用如{@code D2[A2:-1]} 被误判为循环依赖），只收集已 processed 实例的值。
      *
      * @param cell 正在计算的单元格，不可为空
      * @param currentCell 当前单元格，可为 null

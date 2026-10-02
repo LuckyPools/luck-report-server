@@ -4,9 +4,7 @@ import java.util.Collection;
 import java.util.Map;
 
 /**
- * 内置数据源注册接口
- * 用于提供内置数据源的获取能力，实现类可从数据库或其他来源动态加载数据源配置
- * Utils 类通过此接口获取内置数据源，实现 core 模块与 agent 模块的解耦
+ * 内置数据源注册接口；用于提供内置数据源的获取能力，实现类可从数据库或其他来源动态加载数据源配置；Utils 类通过此接口获取内置数据源，实现 core 模块与 agent 模块的解耦
  *
  * @author luck
  */

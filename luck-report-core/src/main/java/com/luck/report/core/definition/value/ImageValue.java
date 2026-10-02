@@ -15,7 +15,6 @@
  ******************************************************************************/
 package com.luck.report.core.definition.value;
 
-
 import com.luck.report.core.expression.model.Expression;
 
 import java.io.Serializable;
@@ -48,7 +47,6 @@ public class ImageValue implements Value, Serializable {
      * @param type 类型（忽略）
      */
     public void setType(ValueType type) {
-        // 空实现，忽略type字段
     }
 
     @Override
@@ -65,7 +63,6 @@ public class ImageValue implements Value, Serializable {
      * @param value 值（忽略）
      */
     public void setValue(String value) {
-        // 空实现，忽略value字段
     }
 
     public Source getSource() {

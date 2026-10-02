@@ -13,15 +13,15 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 报表模块自有文案翻译器：不注册 MessageSource、不依赖容器国际化能力，
- * 避免以 starter 嵌入第三方应用时与宿主冲突。
- * <p>兜底链：目标语言 → 默认语言 → code 本身，因此未配置文案时行为与改造前一致。
+ * 报表模块自有文案翻译器
  */
 public final class ReportI18n {
 
     private static final Logger logger = LoggerFactory.getLogger(ReportI18n.class);
 
-    /** 带 luck-report/ 私有前缀，避免与宿主项目资源重名 */
+    /**
+     * 带 luck-report/ 私有前缀，避免与宿主项目资源重名
+     */
     public static final String RESOURCE_BASE = "luck-report/i18n/messages_";
 
     private static final String RESOURCE_SUFFIX = ".properties";
@@ -36,12 +36,16 @@ public final class ReportI18n {
     private ReportI18n() {
     }
 
-    /** 按当前线程语言翻译 */
+    /**
+     * 按当前线程语言翻译
+     */
     public static String getMessage(String code, Object... args) {
         return getMessage(ReportLocaleContext.get(), code, args);
     }
 
-    /** 按指定语言翻译，未命中返回 code 本身而非空串，避免漏配文案时报错 */
+    /**
+     * 按指定语言翻译，未命中返回 code 本身而非空串，避免漏配文案时报错
+     */
     public static String getMessage(ReportLocale locale, String code, Object... args) {
         if (code == null || code.isEmpty()) {
             return code;
@@ -58,8 +62,7 @@ public final class ReportI18n {
     }
 
     /**
-     * 取异常的可展示文案：携带文案编码的按当前语言翻译，其余返回原 message。
-     * 用于 catch 块拼接 e.getMessage() 时避免把未翻译的编码暴露给前端。
+     * 取异常的可展示文案
      */
     public static String messageOf(Throwable t) {
         if (t == null) {
@@ -76,7 +79,9 @@ public final class ReportI18n {
         return msg == null ? null : getMessage(msg);
     }
 
-    /** 任一语言命中即返回 true */
+    /**
+     * 任一语言命中即返回 true
+     */
     public static boolean hasMessage(String code) {
         if (code == null || code.isEmpty()) {
             return false;
@@ -89,7 +94,9 @@ public final class ReportI18n {
         return false;
     }
 
-    /** 注册或覆盖文案，供第三方项目扩展 */
+    /**
+     * 注册或覆盖文案，供第三方项目扩展
+     */
     public static void register(ReportLocale locale, Map<String, String> messages) {
         if (locale == null || messages == null || messages.isEmpty()) {
             return;
@@ -102,7 +109,9 @@ public final class ReportI18n {
         bundle.putAll(messages);
     }
 
-    /** 重新加载资源文件，保留 {@link #register} 注入的文案 */
+    /**
+     * 重新加载资源文件，保留 {@link #register} 注入的文案
+     */
     public static void reload() {
         for (ReportLocale locale : ReportLocale.values()) {
             Map<String, String> loaded = loadBundle(locale.getCode());
@@ -115,7 +124,9 @@ public final class ReportI18n {
         }
     }
 
-    /** 只读文案快照，便于排查 */
+    /**
+     * 只读文案快照，便于排查
+     */
     public static Map<String, String> snapshot(ReportLocale locale) {
         Map<String, String> bundle = BUNDLES.get(locale.getCode());
         if (bundle == null) {
@@ -166,13 +177,14 @@ public final class ReportI18n {
             try {
                 in.close();
             } catch (Exception ignore) {
-                // 忽略
             }
         }
         return messages;
     }
 
-    /** 优先用 TCCL，适配宿主容器的类加载体系 */
+    /**
+     * 优先用 TCCL，适配宿主容器的类加载体系
+     */
     private static InputStream openStream(String path) {
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         if (loader != null) {

@@ -21,8 +21,7 @@ package com.luck.report.core.utils;
  */
 public class UnitUtils {
     /**
-     * 磅转像素。与前端 table.ts pointToPixel 对齐：Math.round(pt * 1.33)。
-     * 旧实现 BigDecimal.intValue() 向 0 截断，会导致预览行高系统性偏矮 0~1px/行。
+     * 磅转像素。与前端 table.ts pointToPixel 对齐：Math.round(pt * 1.33)。旧实现 BigDecimal.intValue() 向 0 截断，会导致预览行高系统性偏矮 0~1px/行。
      */
     public static int pointToPixel(double point) {
         double value = point * 1.33;

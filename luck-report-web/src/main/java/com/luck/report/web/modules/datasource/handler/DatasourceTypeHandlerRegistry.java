@@ -12,7 +12,6 @@ import com.luck.report.core.exception.ReportBizException;
 
 /**
  * 数据源类型处理器注册中心
- * 管理所有DatasourceTypeHandler实例，根据类型名查找对应处理器
  *
  * @author luck
  */

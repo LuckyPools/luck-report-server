@@ -32,7 +32,6 @@ public class DownDuplocatorWrapper {
     private List<CellDownDuplicator> mainCellChildren = new ArrayList<CellDownDuplicator>();
     private List<CellDownDuplicator> cellDuplicators = new ArrayList<CellDownDuplicator>();
     private Map<Cell, List<CellDownDuplicator>> createNewDuplicatorsMap = new HashMap<Cell, List<CellDownDuplicator>>();
-    //	private List<CellDownDuplicator> processedCellDuplicators=new ArrayList<CellDownDuplicator>();
     private List<Cell> duplicatorCells = new ArrayList<Cell>();
 
     public DownDuplocatorWrapper(String mainCellName) {

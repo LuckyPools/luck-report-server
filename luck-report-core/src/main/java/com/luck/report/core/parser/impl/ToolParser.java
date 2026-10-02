@@ -21,8 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.dom4j.Element;
 
 /**
- * 预览工具栏配置 XML 解析器。
- * <p>解析 {@code <tool>} 元素的各属性，映射为 {@link Tool} 对象的布尔字段。
+ * 预览工具栏配置 XML 解析器。解析 {@code <tool>} 元素的各属性，映射为 {@link Tool} 对象的布尔字段。
  *
  * @author luck-report
  * @since 2026年08月29日

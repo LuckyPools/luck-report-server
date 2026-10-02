@@ -24,7 +24,6 @@ import java.util.List;
 
 /**
  * 智能体知识管理Controller
- * 提供智能体知识的增删改查和向量化管理接口
  *
  * @author luck
  */

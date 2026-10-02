@@ -8,7 +8,6 @@ import java.util.Map;
 
 /**
  * 查询表单选项加载结果视图对象，用于 {@code /html/load_search_form_options} 接口返回。
- * <p>字段名与前端 {@code SearchFormOptionsResult} 契约保持一致，避免破坏调用方。
  *
  * @author luck-report
  * @since 2.1.0
@@ -17,10 +16,14 @@ public class SearchFormOptionsVo implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /** 选项集：key 为 "数据源名/数据集名"，value 为 {label, value} 选项列表 */
+    /**
+     * 选项集：key 为 "数据源名/数据集名"，value 为 {label, value} 选项列表
+     */
     private Map<String, List<SearchFormOption>> options = new HashMap<>();
 
-    /** 单项加载失败的错误信息：key 为 "数据源名/数据集名" */
+    /**
+     * 单项加载失败的错误信息：key 为 "数据源名/数据集名"
+     */
     private Map<String, String> errors = new HashMap<>();
 
     public SearchFormOptionsVo() {

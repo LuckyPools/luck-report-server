@@ -56,7 +56,9 @@ public class DataRowFunction implements Function {
         return seq != null ? seq : 1;
     }
 
-    /** 按 cellsMap 顺序，在同一上层左父格内从 1 编号 */
+    /**
+     * 按 cellsMap 顺序，在同一上层左父格内从 1 编号
+     */
     private Map<Cell, Integer> buildIndexMap(List<Cell> siblings) {
         Map<Cell, Integer> indexMap = new IdentityHashMap<Cell, Integer>();
         Map<Cell, Integer> groupCounter = new IdentityHashMap<Cell, Integer>();

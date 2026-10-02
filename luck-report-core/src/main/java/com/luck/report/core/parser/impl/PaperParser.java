@@ -81,7 +81,6 @@ public class PaperParser implements Parser<Paper> {
         if (StringUtils.isNotBlank(bgImage)) {
             paper.setBgImage(StringEscapeUtils.unescapeXml(bgImage));
         }
-        // 冻结行列锚点单元格名，可空，空表示不冻结
         String freezeRowCellName = element.attributeValue("freeze-row-cell-name");
         if (StringUtils.isNotBlank(freezeRowCellName)) {
             paper.setFreezeRowCellName(freezeRowCellName);

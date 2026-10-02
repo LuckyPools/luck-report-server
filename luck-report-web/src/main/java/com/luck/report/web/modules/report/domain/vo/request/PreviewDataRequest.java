@@ -2,8 +2,6 @@ package com.luck.report.web.modules.report.domain.vo.request;
 
 /**
  * 数据预览请求 VO。
- * <p>
- * 继承自 {@link JdbcConnectionRequest}，用于 {@code /datasource/preview_data} 接口。
  *
  * @author luck-report
  * @since 1.0.0

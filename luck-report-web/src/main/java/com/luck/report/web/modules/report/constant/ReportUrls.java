@@ -2,8 +2,6 @@ package com.luck.report.web.modules.report.constant;
 
 /**
  * 报表 URL 路径常量。
- * <p>集中维护管理端和预览端两份 URL 路径段，供 WebConfiguration、TokenInterceptor、ManageInterceptor、PreviewInterceptor 统一引用。
- * <p>新增 Controller 时，只需往对应数组追加路径段，所有拦截器注册和路径判断自动生效。
  *
  * @author luck-report
  * @since 1.2.0
@@ -28,8 +26,7 @@ public final class ReportUrls {
     };
 
     /**
-     * Request attribute key：报表是否为匿名报表（Boolean）。
-     * <p>由 TokenInterceptor（order=1）写入，PreviewInterceptor（order=3）读取，避免重复查库。
+     * Request attribute key
      */
     public static final String ATTR_ANONYMOUS_REPORT = "luck-report.anonymousReport";
 
@@ -38,7 +35,6 @@ public final class ReportUrls {
 
     /**
      * 生成管理端 pathPattern 数组。
-     * <p>示例：{@code managePathPatterns("report")} → {@code ["/report/manage/**", "/report/designer/**", ...]}
      */
     public static String[] managePathPatterns(String prefix) {
         return buildPathPatterns(prefix, MANAGE_URLS);
@@ -46,7 +42,6 @@ public final class ReportUrls {
 
     /**
      * 生成预览端 pathPattern 数组。
-     * <p>示例：{@code previewPathPatterns("report")} → {@code ["/report/preview/**", "/report/html/**", ...]}
      */
     public static String[] previewPathPatterns(String prefix) {
         return buildPathPatterns(prefix, PREVIEW_URLS);

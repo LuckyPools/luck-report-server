@@ -16,8 +16,7 @@
 package com.luck.report.core.build.assertor;
 
 /**
- * not in：左值不在右值集合中。非 null 时语义等价于 !(left in right)；
- * left 或 right 为 null 时与 InAssertor 一样返回 false。
+ * not in：左值不在右值集合中。非 null 时语义等价于 !(left in right)；left 或 right 为 null 时与 InAssertor 一样返回 false。
  *
  * @author Jacky.gao
  * @since 2017年1月12日

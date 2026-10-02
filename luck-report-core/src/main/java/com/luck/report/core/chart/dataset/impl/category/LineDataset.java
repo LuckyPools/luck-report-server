@@ -58,7 +58,6 @@ public class LineDataset extends CategoryDataset {
      * @param type 类型（忽略）
      */
     public void setType(String type) {
-        // 空实现，忽略type字段
     }
 
     public double getLineTension() {

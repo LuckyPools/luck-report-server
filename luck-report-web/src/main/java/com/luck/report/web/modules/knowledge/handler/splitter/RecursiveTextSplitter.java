@@ -7,8 +7,6 @@ import java.util.List;
 
 /**
  * 递归字符分块器。
- * 默认分隔符对齐 Dify FixedRecursiveCharacterTextSplitter：
- * ["\\n\\n", "\\n", "。", ". ", " ", ""]
  *
  * @author luck
  */
@@ -25,7 +23,6 @@ public class RecursiveTextSplitter implements TextSplitter {
     public RecursiveTextSplitter(int chunkSize, int overlapSize) {
         this.chunkSize = chunkSize > 0 ? chunkSize : 1000;
         this.overlapSize = overlapSize >= 0 ? overlapSize : 100;
-        // Dify fixed_text_splitter.py 默认 separators
         this.separators = new ArrayList<>();
         this.separators.add("\n\n");
         this.separators.add("\n");
@@ -44,19 +41,17 @@ public class RecursiveTextSplitter implements TextSplitter {
         List<String> chunks = new ArrayList<>();
         recursiveSplit(text, separators, 0, chunks);
 
-        // 合并相邻的小块以利用空间（带重叠）
         return mergeChunks(chunks);
     }
 
     /**
-     * 递归切分：按当前分隔符切分，超长的部分用下一级分隔符继续切
+     * 递归切分
      */
     private void recursiveSplit(String text, List<String> seps, int sepIndex, List<String> result) {
         if (text.isEmpty()) {
             return;
         }
 
-        // 最后一层：硬切
         if (sepIndex >= seps.size()) {
             hardSplit(text, result);
             return;
@@ -64,14 +59,12 @@ public class RecursiveTextSplitter implements TextSplitter {
 
         String sep = seps.get(sepIndex);
 
-        // 短文本直接返回
         if (text.length() <= chunkSize) {
             result.add(text);
             return;
         }
 
         if (sep.isEmpty()) {
-            // 空分隔符 = 按字符硬切
             hardSplit(text, result);
             return;
         }
@@ -82,10 +75,8 @@ public class RecursiveTextSplitter implements TextSplitter {
         } else if ("\n".equals(sep)) {
             parts = splitByRegex(text, "\n");
         } else if (" ".equals(sep)) {
-            // Dify: re.split(r" +", text)
             parts = splitByRegex(text, " +");
         } else {
-            // Dify: keep separator on preceding chunk for 。 and ". "
             parts = splitByLiteralKeepSep(text, sep);
         }
 
@@ -98,7 +89,6 @@ public class RecursiveTextSplitter implements TextSplitter {
             if (trimmed.length() <= chunkSize) {
                 result.add(trimmed);
             } else {
-                // 超长部分用下一级分隔符继续切
                 recursiveSplit(trimmed, seps, sepIndex + 1, result);
             }
         }
@@ -113,7 +103,9 @@ public class RecursiveTextSplitter implements TextSplitter {
         return parts;
     }
 
-    /** Dify: splits = [s + separator for s in splits[:-1]] + splits[-1:] */
+    /**
+     * Dify: splits = [s + separator for s in splits[:-1]] + splits[-1:]
+     */
     private List<String> splitByLiteralKeepSep(String text, String sep) {
         List<String> parts = new ArrayList<>();
         int from = 0;
@@ -177,7 +169,6 @@ public class RecursiveTextSplitter implements TextSplitter {
                 current.append("\n").append(chunk);
             } else {
                 merged.add(current.toString());
-                // 重叠：保留尾部
                 String tail = current.length() > overlapSize
                         ? current.substring(current.length() - overlapSize)
                         : current.toString();

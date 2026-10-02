@@ -52,7 +52,6 @@ public class WordDocumentParser implements DocumentParser {
         if (lower.endsWith(".doc") && !lower.endsWith(".docx")) {
             return parseDoc(file);
         }
-        // 无扩展名时：老式 msword 走 .doc
         if (lower.isEmpty() && contentType.contains("msword")
                 && !contentType.contains("officedocument")) {
             return parseDoc(file);
@@ -141,7 +140,9 @@ public class WordDocumentParser implements DocumentParser {
         return text.replace("|", "\\|").replace("\n", " ");
     }
 
-    /** Heading1..6 → Markdown # 前缀，便于 StructureTextSplitter */
+    /**
+     * Heading1..6 → Markdown # 前缀，便于 StructureTextSplitter
+     */
     private static String toMarkdownHeadingPrefix(XWPFParagraph paragraph) {
         String style = paragraph.getStyle();
         if (style == null) {
@@ -160,7 +161,6 @@ public class WordDocumentParser implements DocumentParser {
                     return hashes.append(' ').toString();
                 }
             } catch (NumberFormatException ignored) {
-                // fall through
             }
         }
         return "";

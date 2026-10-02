@@ -28,7 +28,9 @@ public class Option implements Serializable {
     private static final long serialVersionUID = 1L;
     private String label;
     private String value;
-    /** 子选项（级联选择 / 树选择的层级选项；扁平选项为 null 不输出） */
+    /**
+     * 子选项（级联选择 / 树选择的层级选项；扁平选项为 null 不输出）
+     */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<Option> children;
 

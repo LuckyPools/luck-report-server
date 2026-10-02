@@ -39,7 +39,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
 /**
  * @author Jacky.gao
  * @since 2016年12月27日
@@ -61,7 +60,6 @@ public class SqlDatasetDefinition implements DatasetDefinition {
         String sqlForUse = sql;
         sqlForUse = SqlParamUtils.convertToNamedParam(sqlForUse);
         Map<String, Object> pmap = buildParameters(parameterMap);
-        // 补充 SQL 中引用但未在 Parameter[] 中定义的参数（如内置参数 luck_user_id）
         supplementSqlParams(pmap, parameterMap, sql);
         Context context = new Context(null, pmap);
         if (sqlExpression != null) {
@@ -110,7 +108,6 @@ public class SqlDatasetDefinition implements DatasetDefinition {
         return sqlForUse;
     }
 
-
     private Map<String, Object> buildParameters(Map<String, Object> params) {
         Map<String, Object> map = new HashMap<String, Object>();
         for (Parameter param : parameters) {
@@ -126,10 +123,7 @@ public class SqlDatasetDefinition implements DatasetDefinition {
     }
 
     /**
-     * 从原始参数 Map 中补充 SQL 引用但未在 Parameter[] 中定义的参数
-     * <p>内置参数（如 luck_user_id）不在报表 Parameter[] 定义中，
-     * 但已由 web 层注入到 parameterMap 中，此处将其补充到 pmap，
-     * 保证 NamedParameterJdbcTemplate 执行时参数齐全。
+     * 从原始参数 Map 中补充 SQL 引用但未在 Parameter[] 中定义的参数；内置参数（如 luck_user_id）不在报表 Parameter[] 定义中，但已由 web 层注入到 parameterMap 中，此处将其补充到 pmap，保证 NamedParameterJdbcTemplate 执行时参数齐全。
      *
      * @param pmap 已构建的参数 Map（来自 Parameter[] 定义），不可为空
      * @param sourceMap 原始参数 Map（含内置参数），可为空

@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class FunctionConfiguration {
 
-    // 统计函数
     @Bean("bean.countFunction")
     public CountFunction countFunction() {
         return new CountFunction();
@@ -52,7 +51,6 @@ public class FunctionConfiguration {
         return new IfnFunction();
     }
 
-    // 日期函数
     @Bean("bean.weekFunction")
     public WeekFunction weekFunction() {
         return new WeekFunction();
@@ -83,7 +81,6 @@ public class FunctionConfiguration {
         return new FormatDateFunction();
     }
 
-    // 数学函数
     @Bean("bean.absFunction")
     public AbsFunction absFunction() {
         return new AbsFunction();
@@ -179,7 +176,6 @@ public class FunctionConfiguration {
         return new MedianFunction();
     }
 
-    // 字符串函数
     @Bean("bean.lengthFunction")
     public LengthFunction lengthFunction() {
         return new LengthFunction();
@@ -235,7 +231,6 @@ public class FunctionConfiguration {
         return new SplitFunction();
     }
 
-    // 页面函数
     @Bean("bean.pageTotalFunction")
     public PageTotalFunction pageTotalFunction() {
         return new PageTotalFunction();
@@ -276,7 +271,6 @@ public class FunctionConfiguration {
         return new PageSumFunction();
     }
 
-    // 其他函数
     @Bean("bean.formatNumberFunction")
     public FormatNumberFunction formatNumberFunction() {
         return new FormatNumberFunction();

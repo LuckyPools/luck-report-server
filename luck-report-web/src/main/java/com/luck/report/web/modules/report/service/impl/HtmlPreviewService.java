@@ -32,7 +32,6 @@ import java.util.Map;
 
 /**
  * HTML 预览服务，负责 HTML 报表的加载、打印页、纸张信息等业务。
- * <p>Bean 名：{@code bean.htmlPreviewService}，避免与第三方系统 Bean 冲突。
  *
  * @author luck-report
  * @since 1.0.0
@@ -200,7 +199,6 @@ public class HtmlPreviewService {
                 htmlReport = exportManager.exportHtml(reportPath, contextPath, parameters);
             }
         }
-        // 计算冻结行列数，交给前端处理 sticky 定位
         if (report == null) {
             ReportDefinition rd = reportRender.getReportDefinition(reportPath);
             report = reportBuilder.buildReport(rd, parameters);
@@ -208,7 +206,6 @@ public class HtmlPreviewService {
         Paper paper = report.getPaper();
         htmlReport.setFreezeRowCount(FreezeUtils.computeFreezeRowCount(report, paper.getFreezeRowCellName()));
         htmlReport.setFreezeColCount(FreezeUtils.computeFreezeColCount(report, paper.getFreezeColCellName()));
-        // 非预览模式下补充工具配置（预览模式已在上方设置）
         if (htmlReport.getTool() == null) {
             ReportDefinition rd = reportRender.getReportDefinition(reportPath);
             htmlReport.setTool(rd.getTool());

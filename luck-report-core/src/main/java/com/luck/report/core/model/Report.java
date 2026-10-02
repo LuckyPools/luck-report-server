@@ -53,9 +53,13 @@ public class Report {
     private List<Cell> lazyComputeCells = new ArrayList<Cell>();
     private Map<Row, Map<Column, Cell>> rowColCellMap = new HashMap<Row, Map<Column, Cell>>();
     private Map<String, List<Cell>> cellsMap = new HashMap<String, List<Cell>>();
-    /** 悬浮图片元素列表（设计态配置，运行期不变） */
+    /**
+     * 悬浮图片元素列表（设计态配置，运行期不变）
+     */
     private List<FloatImage> floatImages;
-    /** 悬浮文本元素列表（设计态配置，运行期不变） */
+    /**
+     * 悬浮文本元素列表（设计态配置，运行期不变）
+     */
     private List<FloatText> floatTexts;
 
     /**
@@ -74,9 +78,7 @@ public class Report {
     }
 
     /**
-     * 将一批行按列表顺序挂接到指定 1-based 位置，再重建序号数组
-     * <p>
-     * 顺序与历史 {@code addAll(pos, insertRows)} 一致；不在此方法内按 tempRowNumber 排序。
+     * 将一批行按列表顺序挂接到指定 1-based 位置，再重建序号数组；顺序与历史 {@code addAll(pos, insertRows)} 一致；不在此方法内按 tempRowNumber 排序。
      *
      * @param firstRowIndex 1-based 插入位置（pos = firstRowIndex - 1）
      * @param insertRows 已排好序的待插入行；空则忽略
@@ -136,9 +138,7 @@ public class Report {
     }
 
     /**
-     * 将一批列按列表顺序挂接到指定 1-based 位置，再重建序号数组
-     * <p>
-     * 顺序与历史 {@code addAll(pos, insertColumns)} 一致；不在此方法内按 tempColumnNumber 排序。
+     * 将一批列按列表顺序挂接到指定 1-based 位置，再重建序号数组；顺序与历史 {@code addAll(pos, insertColumns)} 一致；不在此方法内按 tempColumnNumber 排序。
      *
      * @param firstColumnIndex 1-based 插入位置（pos = firstColumnIndex - 1）
      * @param insertColumns 已排好序的待插入列；空则忽略
@@ -187,9 +187,7 @@ public class Report {
     }
 
     /**
-     * 按当前 ArrayList 顺序串接 prev/next 并写入缓存行号
-     * <p>
-     * 用于 {@code newReport} 建表结束，或外部仅改了列表顺序后需对齐链。
+     * 按当前 ArrayList 顺序串接 prev/next 并写入缓存行号；用于 {@code newReport} 建表结束，或外部仅改了列表顺序后需对齐链。
      */
     public void chainRowsByListOrder() {
         if (rows == null || rows.isEmpty()) {
@@ -204,9 +202,7 @@ public class Report {
     }
 
     /**
-     * 按当前 ArrayList 顺序串接 prev/next 并写入缓存列号
-     * <p>
-     * 用于 {@code newReport} 建表结束，或外部仅改了列表顺序后需对齐链。
+     * 按当前 ArrayList 顺序串接 prev/next 并写入缓存列号；用于 {@code newReport} 建表结束，或外部仅改了列表顺序后需对齐链。
      */
     public void chainColumnsByListOrder() {
         if (columns == null || columns.isEmpty()) {

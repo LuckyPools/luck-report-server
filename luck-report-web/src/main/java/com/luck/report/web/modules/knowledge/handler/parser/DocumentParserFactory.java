@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * 文档解析器工厂：按文件类型选择 {@link DocumentParser}，产出纯文本后再交切割链路
+ * 文档解析器工厂
  *
  * @author luck
  */

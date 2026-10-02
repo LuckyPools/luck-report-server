@@ -168,7 +168,6 @@ public class ExpressionUtils implements ApplicationContextAware {
      */
     public static Set<String> getDependencyCellNames(CellDefinition cellDef, Map<String, CellDefinition> cellDefinitionMap) {
         Set<String> result = new HashSet<String>();
-        // 从条件属性中提取依赖单元格名
         List<ConditionPropertyItem> conditionPropertyItems = cellDef.getConditionPropertyItems();
         if (conditionPropertyItems != null && !conditionPropertyItems.isEmpty()) {
             for (ConditionPropertyItem item : conditionPropertyItems) {
@@ -179,7 +178,6 @@ public class ExpressionUtils implements ApplicationContextAware {
                 result.addAll(getCellNamesFromExpression(item.getExpression(), cellDefinitionMap));
             }
         }
-        // 从值定义中提取依赖单元格名
         Value value = cellDef.getValue();
         if (value instanceof DatasetValue) {
             DatasetValue datasetValue = (DatasetValue) value;

@@ -45,7 +45,9 @@ public class HtmlReport {
 
     private List<FloatImage> floatImages;
     private List<FloatText> floatTexts;
-    /** 预览工具栏配置 */
+    /**
+     * 预览工具栏配置
+     */
     private Tool tool;
 
     public String getContent() {

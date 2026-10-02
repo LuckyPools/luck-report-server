@@ -207,7 +207,6 @@ public class SlashBuilder {
             try {
                 ResourceCache.putObject(buildKey(reportFullName, cellName), imageBytes);
             } catch (Throwable ignore) {
-                // 无 Spring Cache 时跳过；预览/导出已带 base64
             }
             return base64Data;
         } catch (Exception ex) {

@@ -2,14 +2,18 @@ package com.luck.report.web.modules.report.domain.vo.request;
 
 import java.util.Map;
 
-/** 查询表单选项：单个数据集引用。 */
+/**
+ * 查询表单选项：单个数据集引用。
+ */
 public class SearchFormDatasetRef {
 
     private String datasourceName;
     private String datasetName;
     private String labelField;
     private String valueField;
-    /** 父节点值字段；不传则返回扁平选项 */
+    /**
+     * 父节点值字段；不传则返回扁平选项
+     */
     private String parentField;
     private Map<String, Object> parameters;
 

@@ -14,26 +14,30 @@ import java.util.Map;
 
 /**
  * 资源加载服务
- * 处理工具配置接口相关逻辑
  */
 @Service("bean.resourceLoaderService")
 @RequiredArgsConstructor
 public class ResourceLoaderService {
 
-    /** agent 链路日志总开关，随工具配置一并返回，供前端决定是否上报 */
+    /**
+     * agent 链路日志总开关，随工具配置一并返回，供前端决定是否上报
+     */
     @Qualifier("bean.agentTraceProperties")
     private final AgentTraceProperties agentTraceProperties;
 
-    /** 向量存储实现；EmptyVectorStore 时 vectorEnabled=false */
+    /**
+     * 向量存储实现；EmptyVectorStore 时 vectorEnabled=false
+     */
     private final VectorStore vectorStore;
 
-    /** 配置的向量库类型（postgresql/milvus/chroma），未配置时为空 */
+    /**
+     * 配置的向量库类型（postgresql/milvus/chroma），未配置时为空
+     */
     @Value("${luck-report.vector.type:}")
     private String vectorType;
 
     /**
      * 默认语言（可选）。未在配置文件声明或为空时回落 zh_CN。
-     * 可选值：zh_CN（中文）、en_US（英文）。
      */
     @Value("${luck-report.locale:zh_CN}")
     private String locale;
@@ -77,7 +81,6 @@ public class ResourceLoaderService {
     private void addTimezoneInfo(Map<String, Object> result) {
         result.put("timezone", "Asia/Shanghai");
     }
-
 
     /**
      * 添加导出配置

@@ -20,33 +20,50 @@ import com.luck.report.web.i18n.ReportI18n;
 
 /**
  * 报表转化工具 将 luck-report v1 版本的报表转化为 v2 版本
- * v1 使用 u-xxx 组件标签，v2 使用 a-xxx 组件标签（ant-design-vue）
  *
  * @author luck
  */
 public class TransformLuckReportV1Utils {
 
-    /** v1 tag 前缀 */
+    /**
+     * v1 tag 前缀
+     */
     private static final String V1_TAG_PREFIX = "u-";
-    /** v2 tag 前缀 */
+    /**
+     * v2 tag 前缀
+     */
     private static final String V2_TAG_PREFIX = "a-";
 
-    /** v1 formRef 值 */
+    /**
+     * v1 formRef 值
+     */
     private static final String V1_FORM_REF = "uForm";
-    /** v2 formRef 值 */
+    /**
+     * v2 formRef 值
+     */
     private static final String V2_FORM_REF = "aFormRef";
 
-    /** v1 form 默认 gutter */
+    /**
+     * v1 form 默认 gutter
+     */
     private static final String V1_FORM_GUTTER = "15";
-    /** v2 form 默认 gutter */
+    /**
+     * v2 form 默认 gutter
+     */
     private static final String V2_FORM_GUTTER = "0";
 
-    /** v1 row 默认 gutter */
+    /**
+     * v1 row 默认 gutter
+     */
     private static final String V1_ROW_GUTTER = "15";
-    /** v2 row 默认 gutter */
+    /**
+     * v2 row 默认 gutter
+     */
     private static final String V2_ROW_GUTTER = "0";
 
-    /** document URL 映射：v1 路径 → v2 ant-design-vue URL */
+    /**
+     * document URL 映射：v1 路径 → v2 ant-design-vue URL
+     */
     private static final Map<String, String> DOCUMENT_URL_MAP = new HashMap<>();
     static {
         DOCUMENT_URL_MAP.put("/component/input", "https://www.antdv.com/components/input-cn");
@@ -60,7 +77,9 @@ public class TransformLuckReportV1Utils {
         DOCUMENT_URL_MAP.put("/component/layout", "");
     }
 
-    /** size 需要从 medium 转为 small 的组件 tag */
+    /**
+     * size 需要从 medium 转为 small 的组件 tag
+     */
     private static final String[] SIZE_MEDIUM_TO_SMALL_TAGS = {
             "a-radio-group", "a-checkbox-group", "a-button"
     };
@@ -146,7 +165,7 @@ public class TransformLuckReportV1Utils {
     }
 
     /**
-     * 方法说明：将 LuckReport V1 报表 XML 字符串转化为 V2 结构
+     * 将 LuckReport V1 报表 XML 转换为 V2
      *
      * @param xmlContent 原始 XML，非空
      * @return 转化后的 XML 字符串
@@ -171,7 +190,7 @@ public class TransformLuckReportV1Utils {
     }
 
     /**
-     * 方法说明：将 dom4j Document 序列化为 UTF-8 XML 字符串
+     * 将 Document 序列化为 XML 字符串
      *
      * @param doc 文档，非空
      * @return XML 文本
@@ -188,25 +207,20 @@ public class TransformLuckReportV1Utils {
 
     /**
      * 转换 form 元素
-     * 将 v1 的 form 属性更新为 v2
      */
     private static void transformFormElement(Element formElement) {
-        // 更新 formRef
         Attribute formRefAttr = formElement.attribute("formRef");
         if (formRefAttr != null && V1_FORM_REF.equals(formRefAttr.getValue())) {
             formRefAttr.setValue(V2_FORM_REF);
         }
 
-        // 更新 tag: u-form → a-form
         updateTagAttribute(formElement);
 
-        // 更新 gutter: 15 → 0
         Attribute gutterAttr = formElement.attribute("gutter");
         if (gutterAttr != null && V1_FORM_GUTTER.equals(gutterAttr.getValue())) {
             gutterAttr.setValue(V2_FORM_GUTTER);
         }
 
-        // 递归处理子元素
         @SuppressWarnings("unchecked")
         List<Element> children = formElement.elements();
         for (Element child : children) {
@@ -220,16 +234,12 @@ public class TransformLuckReportV1Utils {
     private static void transformElement(Element element) {
         String elementName = element.getName();
 
-        // 更新 tag 属性
         updateTagAttribute(element);
 
-        // 更新 document 属性
         updateDocumentAttribute(element);
 
-        // 更新 size 属性（部分组件 medium → small）
         updateSizeAttribute(element);
 
-        // row 元素的特殊处理
         if ("row".equals(elementName)) {
             Attribute rowGutterAttr = element.attribute("gutter");
             if (rowGutterAttr != null && V1_ROW_GUTTER.equals(rowGutterAttr.getValue())) {
@@ -237,7 +247,6 @@ public class TransformLuckReportV1Utils {
             }
         }
 
-        // 递归处理子元素
         @SuppressWarnings("unchecked")
         List<Element> children = element.elements();
         for (Element child : children) {
@@ -246,7 +255,7 @@ public class TransformLuckReportV1Utils {
     }
 
     /**
-     * 更新 tag 属性：u-xxx → a-xxx
+     * 更新 tag 属性
      */
     private static void updateTagAttribute(Element element) {
         Attribute tagAttr = element.attribute("tag");
@@ -259,7 +268,7 @@ public class TransformLuckReportV1Utils {
     }
 
     /**
-     * 更新 document 属性：v1 路径 → v2 ant-design-vue URL
+     * 更新 document 属性
      */
     private static void updateDocumentAttribute(Element element) {
         Attribute docAttr = element.attribute("document");
@@ -273,7 +282,7 @@ public class TransformLuckReportV1Utils {
     }
 
     /**
-     * 更新 size 属性：部分组件从 medium 改为 small
+     * 更新 size 属性
      */
     private static void updateSizeAttribute(Element element) {
         Attribute tagAttr = element.attribute("tag");
@@ -294,10 +303,8 @@ public class TransformLuckReportV1Utils {
     }
 
     /**
-     * 递归转换XML中所有 <sql> 元素的参数占位符：:paramName → #{paramName}
-     * 排除数字后的冒号（时间格式如 12:30:00）和标识符后的冒号，支持中文参数名。
-     * 使用 CDATA 重新写入内容，避免 setText 丢失 CDATA 包装导致 pretty print
-     * 时 trimText 把 SQL 中的换行折叠成空格。
+     * 递归转换XML中所有 <sql> 元素的参数占位符
+     *
      * @param element 当前XML元素
      */
     private static void transformSqlElements(Element element) {
@@ -307,18 +314,14 @@ public class TransformLuckReportV1Utils {
             if ("sql".equals(child.getName())) {
                 String text = child.getText();
                 if (text != null && text.contains(":")) {
-                    // 排除数字后的冒号（如时间 12:30:00）和标识符后的冒号，支持中文参数名
                     String converted = text.replaceAll(
                             "(?<![a-zA-Z0-9_\\p{L}]):([a-zA-Z_\\p{L}][a-zA-Z0-9_\\p{L}]*)",
                             "#{$1}"
                     );
-                    // 用 CDATA 重新写入，保留原始换行格式；setText 会把 CDATA 变成普通文本，
-                    // 进而被 OutputFormat.createPrettyPrint() 的 trimText 折叠掉换行
                     child.clearContent();
                     child.addCDATA(converted);
                 }
             } else {
-                // 非sql元素继续递归查找
                 transformSqlElements(child);
             }
         }

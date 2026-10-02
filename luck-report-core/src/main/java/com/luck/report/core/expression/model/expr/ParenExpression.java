@@ -19,7 +19,6 @@ import com.luck.report.core.expression.model.Operator;
 
 import java.util.List;
 
-
 /**
  * @author Jacky.gao
  * @since 2016年11月18日

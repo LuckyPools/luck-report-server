@@ -8,9 +8,13 @@ import java.io.Serializable;
 public class DatasetParam implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** 数据集查询参数名（SQL 数据集 parameter 的 name / Bean 方法参数 key） */
+    /**
+     * 数据集查询参数名（SQL 数据集 parameter 的 name / Bean 方法参数 key）
+     */
     private String paramKey;
-    /** 父查询字段的 vModel */
+    /**
+     * 父查询字段的 vModel
+     */
     private String parentField;
 
     /**

@@ -73,10 +73,8 @@ public class ReportParser {
             Collections.sort(report.getRows());
             Collections.sort(report.getColumns());
         } catch (DocumentException ex) {
-            // SAX 语法错误单独处理：从底层 SAXParseException 还原行列号
             throw new ReportParseException(buildXmlSyntaxMessage(ex));
         } catch (ReportParseException ex) {
-            // 已带定位信息的解析异常直接透传，避免再包一层丢失消息
             throw ex;
         } catch (Exception ex) {
             throw new ReportParseException(ex);
@@ -106,7 +104,6 @@ public class ReportParser {
     private void parseElement(Element ele, ReportDefinition report) {
         Parser<?> parser = parsers.get(ele.getName());
         if (parser == null) {
-            // 未知标签与历史行为保持一致：静默跳过，保证向前兼容
             return;
         }
         Object target;

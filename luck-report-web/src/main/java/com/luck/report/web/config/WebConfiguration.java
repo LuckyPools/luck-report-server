@@ -37,23 +37,17 @@ import java.util.concurrent.TimeUnit;
 public class WebConfiguration implements WebMvcConfigurer {
 
     /**
-     * 后台 servlet 前缀（默认 {@code report}），与所有 controller 的
-     * {@code @RequestMapping("${luck-report.servletPrefix:}/xxx")} 保持一致。
+     * 后台 servlet 前缀（默认 {@code report}），与所有 controller 的 RequestMapping 保持一致。
      */
     @Value("${luck-report.servletPrefix:}")
     private String servletPrefix;
 
     /**
-     * 注册前端静态资源处理器（yml 只支持单 pattern/单 location 列表，编程式注册）：
-     * {@code /<servletPrefix>/lib/**} -> classpath:/html/lib/（npm run lib 产物）。
-     * <p>lib 资源链：{@link EncodedResourceResolver} 回吐构建期预生成的 .gz（无需宿主开启
-     * server.compression），{@link PathResourceResolver} 兜底回原文件；
-     * Cache-Control 为 <b>1 天</b>公开缓存。发版/多次 build:lib 靠壳页面
-     * {@code ?v=${assetVersion}} 换 URL 强制拉新，不必依赖缩短 max-age，也不必用户清缓存。
+     * 注册前端静态资源处理器
      */
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        String prefix = servletPrefix == null || servletPrefix.isEmpty() ? "report" : servletPrefix;
+        String prefix = servletPrefix == null || servletPrefix.isEmpty() ? "" : servletPrefix;
         registry.addResourceHandler("/" + prefix + "/lib/**")
                 .addResourceLocations("classpath:/html/lib/")
                 .setCacheControl(CacheControl.maxAge(1, TimeUnit.DAYS).cachePublic())

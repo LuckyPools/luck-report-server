@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 
 /**
  * 智能体知识转换器
- * 用于Entity、DTO、VO之间的相互转换
  *
  * @author luck
  */
@@ -58,7 +57,6 @@ public class AgentKnowledgeConverter {
         }
         LocalDateTime now = LocalDateTime.now();
 
-        // 设置分块策略：blank → recursive；非法值抛业务异常
         String splitterType = SplitterType.fromValue(dto.getSplitterType()).getValue();
 
         AgentKnowledge knowledge = new AgentKnowledge();
@@ -74,7 +72,6 @@ public class AgentKnowledgeConverter {
         knowledge.setCreateTime(now);
         knowledge.setUpdateTime(now);
 
-        // 文档类型时设置文件信息
         if (dto.getFile() != null && !dto.getFile().isEmpty()) {
             knowledge.setSourceFilename(dto.getFile().getOriginalFilename());
             knowledge.setFileSize(dto.getFile().getSize());

@@ -7,8 +7,6 @@ import org.springframework.stereotype.Component;
 
 /**
  * PostgreSQL数据源类型处理器
- * 负责PostgreSQL类型的JDBC URL生成和Schema提取
- * PostgreSQL的databaseName格式为 "数据库名|Schema名"
  *
  * @author luck
  */
@@ -25,7 +23,6 @@ public class PostgresqlDatasourceTypeHandler implements DatasourceTypeHandler {
         if (!hasRequiredConnectionFields(datasource)) {
             return datasource.getConnectionUrl();
         }
-        // databaseName格式: "数据库名|Schema名"，取前半部分作为JDBC URL中的数据库名
         String dbName = datasource.getDatabaseName();
         if (dbName != null && dbName.contains("|")) {
             dbName = dbName.split("\\|")[0];

@@ -119,6 +119,5 @@ public class ColComponent extends ContainerComponent {
 
     @Override
     public void setType(String type) {
-        // ColComponent 不需要设置 type
     }
 }

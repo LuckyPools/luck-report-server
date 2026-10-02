@@ -7,8 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 图表系列/扇区自定义调色板。
- * 不参与 Chart.js options JSON，由 Dataset 取色消费。
+ * 图表系列/扇区自定义调色板。不参与 Chart.js options JSON，由 Dataset 取色消费。
  */
 public class ColorsOption implements Option, Serializable {
     private static final long serialVersionUID = 1L;
@@ -28,7 +27,6 @@ public class ColorsOption implements Option, Serializable {
     }
 
     public void setType(String type) {
-        // JSON 反序列化兼容
     }
 
     public List<String> getColors() {

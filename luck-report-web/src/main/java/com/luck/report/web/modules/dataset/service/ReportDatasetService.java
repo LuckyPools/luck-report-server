@@ -9,7 +9,6 @@ import java.util.List;
 
 /**
  * 公共数据集服务接口
- * 提供公共数据集的增删改查、分页查询和状态管理能力
  *
  * @author luck
  */
@@ -41,7 +40,6 @@ public interface ReportDatasetService {
 
     /**
      * 创建公共数据集
-     * 校验名称唯一、类型合法、sql类型必绑已启用公共数据源且SQL通过安全校验、json类型内容必须为合法JSON数组
      *
      * @param dto 保存参数
      * @return 创建后的公共数据集VO
@@ -50,7 +48,6 @@ public interface ReportDatasetService {
 
     /**
      * 更新公共数据集
-     * 校验规则与创建一致，改名时重新查重
      *
      * @param id 公共数据集ID
      * @param dto 保存参数
@@ -82,7 +79,6 @@ public interface ReportDatasetService {
 
     /**
      * 统计引用指定公共数据源的公共数据集数量
-     * 数据源删除前的引用检查使用
      *
      * @param datasourceId 公共数据源ID
      * @return 引用数量

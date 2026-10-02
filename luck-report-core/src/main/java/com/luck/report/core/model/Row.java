@@ -19,7 +19,6 @@ import com.luck.report.core.definition.Band;
 
 import java.util.List;
 
-
 /**
  * @author Jacky.gao
  * @since 2016年11月1日
@@ -28,9 +27,13 @@ public class Row extends Line {
     private int height;
     private int realHeight = -1;
     private String rowKey;
-    /** 展开插行前的排序键，仅 complete() 排序用 */
+    /**
+     * 展开插行前的排序键，仅 complete() 排序用
+     */
     private int tempRowNumber;
-    /** 正式行号（1-based），insert/chain 后由 Report 写入 */
+    /**
+     * 正式行号（1-based），insert/chain 后由 Report 写入
+     */
     private int rowNumber;
     private Band band;
     private int pageIndex;

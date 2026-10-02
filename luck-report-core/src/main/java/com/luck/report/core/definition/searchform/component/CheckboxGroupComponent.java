@@ -15,9 +15,13 @@ public class CheckboxGroupComponent extends BaseInputComponent {
     private boolean border;
     private String size;
     private String defaultValue;
-    /** 选项来源：static=静态（默认），dataset=关联数据集 */
+    /**
+     * 选项来源：static=静态（默认），dataset=关联数据集
+     */
     private String optionSource;
-    /** 数据集选项绑定（optionSource=dataset 时有效） */
+    /**
+     * 数据集选项绑定（optionSource=dataset 时有效）
+     */
     private DatasetOption datasetOption;
 
     /**

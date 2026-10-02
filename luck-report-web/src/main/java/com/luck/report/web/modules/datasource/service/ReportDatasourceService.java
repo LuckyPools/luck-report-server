@@ -12,7 +12,6 @@ import java.util.List;
 
 /**
  * 数据源服务接口
- * 提供数据源的增删改查、连接测试、表管理、Schema初始化和逻辑外键管理功能
  *
  * @author luck
  */
@@ -109,7 +108,6 @@ public interface ReportDatasourceService {
 
     /**
      * 初始化表Schema到向量数据库
-     * 将指定表的Schema信息向量化存储，供agent查询使用
      *
      * @param id      数据源ID
      * @param tables  需要初始化的表名列表
@@ -172,8 +170,6 @@ public interface ReportDatasourceService {
 
     /**
      * 构建SchemaDTO
-     * 通过向量检索召回与查询相关的表结构，合并逻辑外键，组装为统一的SchemaDTO
-     * 直接序列化返回给前端，由前端/Agent 转发给 LLM 消费
      *
      * @param datasourceId 数据源ID
      * @param query        用户自然语言查询
@@ -183,8 +179,6 @@ public interface ReportDatasourceService {
 
     /**
      * 获取与查询相关的表结构信息（含表/字段/外键）
-     * 传入查询文本，通过向量检索召回相关表并组装为结构化 SchemaDTO
-     * 供前端 Agent 序列化后给 LLM 生成 SQL 做参考
      *
      * @param datasourceId 数据源ID
      * @param query        用户自然语言查询
@@ -194,7 +188,6 @@ public interface ReportDatasourceService {
 
     /**
      * 根据名称获取数据源
-     * 用于通过数据源名称获取数据源详情
      *
      * @param name 数据源名称
      * @return 数据源VO，不存在则返回null
@@ -211,8 +204,6 @@ public interface ReportDatasourceService {
 
     /**
      * 跨数据源搜索Schema
-     * 遍历所有已启用数据源，通过向量检索召回与查询相关的表结构
-     * 返回每个匹配数据源的基本信息和格式化的Schema提示词，供Agent快速定位合适的数据源
      *
      * @param query 用户自然语言查询
      * @return 搜索结果列表，按相关度排序

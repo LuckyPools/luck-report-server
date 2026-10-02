@@ -36,8 +36,7 @@ public class ChromaVectorStoreConfiguration {
     }
 
     /**
-     * 创建 Chroma 底层 API（用于直接传向量的增删查操作）
-     * DefaultApi 通过 ApiClient 连接 Chroma 服务，与 Client 共用同一个 URL
+     * 创建 Chroma 底层 DefaultApi
      *
      * @param props Chroma 配置属性
      * @return DefaultApi 实例

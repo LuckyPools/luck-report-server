@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 
 /**
  * 数据源配置实体
- * 存储数据源连接信息，供agent查询和调用
  *
  * @author luck
  */
@@ -19,41 +18,65 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class ReportDatasource extends DataEntity<ReportDatasource> {
 
-    /** 数据源名称 */
+    /**
+     * 数据源名称
+     */
     private String name;
 
-    /** 数据源类型：mysql/postgresql/oracle/dameng/sqlserver/hive */
+    /**
+     * 数据源类型：mysql/postgresql/oracle/dameng/sqlserver/hive
+     */
     private String type;
 
-    /** 主机地址 */
+    /**
+     * 主机地址
+     */
     private String host;
 
-    /** 端口号 */
+    /**
+     * 端口号
+     */
     private Integer port;
 
-    /** 数据库名 */
+    /**
+     * 数据库名
+     */
     private String databaseName;
 
-    /** 用户名 */
+    /**
+     * 用户名
+     */
     private String username;
 
-    /** 密码（序列化时隐藏） */
+    /**
+     * 密码（序列化时隐藏）
+     */
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
-    /** 完整JDBC连接URL */
+    /**
+     * 完整JDBC连接URL
+     */
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String connectionUrl;
 
-    /** 是否启用 */
+    /**
+     * 是否启用
+     */
     private Boolean enabled;
 
-    /** 连接测试状态：success/failed/unknown */
+    /**
+     * 连接测试状态：success/failed/unknown
+     */
     private String testStatus;
 
-    /** 描述 */
+    /**
+     * 描述
+     */
     private String description;
 
-    /** 已初始化的表名列表（JSON格式存储，如["table1","table2"]） */
+    /**
+     * 已初始化的表名列表（JSON格式存储）
+     */
     private String initializedTables;
 }

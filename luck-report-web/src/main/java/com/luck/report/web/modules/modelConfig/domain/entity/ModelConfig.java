@@ -11,8 +11,6 @@ import java.time.LocalDateTime;
 
 /**
  * 大模型配置实体
- * 存储大模型的连接信息和调用参数，后期会提供管理界面维护
- * 当前从内存缓存中读取，默认返回千问的配置
  *
  * @author luck
  */
@@ -21,51 +19,83 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ModelConfig extends DataEntity<ModelConfig> {
 
-    /** 厂商标识（如 alibaba、openai），方便前端展示回显 */
+    /**
+     * 厂商标识（如 alibaba、openai），方便前端展示回显
+     */
     private String provider;
 
-    /** API 基础地址（如 https://dashscope.aliyuncs.com/compatible-mode/v1） */
+    /**
+     * API 基础地址（如 https://dashscope.aliyuncs.com/compatible-mode/v1）
+     */
     private String baseUrl;
 
-    /** API 密钥（落库加密；调用前解密） */
+    /**
+     * API 密钥（落库加密；调用前解密）
+     */
     private String apiKey;
 
-    /** 模型名称（如 qwen3.6-plus、text-embedding-v3） */
+    /**
+     * 模型名称（如 qwen3.6-plus、text-embedding-v3）
+     */
     private String modelName;
 
-    /** 自定义名称，最多50个字 */
+    /**
+     * 自定义名称，最多50个字
+     */
     private String configName;
 
-    /** 排序字段，数字越小越靠前 */
+    /**
+     * 排序字段，数字越小越靠前
+     */
     private Integer sort;
 
-    /** 温度参数，控制生成随机性，0~1 */
+    /**
+     * 温度参数，控制生成随机性，0~1
+     */
     private Double temperature;
 
-    /** 是否启用：true-启用，false-禁用 */
+    /**
+     * 是否启用：true-启用，false-禁用
+     */
     private Boolean enabled;
 
-    /** 上下文窗口大小（token），供 Agent 压缩判断；不作为 API 输出上限 */
+    /**
+     * 上下文窗口大小（token），供 Agent 压缩判断；不作为 API 输出上限
+     */
     private Integer contextWindowTokens;
 
-    /** 模型类型：CHAT / EMBEDDING / RERANK */
+    /**
+     * 模型类型：CHAT / EMBEDDING / RERANK
+     */
     private ModelType modelType;
 
-    /** API 路径，拼在 baseUrl 后；按类型默认不同（如 /v1/chat/completions、/embeddings、/rerank） */
+    /**
+     * API 路径，拼在 baseUrl 后；按类型默认不同（如 /v1/chat/completions、/embeddings、/rerank）
+     */
     private String apiPath;
 
-    /** 是否启用代理：false-禁用，true-启用 */
+    /**
+     * 是否启用代理：false-禁用，true-启用
+     */
     private Boolean proxyEnabled;
 
-    /** 代理主机地址 */
+    /**
+     * 代理主机地址
+     */
     private String proxyHost;
 
-    /** 代理端口 */
+    /**
+     * 代理端口
+     */
     private Integer proxyPort;
 
-    /** 代理用户名（可选） */
+    /**
+     * 代理用户名（可选）
+     */
     private String proxyUsername;
 
-    /** 代理密码（可选） */
+    /**
+     * 代理密码（可选）
+     */
     private String proxyPassword;
 }

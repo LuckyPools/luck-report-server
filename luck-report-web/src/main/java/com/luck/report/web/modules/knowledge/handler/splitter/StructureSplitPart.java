@@ -1,6 +1,8 @@
 package com.luck.report.web.modules.knowledge.handler.splitter;
 
-/** FastGPT getSplitTexts 产出的单段。 */
+/**
+ * FastGPT getSplitTexts 产出的单段。
+ */
 class StructureSplitPart {
 
     final String text;

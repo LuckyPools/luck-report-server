@@ -11,8 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
- * javax.servlet（Spring Boot 2.x）ViewRenderer 实现。
- * <p>使用 Thymeleaf + javax.servlet WebContext 渲染页面。
+ * javax.servlet（Spring Boot 2.x）ViewRenderer，基于 Thymeleaf 渲染页面。
  */
 public class JavaxViewRenderer implements ViewRenderer {
 
@@ -27,23 +26,19 @@ public class JavaxViewRenderer implements ViewRenderer {
         HttpServletRequest request = webRequest.getNativeRequest(HttpServletRequest.class);
         HttpServletResponse response = webRequest.getNativeResponse(HttpServletResponse.class);
 
-        // 构建 Thymeleaf WebContext
         WebContext context = new WebContext(request, response, request.getServletContext());
 
-        // 注入模板变量
         String token = request.getParameter("token");
         String baseURL = request.getContextPath()
                 + (servletPrefix == null || servletPrefix.isEmpty() ? "" : "/" + servletPrefix);
         context.setVariable("token", token == null ? "" : token);
         context.setVariable("baseURL", baseURL);
         context.setVariable("servletPrefix", servletPrefix == null ? "" : servletPrefix);
-        // 强缓存下的 cache-bust：发版/重新 build:lib 后强制拉新 style.css（含 iconfont）
+        // 强缓存下 cache-bust，发版后强制拉新静态资源
         context.setVariable("assetVersion", LibAssetVersions.current());
 
-        // 设置响应类型
         response.setContentType("text/html;charset=UTF-8");
 
-        // 使用独立模板引擎渲染
         templateEngine.process(templateName, context, response.getWriter());
     }
 }

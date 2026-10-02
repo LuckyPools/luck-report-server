@@ -9,8 +9,6 @@ import java.util.regex.Pattern;
 
 /**
  * 段落分块器
- * 移植自 data-agent 的 ParagraphTextSplitter，适配为独立 TextSplitter 实现
- * 按段落边界切分，支持递归降级（段落→句子→字符）和重叠
  *
  * @author luck
  */
@@ -71,7 +69,7 @@ public class ParagraphTextSplitter implements TextSplitter {
     }
 
     /**
-     * 装箱：能塞则塞；超限则出块并保留 overlap
+     * 将文本块装入当前分块
      */
     private StringBuilder packInto(List<String> chunks, StringBuilder currentChunk, String piece) {
         int separatorLength = currentChunk.length() > 0 ? 2 : 0;

@@ -18,20 +18,14 @@ package com.luck.report.core.chart;
 import java.io.Serializable;
 
 /**
- * 数据标签字体配置（对应 ECharts series.label.fontSize/color/fontWeight）
- * 用于 DataLabelsPlugin 的 font 字段，独立于 FontStyle 枚举，避免语义混淆。
- *
- * 调用方：DataLabelsPlugin.toJson() 消费本类输出 JSON
+ * 数据标签字体配置（对应 ECharts series.label.fontSize/color/fontWeight）；用于 DataLabelsPlugin 的 font 字段，独立于 FontStyle 枚举，避免语义混淆。调用方：DataLabelsPlugin.toJson() 消费本类输出 JSON
  */
 public class Font implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public Font() {}
-    // 字号（对应 ECharts series.label.fontSize）
     private int size = 12;
-    // 颜色（对应 ECharts series.label.color；为 null 时随系列色）
     private String color = "#333";
-    // 字体粗细（对应 ECharts series.label.fontWeight；normal/bold/bolder/lighter）
     private String weight = "normal";
 
     /**

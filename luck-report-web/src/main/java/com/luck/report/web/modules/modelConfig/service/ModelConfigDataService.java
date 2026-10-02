@@ -10,7 +10,6 @@ import java.util.List;
 
 /**
  * 模型配置数据服务接口
- * 提供模型配置的基础CRUD操作
  *
  * @author luck
  */
@@ -26,7 +25,6 @@ public interface ModelConfigDataService {
 
     /**
      * 启用模型配置
-     * 将指定ID的配置设置为启用状态，不禁用同类型的其他配置
      *
      * @param id 要启用的配置ID
      */
@@ -34,8 +32,6 @@ public interface ModelConfigDataService {
 
     /**
      * 禁用模型配置
-     * 将指定ID的配置设置为禁用状态
-     * 如果该类型只有一个启用的模型，则不允许禁用，至少保留一个可用模型
      *
      * @param id 要禁用的配置ID
      * @throws RuntimeException 当该类型只有一个启用的模型时抛出
@@ -104,8 +100,6 @@ public interface ModelConfigDataService {
 
     /**
      * 根据模型ID获取对话模型配置（带缓存）
-     * 如果未传modelId，则使用默认激活的第一个对话模型
-     * 优先从缓存读取，缓存不存在时从数据库查询并写入缓存
      *
      * @param modelId 模型配置ID，可为null
      * @return Index 对话模型配置

@@ -93,7 +93,9 @@ public class CacheUtils {
         getReportCache().put(key, value);
     }
 
-    /** @param time 过期秒数 */
+    /**
+     * @param time 过期秒数
+     */
     public static <T> void put(String key, T value, long time) {
         getReportCache().put(key, value, time);
     }
@@ -110,7 +112,9 @@ public class CacheUtils {
         return getReportCache().keys(keyPatten);
     }
 
-    /** @param time 过期秒数 */
+    /**
+     * @param time 过期秒数
+     */
     public static boolean setExpire(String key, long time) {
         return getReportCache().setExpire(key, time);
     }

@@ -15,8 +15,6 @@
  ******************************************************************************/
 package com.luck.report.core.definition.value;
 
-
-
 import java.io.Serializable;
 import java.util.List;
 
@@ -66,7 +64,6 @@ public class SlashValue implements Value, Serializable {
      * @param type 类型（忽略）
      */
     public void setType(ValueType type) {
-        // 空实现，忽略type字段
     }
 
     /**
@@ -74,7 +71,6 @@ public class SlashValue implements Value, Serializable {
      * @param value 值（忽略）
      */
     public void setValue(String value) {
-        // 空实现，忽略value字段
     }
 
     public String getBase64Data() {

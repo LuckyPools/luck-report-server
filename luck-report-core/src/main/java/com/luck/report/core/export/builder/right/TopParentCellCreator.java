@@ -86,7 +86,6 @@ public class TopParentCellCreator {
         }
     }
 
-
     private boolean assertDoBlank(CellDefinition nextParentCell, CellDefinition parentCell, CellDefinition mainCell, Range childRange) {
         if (nextParentCell == null) {
             return false;

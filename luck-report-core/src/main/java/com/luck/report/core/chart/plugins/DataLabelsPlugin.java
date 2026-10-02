@@ -42,7 +42,6 @@ public class DataLabelsPlugin implements Plugin, Serializable {
      * @param name
      */
     public void setName(String name) {
-        // 空实现，忽略name字段
     }
 
     @Override
@@ -55,7 +54,6 @@ public class DataLabelsPlugin implements Plugin, Serializable {
         if (formatter != null && !formatter.isEmpty()) {
             sb.append(",\"formatter\":\"").append(formatter).append("\"");
         }
-        // font 为空时仍输出默认 font，保持与旧版前端 buildChartJsConfig 行为一致
         sb.append(",\"font\":").append(font != null ? font.toJson() : "{\"size\":12,\"color\":\"#333\",\"weight\":\"normal\"}");
         sb.append("}");
         return sb.toString();

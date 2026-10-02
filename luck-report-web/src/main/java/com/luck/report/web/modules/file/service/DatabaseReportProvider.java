@@ -25,8 +25,6 @@ import java.util.Objects;
 
 /**
  * 数据库存储报表 Provider
- * - prefix: db:
- * - 报表 ID 即 luck_report_template.id，file 入参格式为 "db:123"
  *
  * @author luck
  */
@@ -110,12 +108,10 @@ public class DatabaseReportProvider implements ReportProvider {
 
     @Override
     public ReportFile saveReport(String title, String reportPath, String content) {
-        // db:123（已存在）或 db:title（创建）
         String id = sliceId(reportPath);
         title = title == null ? StringUtils.EMPTY : title.trim();
         Date now = new Date();
         content = content == null ? StringUtils.EMPTY : content;
-        // 持久化前加密自定义 JDBC 密码
         content = ReportJdbcPasswordXmlUtils.encryptJdbcPasswords(content);
 
         if (StringUtils.isNotBlank(id)) {
@@ -151,10 +147,6 @@ public class DatabaseReportProvider implements ReportProvider {
 
     /**
      * 构造 saveReport 返回的 ReportFile
-     * - path 为数据库主键 id（不含 PREFIX 前缀），与 getReportFiles 保持一致
-     * - name 为展示标题
-     * - directory 固定 false
-     * - updateDate 优先用实体的更新时间，缺失时回退到本次保存时间
      */
     private ReportFile buildReportFile(String title, ReportTemplate entity, Date fallback) {
         String id = entity == null ? null : entity.getId();
@@ -207,7 +199,6 @@ public class DatabaseReportProvider implements ReportProvider {
         if (title.isEmpty()) {
             throw new ReportException("error.report.nameEmpty");
         }
-        // 走 updateMeta 白名单更新：只改 title，物理上不会触碰 template 列
         ReportTemplate patch = new ReportTemplate();
         patch.setId(id);
         patch.setTitle(title);

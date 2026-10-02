@@ -1,8 +1,7 @@
 package com.luck.report.core.exception;
 
 /**
- * 通用业务异常，用于替换散落的 {@code RuntimeException} / {@code IllegalArgumentException}。
- * <p>与 ReportException 的区别：ReportException 语义偏"报表内核错误"，本类用于普通业务校验与流程中断。
+ * 通用业务异常，用于替换散落的 {@code RuntimeException} / {@code IllegalArgumentException}。与 ReportException 的区别：ReportException 语义偏"报表内核错误"，本类用于普通业务校验与流程中断。
  */
 public class ReportBizException extends RuntimeException implements ErrorCodeAware {
 
@@ -24,7 +23,9 @@ public class ReportBizException extends RuntimeException implements ErrorCodeAwa
         this.errorArgs = null;
     }
 
-    /** errorArgs 依次对应 {0}、{1} */
+    /**
+     * errorArgs 依次对应 {0}、{1}
+     */
     public ReportBizException(String errorCode, Object... errorArgs) {
         super(errorCode);
         this.errorCode = errorCode;

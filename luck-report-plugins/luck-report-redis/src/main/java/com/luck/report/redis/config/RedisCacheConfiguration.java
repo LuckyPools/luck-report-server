@@ -21,13 +21,7 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 /**
- * Redis 缓存配置类。
- * 第三方项目引入 luck-report-redis 依赖后，自动装配 RedisTemplate 与 RedisCache Bean，
- * 实现 ReportCache 接口的分布式缓存能力。配合 luck-report.disableLocalReportCache=true 禁用本地缓存后生效。
- *
- * 使用 name 字符串引用替代 class 引用，兼容 Spring Boot 2/3/4
- * （Boot 4 将 RedisAutoConfiguration 从 org.springframework.boot.autoconfigure.data.redis
- * 迁移到了 org.springframework.boot.data.redis.autoconfigure）
+ * Redis 缓存配置
  *
  * @author luckyPools
  * @since 2017年3月8日
@@ -41,8 +35,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 public class RedisCacheConfiguration {
 
     /**
-     * 配置 RedisTemplate Bean。
-     * Key 使用 String 序列化器，Value 使用 JSON 序列化器，保证缓存值可读性与类型还原。
+     * 配置 RedisTemplate Bean
      *
      * @param connectionFactory Redis 连接工厂，由 Spring Boot RedisAutoConfiguration 自动注入，不能为空
      * @return 配置好的 RedisTemplate 实例
@@ -73,8 +66,7 @@ public class RedisCacheConfiguration {
     }
 
     /**
-     * 配置 RedisCache Bean，实现 ReportCache 接口。
-     * 由 CacheUtils 在运行时选取首个非 disabled 的 ReportCache 实例。
+     * 配置 RedisCache Bean
      *
      * @param redisTemplate       Redis 操作模板，通过 @Qualifier 指定使用 bean.remoteRedisTemplate，不能为空
      * @param cacheExpireSeconds  默认过期时间（秒），对应 luck-report.cacheExpireSeconds

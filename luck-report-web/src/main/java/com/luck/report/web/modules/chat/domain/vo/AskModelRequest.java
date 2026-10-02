@@ -7,35 +7,45 @@ import java.util.Map;
 
 /**
  * 大模型调用请求参数
- * 封装调用大模型所需的全部参数，由调用方构建后传入 askModel
- *
- * 调用者：ChatController.chatStream() → ChatUtils.buildStreamCall()
- *         ChatCompactController.compact() → ChatUtils.askModel()
  *
  * @author luck
  */
 public class AskModelRequest {
-    /** 模型配置，包含 baseUrl、apiKey、modelName 等 */
+    /**
+     * 模型配置，包含 baseUrl、apiKey、modelName 等
+     */
     private final ModelConfig chatConfig;
-    /** OpenAI 格式的消息列表 */
+    /**
+     * OpenAI 格式的消息列表
+     */
     private final List<Map<String, Object>> messages;
-    /** 是否流式请求 */
+    /**
+     * 是否流式请求
+     */
     private boolean stream = false;
-    /** 温度参数，控制生成随机性 */
+    /**
+     * 温度参数，控制生成随机性
+     */
     private Double temperature;
-    /** 本次请求的输出 token 上限（可选）；与 ModelConfig.contextWindowTokens（上下文窗口）无关 */
+    /**
+     * 本次请求的输出 token 上限（可选）；与 ModelConfig.contextWindowTokens（上下文窗口）无关
+     */
     private Integer maxTokens;
-    /** 工具定义列表（OpenAI Function Calling 格式），可为 null */
+    /**
+     * 工具定义列表（OpenAI Function Calling 格式），可为 null
+     */
     private List<Map<String, Object>> tools;
-    /** 工具调用策略，如 "auto"、"none"，或 {"type":"function","function":{"name":"xxx"}} 强制调用，可为 null */
+    /**
+     * 工具调用策略，如 "auto"、"none"，或强制调用指定函数，可为 null
+     */
     private Object toolChoice;
-    /** 流式选项，如 {"include_usage": true}，可为 null */
+    /**
+     * 流式选项，如 {"include_usage": true}，可为 null
+     */
     private Map<String, Object> streamOptions;
 
     /**
      * 是否启用深度思考
-     * 启用后，大模型会先生成推理过程（reasoning_content），再生成最终回复
-     * 部分模型（如 Qwen）需要通过 extra_params 配置
      */
     private Boolean deepThink = false;
 

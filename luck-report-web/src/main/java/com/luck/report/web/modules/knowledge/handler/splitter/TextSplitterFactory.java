@@ -11,16 +11,6 @@ import org.springframework.stereotype.Component;
 
 /**
  * 文本分块器工厂
- * 根据 splitterType 选择对应的分块策略
- *
- * 支持的策略：
- * - token: 按固定字符数切分，适用于代码、日志等
- * - recursive: Dify 风格递归分隔符切分
- * - structure: FastGPT 结构感知（标题/代码/表）
- * - table: FastGPT Markdown 表行窗
- * - sentence / paragraph / semantic: 既有策略
- *
- * chunkSize / chunkOverlap 来自 {@code luck-report.vector} 配置（字符级）。
  *
  * @author luck
  */

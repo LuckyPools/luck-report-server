@@ -52,8 +52,6 @@ public class ImportExcelController {
 
     /**
      * 按配置参数解析 Excel 为 JSON 字符串
-     * <p>行号参数（headerRowIndex/firstDataRowIndex/lastDataRowIndex）采用从 1 开始的语义，
-     * 与 Excel 中直观的"第几行"一致，服务端会转换为 POI 所需的从 0 开始的索引。</p>
      *
      * @param file              上传的 Excel 文件，参数名 _excel_file
      * @param sheetIndex        指定解析的 Sheet 索引（从 0 开始，可为空），为空时默认读取第一个 Sheet

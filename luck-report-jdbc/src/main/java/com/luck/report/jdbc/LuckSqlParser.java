@@ -193,7 +193,6 @@ public class LuckSqlParser {
         if (refid == null || refid.trim().isEmpty()) {
             throw new IllegalArgumentException("<include> refid is required");
         }
-        // 支持 namespace.id 或本地 id
         String localId = refid;
         int dot = refid.lastIndexOf('.');
         if (dot >= 0) {

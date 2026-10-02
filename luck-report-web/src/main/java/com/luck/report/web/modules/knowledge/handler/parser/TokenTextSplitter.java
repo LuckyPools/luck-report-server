@@ -7,8 +7,6 @@ import java.util.List;
 
 /**
  * Token分块器
- * 按固定字符数切分，支持重叠
- * 适用于代码、日志等无明显语义边界的文本
  *
  * @author luck
  */
@@ -45,7 +43,6 @@ public class TokenTextSplitter implements TextSplitter {
             int end = Math.min(start + chunkSize, textLen);
             String candidate = text.substring(start, end);
 
-            // 仅对「末块且过短」做冗余处理，避免重复字符文本误判 contains
             if (end == textLen && !chunks.isEmpty() && candidate.length() < chunkSize * 0.5) {
                 String last = chunks.get(chunks.size() - 1);
                 if (last.endsWith(candidate)) {

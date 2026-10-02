@@ -34,7 +34,6 @@ import java.sql.Connection;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-
 /**
  * @author Jacky.gao
  * @since 2016年11月12日
@@ -70,9 +69,7 @@ public class Utils implements ApplicationContextAware {
     }
 
     /**
-     * 获取所有内置数据源
-     * 优先从 BuildinDatasourceRegistry 动态获取（agent 模块从数据库加载）
-     * 如果没有 Registry，则从 Spring 容器直接获取 BuildinDatasource Bean
+     * 获取所有内置数据源；优先从 BuildinDatasourceRegistry 动态获取（agent 模块从数据库加载）；如果没有 Registry，则从 Spring 容器直接获取 BuildinDatasource Bean
      *
      * @return 内置数据源集合
      */
@@ -81,7 +78,6 @@ public class Utils implements ApplicationContextAware {
             return new ArrayList<BuildinDatasource>();
         }
 
-        // 优先从 BuildinDatasourceRegistry 动态获取（agent 模块已加载）
         Map<String, BuildinDatasourceRegistry> registryBeans = applicationContext.getBeansOfType(BuildinDatasourceRegistry.class);
         if (!registryBeans.isEmpty()) {
             List<BuildinDatasource> result = new ArrayList<BuildinDatasource>();
@@ -91,7 +87,6 @@ public class Utils implements ApplicationContextAware {
             return result;
         }
 
-        // 备选方案：从 Spring 容器直接获取 BuildinDatasource Bean
         return new ArrayList<BuildinDatasource>(applicationContext.getBeansOfType(BuildinDatasource.class).values());
     }
 

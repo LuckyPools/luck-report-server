@@ -18,6 +18,8 @@ package com.luck.report.infra.modules.servlet.context;
 import com.luck.report.infra.modules.servlet.provider.ApiRequest;
 
 /**
+ * 当前请求上下文持有者
+ *
  * @author Jacky.gao
  * @since 2017年3月8日
  */

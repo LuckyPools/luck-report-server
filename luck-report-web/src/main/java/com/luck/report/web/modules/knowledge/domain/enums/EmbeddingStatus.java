@@ -6,23 +6,30 @@ import com.luck.report.core.exception.ReportBizException;
 
 /**
  * 向量化状态枚举类
- * 用于标识业务知识向量化处理的状态
  *
  * @author luck
  */
 @Getter
 public enum EmbeddingStatus {
 
-    /** 待处理 */
+    /**
+     * 待处理
+     */
     PENDING("PENDING"),
 
-    /** 处理中 */
+    /**
+     * 处理中
+     */
     PROCESSING("PROCESSING"),
 
-    /** 已完成 */
+    /**
+     * 已完成
+     */
     COMPLETED("COMPLETED"),
 
-    /** 失败 */
+    /**
+     * 失败
+     */
     FAILED("FAILED");
 
     private final String value;

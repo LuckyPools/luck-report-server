@@ -175,22 +175,34 @@ public class Paper implements Serializable {
         this.htmlIntervalRefreshValue = htmlIntervalRefreshValue;
     }
 
-    /** @return 冻结行锚点单元格名；为空表示不冻结行 */
+    /**
+     *
+     * @return 冻结行锚点单元格名；为空表示不冻结行
+     */
     public String getFreezeRowCellName() {
         return freezeRowCellName;
     }
 
-    /** @param freezeRowCellName 冻结行锚点单元格名，可空 */
+    /**
+     *
+     * @param freezeRowCellName 冻结行锚点单元格名，可空
+     */
     public void setFreezeRowCellName(String freezeRowCellName) {
         this.freezeRowCellName = freezeRowCellName;
     }
 
-    /** @return 冻结列锚点单元格名；为空表示不冻结列 */
+    /**
+     *
+     * @return 冻结列锚点单元格名；为空表示不冻结列
+     */
     public String getFreezeColCellName() {
         return freezeColCellName;
     }
 
-    /** @param freezeColCellName 冻结列锚点单元格名，可空 */
+    /**
+     *
+     * @param freezeColCellName 冻结列锚点单元格名，可空
+     */
     public void setFreezeColCellName(String freezeColCellName) {
         this.freezeColCellName = freezeColCellName;
     }

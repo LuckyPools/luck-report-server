@@ -8,8 +8,6 @@ import java.util.List;
 
 /**
  * 智能体知识Mapper
- * 操作 luck_agent_knowledge 表
- * SQL 定义在 resources/luck-report/sql/{dbType}/AgentKnowledgeMapper.xml 中，支持多数据库方言
  *
  * @author luck
  */
@@ -25,7 +23,6 @@ public interface AgentKnowledgeMapper {
 
     /**
      * 根据ID更新智能体知识（动态更新非空字段）
-     * updateTime 由 Java 侧赋值，不依赖数据库函数
      *
      * @param knowledge 智能体知识实体
      * @return 影响行数
@@ -42,7 +39,6 @@ public interface AgentKnowledgeMapper {
 
     /**
      * 分页条件查询智能体知识
-     * 分页由拦截器自动改写，SQL 中无需手写 LIMIT
      *
      * @param queryDTO 查询条件
      * @param offset   偏移量
@@ -62,7 +58,6 @@ public interface AgentKnowledgeMapper {
 
     /**
      * 查询所有生效的智能体知识ID列表
-     * 用于向量检索时动态过滤（只检索 is_enabled=1 的知识）
      *
      * @return 生效的智能体知识ID列表
      */
@@ -70,7 +65,6 @@ public interface AgentKnowledgeMapper {
 
     /**
      * 根据ID列表批量查询智能体知识
-     * 用于向量检索结果回填原文内容
      *
      * @param ids 智能体知识ID列表
      * @return 智能体知识实体列表

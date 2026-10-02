@@ -87,7 +87,6 @@ public class JoinExpression extends BaseExpression {
             if (str == null) {
                 if (data instanceof String) {
                     str = "\"" + data + "\"";
-                    //str=""+data+"";
                 } else {
                     str = "" + data + "";
                 }
@@ -95,7 +94,6 @@ public class JoinExpression extends BaseExpression {
                 Operator op = operators.get(i - 1);
                 if (data instanceof String) {
                     str += "" + op + "\"" + data + "\"";
-                    //str+=""+op+""+data+"";
                 } else {
                     str += "" + op + "" + data + "";
                 }

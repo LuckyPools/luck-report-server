@@ -29,7 +29,6 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-
 /**
  * @author Jacky.gao
  * @since 2017年6月9日
@@ -64,7 +63,6 @@ public abstract class CategoryDataset extends BaseDataset {
             if (seriesType.equals(SeriesType.property)) {
                 series = Utils.getProperty(obj, seriesProperty);
             } else {
-                // 未配置 series-text 时用空串，避免数据被整表跳过
                 series = StringUtils.isNotBlank(seriesText) ? seriesText : "";
             }
             if (series == null) {
@@ -97,7 +95,6 @@ public abstract class CategoryDataset extends BaseDataset {
         setLabels(toLabel(categoryList));
         return buildDatasets(seriesDataMap, props);
     }
-
 
     protected String buildDatasets(Map<Object, Map<Object, List<Object>>> map, String props) {
         StringBuilder sb = new StringBuilder();
@@ -243,7 +240,6 @@ public abstract class CategoryDataset extends BaseDataset {
     public void setSeriesText(String seriesText) {
         this.seriesText = seriesText;
     }
-
 
     public SeriesType getSeriesType() {
         return seriesType;

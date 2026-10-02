@@ -10,13 +10,33 @@ import lombok.Data;
 @Data
 public class VectorDocumentRow {
 
+    /**
+     * 文档 ID
+     */
     private String id;
-    /** 向量字符串，如 "[0.1,0.2,0.3]" */
+
+    /**
+     * 向量字符串，如 "[0.1,0.2,0.3]"
+     */
     private String vector;
+
+    /**
+     * 文档内容
+     */
     private String content;
-    /** metadata JSON */
+
+    /**
+     * metadata JSON
+     */
     private String metadata;
+
+    /**
+     * 知识类型
+     */
     private String vectorType;
-    /** 仅检索时有值 */
+
+    /**
+     * 相似度，仅检索时有值
+     */
     private Double similarity;
 }

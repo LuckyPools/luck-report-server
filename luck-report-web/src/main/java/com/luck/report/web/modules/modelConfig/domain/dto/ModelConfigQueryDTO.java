@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 
 /**
  * 模型配置分页查询DTO
- * 用于接收前端分页查询模型配置的请求参数
  *
  * @author luck
  */
@@ -19,25 +18,37 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ModelConfigQueryDTO {
 
-    /** 配置名称（模糊查询） */
+    /**
+     * 配置名称（模糊查询）
+     */
     private String configName;
 
-    /** 模型名称（模糊查询，例如 gpt-4、deepseek-chat） */
+    /**
+     * 模型名称（模糊查询，例如 gpt-4、deepseek-chat）
+     */
     private String modelName;
 
-    /** 模型类型：CHAT, EMBEDDING */
+    /**
+     * 模型类型：CHAT, EMBEDDING
+     */
     private String modelType;
 
-    /** 是否启用：true-启用，false-禁用 */
+    /**
+     * 是否启用：true-启用，false-禁用
+     */
     private Boolean enabled;
 
-    /** 当前页码（默认第1页） */
+    /**
+     * 当前页码（默认第1页）
+     */
     @NotNull(message = "pageNum不能为空")
     @Min(value = 1, message = "pageNum不能小于1")
     @Builder.Default
     private Integer pageNum = 1;
 
-    /** 每页大小（默认10条） */
+    /**
+     * 每页大小（默认10条）
+     */
     @NotNull(message = "pageSize不能为空")
     @Min(value = 1, message = "pageSize不能小于1")
     @Builder.Default

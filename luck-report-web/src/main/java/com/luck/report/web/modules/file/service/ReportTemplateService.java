@@ -8,7 +8,6 @@ import java.util.List;
 
 /**
  * 报表文件服务接口
- * 用于对 luck_report_template 表进行增删改查，并提供数据库存储报表的读写能力
  *
  * @author luck
  */

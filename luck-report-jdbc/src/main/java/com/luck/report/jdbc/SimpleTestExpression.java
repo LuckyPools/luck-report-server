@@ -61,7 +61,7 @@ public final class SimpleTestExpression {
         boolean result = parseAnd(tokens, idx, context);
         while (idx[0] < tokens.size() && "or".equalsIgnoreCase(tokens.get(idx[0]))) {
             idx[0]++;
-            // 必须先解析右侧，不能用 || 短路，否则剩余 token 会被当成非法表达式
+            // 必须先解析右侧，不能用 || 短路
             boolean right = parseAnd(tokens, idx, context);
             result = result || right;
         }

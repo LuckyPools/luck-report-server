@@ -28,7 +28,9 @@ public class TableTextSplitter implements TextSplitter {
         this.maxSize = maxSize > 0 ? maxSize : DEFAULT_MAX_SIZE;
     }
 
-    /** FastGPT strIsMdTable */
+    /**
+     * FastGPT strIsMdTable
+     */
     public static boolean strIsMdTable(String str) {
         if (str == null || !str.contains("|")) {
             return false;
@@ -62,7 +64,6 @@ public class TableTextSplitter implements TextSplitter {
         if (strIsMdTable(text.trim())) {
             return markdownTableSplit(text);
         }
-        // Excel/CSV Parser 输出 "## Sheet\n\n|...|"：按 Sheet 分段后再走 markdownTableSplit
         List<String> sections = splitByMarkdownH2(text);
         List<String> chunks = new ArrayList<String>();
         for (String section : sections) {
@@ -116,7 +117,9 @@ public class TableTextSplitter implements TextSplitter {
         return sections;
     }
 
-    /** FastGPT markdownTableSplit（仅 char 分支） */
+    /**
+     * FastGPT markdownTableSplit（仅 char 分支）
+     */
     List<String> markdownTableSplit(String text) {
         List<String> splitText2Lines = new ArrayList<String>();
         for (String line : text.split("\n", -1)) {

@@ -7,8 +7,6 @@ import org.springframework.stereotype.Component;
 
 /**
  * Oracle数据源类型处理器
- * 负责Oracle类型的JDBC URL生成和Schema提取
- * Oracle的databaseName格式为 "数据库名|Schema名"
  *
  * @author luck
  */

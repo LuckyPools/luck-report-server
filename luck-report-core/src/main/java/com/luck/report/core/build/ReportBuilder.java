@@ -354,7 +354,6 @@ public class ReportBuilder implements ApplicationContextAware {
 		return lastRow;
 	}
 
-
 	private Cell newBlankCell(Cell cell, Column column, Report report) {
 		Cell newCell = new Cell();
 		newCell.setData("");

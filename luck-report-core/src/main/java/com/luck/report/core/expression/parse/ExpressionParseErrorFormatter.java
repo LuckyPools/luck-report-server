@@ -9,10 +9,14 @@ import java.util.List;
  */
 public final class ExpressionParseErrorFormatter {
 
-    /** 字符串拼接链中夹了括号表达式 */
+    /**
+     * 字符串拼接链中夹了括号表达式
+     */
     public static final String CODE_CONCAT_PAREN = "error.expression.parse.concatParen";
 
-    /** 未能归类的语法错误 */
+    /**
+     * 未能归类的语法错误
+     */
     public static final String CODE_DEFAULT = "error.expression.parse.default";
 
     private static final int SNIPPET_RADIUS = 28;

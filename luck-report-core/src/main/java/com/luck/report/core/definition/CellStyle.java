@@ -22,7 +22,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.awt.*;
 import java.io.Serializable;
 
-
 /**
  * @author Jacky.gao
  * @since 2017年1月18日

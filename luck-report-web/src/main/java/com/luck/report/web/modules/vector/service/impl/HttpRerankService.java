@@ -38,7 +38,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * rerank-enabled 且存在激活 RERANK 模型时精排；否则或失败时退回原序截断。
- * 精排结果再与原候选按 rerankWeight 做 RRF（对齐 FastGPT）。
  */
 @Service("bean.httpRerankService")
 public class HttpRerankService implements RerankService {

@@ -99,14 +99,11 @@ public class HtmlProducer {
             bgStyle = ";background:url(" + bgImage + ") no-repeat";
         }
         if (breakPage) {
-            // collapse：与 PDF/导出边框合并观感一致；行高靠 td height + 封顶 line-height 钳制（见 buildCustomStyle）
             sb.append("<table class='page-break' border='0' style='margin:auto;border-collapse:collapse;table-layout:fixed;width:" + tableWidth + "px" + bgStyle + "'>");
         } else {
             sb.append("<table border='0' style='margin:auto;border-collapse:collapse;table-layout:fixed;width:" + tableWidth + "px" + bgStyle + "'>");
         }
         int colSize = columns.size();
-        // table-layout:fixed 下列宽以第一行为准，首行存在跨列单元格时宽度会被均分，
-        // 导致列宽偏离报表定义。用 colgroup 强制按定义列宽渲染，保证与设计器几何一致
         sb.append("<colgroup>");
         for (int j = 0; j < colSize; j++) {
             sb.append("<col style='width:" + UnitUtils.pointToPixel(columns.get(j).getWidth()) + "px'>");
@@ -243,7 +240,6 @@ public class HtmlProducer {
                     }
                     sb.append("<div style=\"position: relative;width:" + widthPx + "px;height:" + chartHeightPx + "px\">");
                     sb.append("<div id=\"" + canvasId + "\" style=\"position:relative;width:" + widthPx + "px;height:" + chartHeightPx + "px;overflow:visible\"");
-                    // 将 base64Data 写入 data 属性，供打印场景将容器替换为 img
                     String base64Data = chartData.retriveBase64Data();
                     if (StringUtils.isNotBlank(base64Data)) {
                         sb.append(" data-chart-base64=\"data:image/png;base64," + base64Data + "\"");
@@ -282,7 +278,9 @@ public class HtmlProducer {
         return width;
     }
 
-    /** 合并列宽：逐列 pointToPixel 再累加，与设计器 sum(getColWidth) 一致（避免 pointToPixel(sum) 舍入差） */
+    /**
+     * 合并列宽：逐列 pointToPixel 再累加，与设计器 sum(getColWidth) 一致（避免 pointToPixel(sum) 舍入差）
+     */
     private int buildWidthPx(List<Column> columns, int colIndex, int colSpan) {
         int width = 0;
         int start = colIndex, end = colIndex + colSpan;
@@ -302,7 +300,9 @@ public class HtmlProducer {
         return height;
     }
 
-    /** 合并行高：逐行 pointToPixel 再累加，与设计器 sum(getRowHeight) 一致 */
+    /**
+     * 合并行高：逐行 pointToPixel 再累加，与设计器 sum(getRowHeight) 一致
+     */
     private int buildHeightPx(List<Row> rows, int rowIndex, int rowSpan) {
         int height = 0;
         int start = rowIndex, end = rowIndex + rowSpan;
@@ -475,7 +475,6 @@ public class HtmlProducer {
         if (bottomBorder != null) {
             sb.append("border-bottom:" + bottomBorder.getStyle().name() + " " + bottomBorder.getWidth() + "px rgb(" + bottomBorder.getColor() + ");");
         }
-        // table-layout:fixed 需要每个单元格显式声明 width；高度锁到定义像素轴（与设计器 getRowHeight 一致）
         int colSpan = cell.getColSpan();
         int widthPx = (colSpan > 1)
                 ? buildWidthPx(columns, colIndex, colSpan)

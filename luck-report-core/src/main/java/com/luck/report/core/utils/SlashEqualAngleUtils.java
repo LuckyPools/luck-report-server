@@ -6,8 +6,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * 斜表头几何：从左上角引出分割线（与前端 slash-geometry 对齐）。
- * 三标签时一条到「底边中点」、一条到「右边中点」；其它数量在底边/右边均分落点。
+ * 斜表头几何：从左上角引出分割线（与前端 slash-geometry 对齐）。三标签时一条到「底边中点」、一条到「右边中点」；其它数量在底边/右边均分落点。
  */
 public final class SlashEqualAngleUtils {
     private SlashEqualAngleUtils() {}
@@ -74,7 +73,6 @@ public final class SlashEqualAngleUtils {
 
         List<SlashLabelLayout> labelLayouts = new ArrayList<>();
         for (int k = 0; k < n; k++) {
-            // 文案顺序：左下扇区 → 右上扇区（与「学校名称|学校类别|经费」一致）
             double midRad = (angles[n - k - 1] + angles[n - k]) / 2;
             double[] hit = rayHitBorder(w, h, midRad);
             int x = (int) Math.round(hit[0] * 0.55);

@@ -8,8 +8,6 @@ import java.io.Serializable;
 
 /**
  * 返回结果VO对象
- * 所有 Controller 返回值统一使用此格式，便于前端解析
- * code=0 表示成功，非 0 表示失败
  *
  * @author luck
  */
@@ -23,7 +21,9 @@ public class ResultVO<T> implements Serializable {
 
     private String message;
 
-    /** 错误码，不随语言变化，供前端与下游服务定位问题 */
+    /**
+     * 错误码，不随语言变化，供前端与下游服务定位问题
+     */
     private String errorCode;
 
     private T data;

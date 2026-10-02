@@ -64,7 +64,7 @@ public final class LuckMapperProxyFactory {
         if (!anyParamAnno && args.length == 1) {
             Object arg = args[0];
             Class<?> paramType = parameters[0].getType();
-            // 简单类型 / 集合：按参数名绑定，禁止把 String 等误拆成 Bean 属性
+            // 简单类型/集合按参数名绑定，避免拆成 Bean 属性
             if (arg == null || isSimpleType(paramType) || isCollectionOrArray(arg)) {
                 bindSingleNamedParam(params, parameters[0], 0, arg);
                 return params;

@@ -5,8 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * {@link ReportProvider#pageReportFiles(int, int, java.util.Map)} 的分页结果。
- * <p>位于 luck-report-core 内，不依赖 luck-report-common，避免反向依赖。
+ * {@link ReportProvider#pageReportFiles(int, int, java.util.Map)} 的分页结果。位于 luck-report-core 内，不依赖 luck-report-common，避免反向依赖。
  *
  * @author luck-report
  * @since 1.0.0
@@ -15,9 +14,13 @@ public class ReportFilePage implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /** 当前页数据 */
+    /**
+     * 当前页数据
+     */
     private List<ReportFile> records;
-    /** 过滤后总记录数（用于前端分页） */
+    /**
+     * 过滤后总记录数（用于前端分页）
+     */
     private long total;
 
     public ReportFilePage() {

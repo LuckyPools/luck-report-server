@@ -25,7 +25,6 @@ import java.util.Map;
 
 /**
  * 报表设计器控制器
- * <p>仅负责 HTTP 请求 / 响应转换，所有业务逻辑委托给 {@link DesignerService}。
  *
  * @author Jacky.gao
  * @since 2017年1月25日
@@ -69,8 +68,6 @@ public class DesignerController {
 
     /**
      * 保存预览文件
-     * - reportPath: 报表唯一路径（如 file:xxx.ureport.xml / db:123），作为 ReportScopedCache 的 key
-     * - content: 报表 XML 内容
      */
     @RequestMapping("/save_preview_report")
     @ResponseBody
@@ -91,7 +88,6 @@ public class DesignerController {
 
     /**
      * 解析报表 XML 为定义 JSON（不落盘、不写缓存）。
-     * <p>供 Virtual 引擎：校验 XML 并转换为与 {@link #loadReport} 同构的前端定义。
      *
      * @param content 报表 XML 全文
      * @param reportPath 可选上下文路径，仅用于解析日志/命名，不触发读写
@@ -116,11 +112,6 @@ public class DesignerController {
 
     /**
      * 保存报表文件
-     * - title: 报表展示名（db: provider 用作 title，file: provider 忽略）
-     * - reportPath: 报表唯一路径（带 provider 前缀），如 file:xxx.ureport.xml / db:123
-     * - content: 报表 XML 内容
-     *
-     * 兼容旧版：仅传 file 时，title 缺省为空字符串
      */
     @RequestMapping("/save_report")
     @ResponseBody
@@ -133,8 +124,6 @@ public class DesignerController {
 
     /**
      * 加载所有已启用的报表提供者元数据列表。
-     * <p>仅返回 provider 基础信息（name/prefix/disabled），不包含任何文件。
-     * 用于：管理页下拉、报表来源过滤等"仅需 provider 元数据"的场景。
      */
     @RequestMapping("/load_providers")
     @ResponseBody
@@ -144,7 +133,6 @@ public class DesignerController {
 
     /**
      * 分页查询报表列表
-     * <p>用于设计器的"打开报表"弹窗、"另存为"弹窗等需要分页加载报表的场景。
      */
     @PostMapping("/page_reports")
     @ResponseBody
@@ -154,9 +142,6 @@ public class DesignerController {
 
     /**
      * 加载每个 provider 在指定路径下的报表文件列表（含目录）。
-     * <p>响应结构：{@code List<ReportProviderDetailVo>}，与 {@link #loadReportProviders()} 形式一致；
-     * 前端按 {@code vo.prefix} 识别 provider。
-     * 用于：设计器的"打开报表"弹窗、"另存为"弹窗等需要展示文件树的场景。
      */
     @RequestMapping("/load_reports")
     @ResponseBody
@@ -166,9 +151,6 @@ public class DesignerController {
 
     /**
      * 新建报表
-     * - 接收 fileName（报表名，含 .ureport.xml 后缀）与 provider（报表来源前缀，例如 file:）
-     * - 使用 classpath:template/template.ureport.xml 空白模板在指定 provider 下创建报表
-     * - 完整文件路径 = provider + fileName（例如 file:xxx.ureport.xml）
      */
     @RequestMapping("/create_report")
     @ResponseBody
@@ -179,11 +161,6 @@ public class DesignerController {
 
     /**
      * 复制报表
-     * - sourceFilePath: 源报表完整路径（带 provider 前缀），如 file:xxx.ureport.xml / db:123
-     * - newFilePath: 新报表完整路径（带 provider 前缀），如 file:xxx_copy.ureport.xml / db:xxx_copy
-     * - newTitle: 新报表展示名（db: provider 用作 title）
-     *
-     * 注意：newFilePath 必须与 sourceFilePath 属于同一 provider。
      */
     @RequestMapping("/copy_report")
     @ResponseBody

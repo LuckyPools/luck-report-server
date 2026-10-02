@@ -4,7 +4,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * 博客 MD 缺口薄适配：figure/img → Markdown 图片，非 Dify/FastGPT 上游逻辑。
+ * 博客 MD 缺口薄适配
  */
 public final class KnowledgeHtmlFigureAdapter {
 

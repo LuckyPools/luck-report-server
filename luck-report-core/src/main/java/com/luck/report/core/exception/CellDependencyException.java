@@ -27,8 +27,9 @@ public class CellDependencyException extends ReportException {
         super("Report cells has cyclic dependency.");
     }
 
-
-    /** errorArgs 依次对应 {0}、{1} */
+    /**
+     * errorArgs 依次对应 {0}、{1}
+     */
     public CellDependencyException(String errorCode, Object... errorArgs) {
         super(errorCode, errorArgs);
     }

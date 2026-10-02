@@ -30,9 +30,6 @@ import java.sql.DatabaseMetaData;
 @EnableConfigurationProperties(LuckJdbcProperties.class)
 public class LuckJdbcConfiguration {
 
-    /**
-     * 第三方指定报表元数据 CRUD 数据源时使用的 Bean 名
-     */
     public static final String LUCK_REPORT_DATA_SOURCE = "bean.luckReportDataSource";
 
     private static final Logger log = LoggerFactory.getLogger(LuckJdbcConfiguration.class);

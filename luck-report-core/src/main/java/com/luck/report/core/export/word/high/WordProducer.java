@@ -104,7 +104,6 @@ public class WordProducer implements Producer {
             int pageIndex = 1;
             for (Page page : pages) {
                 List<Row> rows = page.getRows();
-                // 先渲染悬浮元素：framePr 段落需位于页首，y 坐标才能正确定位到当前页
                 if (hasFloat) {
                     renderFloatElementsForPage(document, report, pageIndex - 1, paper, imageDataCache);
                 }
@@ -601,10 +600,8 @@ public class WordProducer implements Producer {
         }
     }
 
-
     /**
-     * 判断当前报表是否包含悬浮元素（图片或文本）。
-     * 仅当存在非空列表时返回 true，避免对旧报表产生任何影响。
+     * 判断当前报表是否包含悬浮元素（图片或文本）。仅当存在非空列表时返回 true，避免对旧报表产生任何影响。
      */
     private boolean hasFloatElements(Report report) {
         List<FloatImage> floatImages = report.getFloatImages();
@@ -615,8 +612,7 @@ public class WordProducer implements Producer {
     }
 
     /**
-     * 将悬浮图片解析为输入流，支持 base64 与 URL（text）两种来源。
-     * 对 URL 图片使用 {@link ImageUtils#getImageBase64Data}，有 image-not-exist 兜底机制。
+     * 将悬浮图片解析为输入流，支持 base64 与 URL（text）两种来源。对 URL 图片使用 {@link ImageUtils#getImageBase64Data}，有 image-not-exist 兜底机制。
      */
     private InputStream buildFloatImageInputStream(FloatImage fi) {
         Source source = fi.getSource();
@@ -631,14 +627,12 @@ public class WordProducer implements Producer {
                 return null;
             }
         }
-        // source=text（URL）：通过 ImageProvider SPI 加载，有 image-not-exist 兜底
         try {
             String base64Data = ImageUtils.getImageBase64Data(ImageType.image, value, 0, 0);
             if (StringUtils.isNotBlank(base64Data)) {
                 return ImageUtils.base64DataToInputStream(base64Data);
             }
         } catch (Exception e) {
-            // ignore
         }
         return null;
     }
@@ -675,12 +669,7 @@ public class WordProducer implements Producer {
     }
 
     /**
-     * 在当前 Word 页面上渲染属于该页的悬浮元素。
-     * <p>使用 Word 的 framePr（段落框架属性）实现绝对定位：
-     * hAnchor/vAnchor 设为 margin（相对页边距定位），wrap 设为 none（浮于文字上方）。
-     * x/y/w/h 以 twips（DXA）为单位。
-     * <p>top/left 为页面相对坐标（相对于每页内容区左上角）。
-     * repeatPrint=true 时每页重复打印；repeatPrint=false 时仅在第1页渲染。
+     * 在当前 Word 页面上渲染属于该页的悬浮元素。使用 Word 的 framePr（段落框架属性）实现绝对定位：hAnchor/vAnchor 设为 margin（相对页边距定位），wrap 设为 none（浮于文字上方）。x/y/w/h 以 twips（DXA）为单位。top/left 为页面相对坐标（相对于每页内容区左上角）。repeatPrint=true 时每页重复打印；repeatPrint=false 时仅在第1页渲染。
      *
      * @param document  XWPFDocument
      * @param report    报表对象
@@ -702,12 +691,10 @@ public class WordProducer implements Producer {
             }
             float elementTopPt = UnitUtils.pixelToPoint(top.intValue());
             if (el.isRepeatPrint()) {
-                // repeatPrint 以第一页为基准：top 必须落在第一页内容区范围内才每页重复
                 if (elementTopPt < 0 || elementTopPt >= pageContentHeight) {
                     continue;
                 }
             } else {
-                // 非重复元素：按全局 top 计算归属页，仅在该页渲染，并换算为页内相对坐标
                 int targetPage = (int) Math.floor(elementTopPt / pageContentHeight);
                 if (pageIndex != targetPage) {
                     continue;
@@ -744,7 +731,6 @@ public class WordProducer implements Producer {
                 if (el instanceof FloatImage) {
                     FloatImage fi = (FloatImage) el;
                     XWPFRun run = para.createRun();
-                    // 使用缓存避免重复下载/解码同一图片
                     String cacheKey = fi.getName() != null ? fi.getName() : String.valueOf(System.identityHashCode(fi));
                     byte[] imageBytes = imageDataCache != null ? imageDataCache.get(cacheKey) : null;
                     if (imageBytes == null) {
@@ -764,7 +750,6 @@ public class WordProducer implements Producer {
                     try {
                         int widthPx = elWidth != null ? elWidth.intValue() : 100;
                         int heightPx = elHeight != null ? elHeight.intValue() : 75;
-                        // 格式检测：1. URL后缀  2. base64数据头签名
                         String path = fi.getPath();
                         int pictureType = XWPFDocument.PICTURE_TYPE_PNG;
                         String ext = ".png";
@@ -778,7 +763,6 @@ public class WordProducer implements Producer {
                                 ext = ".gif";
                             }
                         } else {
-                            // base64 来源：通过数据头签名检测格式
                             String expr = fi.getExpr();
                             if (expr != null && expr.length() >= 4 && expr.startsWith("/9j/")) {
                                 pictureType = XWPFDocument.PICTURE_TYPE_JPEG;
@@ -829,7 +813,6 @@ public class WordProducer implements Producer {
                     if (ft.getUnderline() != null && ft.getUnderline()) {
                         run.setUnderline(UnderlinePatterns.SINGLE);
                     }
-                    // 水平对齐
                     if (ft.getAlign() != null) {
                         String a = ft.getAlign();
                         if ("center".equals(a)) {
@@ -838,14 +821,10 @@ public class WordProducer implements Producer {
                             para.setAlignment(ParagraphAlignment.RIGHT);
                         }
                     }
-                    // 垂直对齐：通过 CTFramePr 的 y 偏移近似实现
-                    // Word frame 不直接支持垂直对齐，通过段落 spacing 调整
                     if (ft.getValign() != null && !"top".equals(ft.getValign())) {
-                        // 使用段前间距推算垂直偏移（近似实现）
                         int totalHeightDxa = dxaH;
                         int fontSizeHalfPt = fontSize != null ? UnitUtils.pixelToPoint(fontSize) * 10 : 120;
                         if ("middle".equals(ft.getValign())) {
-                            // 在段前加间距使文本大致居中
                             int spacing = Math.max(0, (totalHeightDxa - fontSizeHalfPt) / 2);
                             CTSpacing spacingEl = para.getCTP().getPPr().isSetSpacing() ?
                                     para.getCTP().getPPr().getSpacing() : para.getCTP().getPPr().addNewSpacing();
@@ -857,7 +836,6 @@ public class WordProducer implements Producer {
                             spacingEl.setBefore(spacing);
                         }
                     }
-                    // 背景颜色：通过底纹（shading）实现
                     String bgcolor = ft.getBgcolor();
                     if (StringUtils.isNotEmpty(bgcolor)) {
                         String[] bgColors = bgcolor.split(",");
@@ -869,7 +847,6 @@ public class WordProducer implements Producer {
                             shading.setFill(hexBg);
                         }
                     }
-                    // 边框：通过段落边框实现（四边独立）
                     if (ft.getTopBorder() != null || ft.getBottomBorder() != null
                             || ft.getLeftBorder() != null || ft.getRightBorder() != null) {
                         CTPBdr pBdr = para.getCTP().getPPr().isSetPBdr() ?

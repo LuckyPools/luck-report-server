@@ -232,9 +232,7 @@ public abstract class ExcelBuilder {
     }
 
     /**
-     * 将悬浮图片解析为输入流，支持 base64 与 URL（text）两种来源。
-     * 对 URL 图片使用 {@link ImageUtils#getImageBase64Data}，有 image-not-exist 兜底机制。
-     * 对于 WebP 等 Excel 不支持的格式，通过 ImageIO 读取后重新编码为 PNG。
+     * 将悬浮图片解析为输入流，支持 base64 与 URL（text）两种来源。对 URL 图片使用 {@link ImageUtils#getImageBase64Data}，有 image-not-exist 兜底机制。对于 WebP 等 Excel 不支持的格式，通过 ImageIO 读取后重新编码为 PNG。
      */
     protected InputStream buildFloatImageInputStream(FloatImage fi) {
         Source source = fi.getSource();
@@ -252,7 +250,6 @@ public abstract class ExcelBuilder {
                 return null;
             }
         }
-        // source=text（URL）：通过 ImageProvider SPI 加载，有 image-not-exist 兜底
         try {
             String base64Data = ImageUtils.getImageBase64Data(ImageType.image, value, 0, 0);
             if (StringUtils.isNotBlank(base64Data)) {
@@ -267,20 +264,16 @@ public abstract class ExcelBuilder {
     }
 
     /**
-     * 判断图片格式是否被 Excel 直接支持（PNG/JPEG）。
-     * 若不被支持（如 WebP/BMP/GIF），通过 ImageIO 读取后重新编码为 PNG。
-     * 转换成功后需同步修改 FloatImage 的格式标记，由调用方处理。
+     * 判断图片格式是否被 Excel 直接支持（PNG/JPEG）。若不被支持（如 WebP/BMP/GIF），通过 ImageIO 读取后重新编码为 PNG。转换成功后需同步修改 FloatImage 的格式标记，由调用方处理。
      *
      * @param rawInput 原始图片输入流
      * @param fi       悬浮图片对象（用于判断格式）
      * @return 可被 Excel 直接使用的输入流（原样或转换后）
      */
     private InputStream convertUnsupportedFormatIfNeeded(InputStream rawInput, FloatImage fi) {
-        // 如果格式已经是 Excel 直接支持的 PNG/JPEG，无需转换
         if (isExcelSupportedFormat(fi)) {
             return rawInput;
         }
-        // 格式不被 Excel 直接支持（如 WebP/BMP/GIF），尝试通过 ImageIO 读取并重新编码为 PNG
         String fiName = fi.getName() != null ? fi.getName() : "unknown";
         try {
             BufferedImage image = ImageIO.read(rawInput);
@@ -305,41 +298,32 @@ public abstract class ExcelBuilder {
     }
 
     /**
-     * 判断 FloatImage 的格式是否被 Excel 直接支持（确认是 PNG 或 JPEG）。
-     * 注意：buildFloatImageFormat 对无法识别的格式默认返回 PICTURE_TYPE_PNG，
-     * 但 WebP 等格式并非真正的 PNG，需要通过后缀或数据头签名明确确认才返回 true。
+     * 判断 FloatImage 的格式是否被 Excel 直接支持（确认是 PNG 或 JPEG）。注意：buildFloatImageFormat 对无法识别的格式默认返回 PICTURE_TYPE_PNG，但 WebP 等格式并非真正的 PNG，需要通过后缀或数据头签名明确确认才返回 true。
      */
     private boolean isExcelSupportedFormat(FloatImage fi) {
-        // URL 来源：后缀明确是 jpg/jpeg/png 才算支持
         String path = fi.getPath();
         if (path != null) {
             String lower = path.toLowerCase();
             return lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png");
         }
-        // base64 来源：数据头签名明确是 JPEG 或 PNG 才算支持
         String expr = fi.getExpr();
         if (expr != null && expr.length() >= 4) {
             return expr.startsWith("/9j/") || expr.startsWith("iVBOR");
         }
-        // 无法确认，需要尝试转换
         return false;
     }
 
     /**
-     * 使用 oneCellAnchor（单锚点 + 精确 ext 尺寸）创建悬浮图片。
-     * 先用 drawing.createPicture() 创建 twoCellAnchor（让 POI 自动处理图片关系），
-     * 再将 OOXML 中的 twoCellAnchor 替换为 oneCellAnchor，确保宽高精确。
+     * 使用 oneCellAnchor（单锚点 + 精确 ext 尺寸）创建悬浮图片。先用 drawing.createPicture() 创建 twoCellAnchor（让 POI 自动处理图片关系），再将 OOXML 中的 twoCellAnchor 替换为 oneCellAnchor，确保宽高精确。
      */
     private void createOneCellAnchorPicture(Sheet sheet, Drawing<?> drawing, SXSSFWorkbook wb,
                                             int col, int dx, int row, int dy,
                                             long cx, long cy,
                                             int pictureIndex, FloatImage fi) throws Exception {
-        // 1. 用 twoCellAnchor 创建图片（POI 自动建立 blip 关系）
         XSSFClientAnchor tempAnchor = new XSSFClientAnchor(0, 0, (int) cx, (int) cy, (short) col, row, (short) col, row);
         tempAnchor.setAnchorType(ClientAnchor.AnchorType.DONT_MOVE_AND_RESIZE);
         drawing.createPicture(tempAnchor, pictureIndex);
 
-        // 2. 获取 XSSFDrawing 的 CTDrawing，将最后一个 twoCellAnchor 替换为 oneCellAnchor
         XSSFSheet xssfSheet = wb.getXSSFWorkbook().getSheet(sheet.getSheetName());
         XSSFDrawing xssfDrawing = xssfSheet.getDrawingPatriarch();
         if (xssfDrawing == null) {
@@ -351,11 +335,9 @@ public abstract class ExcelBuilder {
             return;
         }
 
-        // 取最后一个 twoCellAnchor（即刚创建的）
         org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTTwoCellAnchor lastTwoCell = ctDrawing.getTwoCellAnchorArray(twoCellCount - 1);
         org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTPicture ctPicture = lastTwoCell.getPic();
 
-        // 3. 创建 oneCellAnchor 并复制 pic 内容
         org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTOneCellAnchor oneCell = ctDrawing.addNewOneCellAnchor();
         org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTMarker from = oneCell.addNewFrom();
         from.setCol(col);
@@ -370,14 +352,11 @@ public abstract class ExcelBuilder {
         oneCell.setPic(ctPicture);
         oneCell.addNewClientData();
 
-        // 4. 删除原来的 twoCellAnchor
         ctDrawing.removeTwoCellAnchor(twoCellCount - 1);
     }
 
     /**
-     * 将 XSSFDrawing 中最后一个 twoCellAnchor（文本框）替换为 oneCellAnchor，
-     * 确保文本框尺寸由 ext 精确控制，不受行列宽高限制。
-     * 返回 oneCellAnchor 中的 CTShape 引用（setSp 会深拷贝，需从 oneCellAnchor 重新获取）。
+     * 将 XSSFDrawing 中最后一个 twoCellAnchor（文本框）替换为 oneCellAnchor，确保文本框尺寸由 ext 精确控制，不受行列宽高限制。返回 oneCellAnchor 中的 CTShape 引用（setSp 会深拷贝，需从 oneCellAnchor 重新获取）。
      */
     private org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTShape convertTextboxToOneCellAnchor(XSSFDrawing xssfDrawing,
                                                 int col, int dx, int row, int dy,
@@ -388,12 +367,10 @@ public abstract class ExcelBuilder {
             return null;
         }
 
-        // 取最后一个 twoCellAnchor（即刚创建的文本框）
         org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTTwoCellAnchor lastTwoCell =
                 ctDrawing.getTwoCellAnchorArray(twoCellCount - 1);
         org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTShape srcShape = lastTwoCell.getSp();
 
-        // 创建 oneCellAnchor 并复制 sp 内容
         org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTOneCellAnchor oneCell = ctDrawing.addNewOneCellAnchor();
         org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTMarker from = oneCell.addNewFrom();
         from.setCol(col);
@@ -408,10 +385,8 @@ public abstract class ExcelBuilder {
         oneCell.setSp(srcShape);
         oneCell.addNewClientData();
 
-        // 删除原来的 twoCellAnchor
         ctDrawing.removeTwoCellAnchor(twoCellCount - 1);
 
-        // setSp 会深拷贝，需从 oneCellAnchor 重新获取 ctShape
         return oneCell.getSp();
     }
 
@@ -447,12 +422,9 @@ public abstract class ExcelBuilder {
     }
 
     /**
-     * 推断悬浮图片的格式（PNG/JPEG）。
-     * 优先从 URL 后缀判断；path 为空（base64 来源）时从 expr 数据头签名判断；
-     * 均无法判断时从 buildValue() 返回的 URL 再尝试一次。
+     * 推断悬浮图片的格式（PNG/JPEG）。优先从 URL 后缀判断；path 为空（base64 来源）时从 expr 数据头签名判断；均无法判断时从 buildValue() 返回的 URL 再尝试一次。
      */
     protected int buildFloatImageFormat(FloatImage fi) {
-        // 1. 从 path（URL 来源的后缀）判断
         String path = fi.getPath();
         if (path != null) {
             int format = detectFormatFromSuffix(path);
@@ -460,7 +432,6 @@ public abstract class ExcelBuilder {
                 return format;
             }
         }
-        // 2. 从 expr（base64 数据头签名）判断
         String expr = fi.getExpr();
         if (expr != null && expr.length() >= 4) {
             if (expr.startsWith("/9j/")) {
@@ -470,7 +441,6 @@ public abstract class ExcelBuilder {
                 return Workbook.PICTURE_TYPE_PNG;
             }
         }
-        // 3. 从 buildValue()（可能返回 URL）再尝试后缀判断
         String value = fi.buildValue();
         if (value != null) {
             int format = detectFormatFromSuffix(value);
@@ -497,8 +467,7 @@ public abstract class ExcelBuilder {
     }
 
     /**
-     * 给定距数据区顶部的像素偏移，在行列表中定位所属行索引及行内 EMU 偏移。
-     * 行高存的是 pt，需先转成 px 再和悬浮 top（px）比较。
+     * 给定距数据区顶部的像素偏移，在行列表中定位所属行索引及行内 EMU 偏移。行高存的是 pt，需先转成 px 再和悬浮 top（px）比较。
      */
     protected int[] findRowPosition(List<Row> rows, int pixelOffset) {
         int cumulative = 0;
@@ -516,8 +485,7 @@ public abstract class ExcelBuilder {
     }
 
     /**
-     * 给定距数据区左侧的像素偏移，在列列表中定位所属 Excel 列索引及列内 EMU 偏移。
-     * 列宽存的是 pt，需先转成 px 再和悬浮 left（px）比较。
+     * 给定距数据区左侧的像素偏移，在列列表中定位所属 Excel 列索引及列内 EMU 偏移。列宽存的是 pt，需先转成 px 再和悬浮 left（px）比较。
      */
     protected int[] findColPosition(List<Column> columns, int pixelOffset) {
         int cumulative = 0;
@@ -541,9 +509,7 @@ public abstract class ExcelBuilder {
     }
 
     /**
-     * 在当前 Excel sheet 上绘制属于该页的悬浮元素。
-     * <p>top/left 为页面相对坐标（相对于每页内容区左上角）。
-     * repeatPrint=true 时每页重复打印；repeatPrint=false 时仅在第1页渲染。
+     * 在当前 Excel sheet 上绘制属于该页的悬浮元素。top/left 为页面相对坐标（相对于每页内容区左上角）。repeatPrint=true 时每页重复打印；repeatPrint=false 时仅在第1页渲染。
      *
      * @param sheet             SXSSF Sheet（用于访问底层 XSSFDrawing 创建文本框）
      * @param drawing           Drawing 对象（用于 createPicture）
@@ -560,7 +526,6 @@ public abstract class ExcelBuilder {
                                               int pageIndex, float currentPageHeight,
                                               List<Row> rows, int rowOffset, List<Column> columns,
                                               CreationHelper creationHelper, SXSSFWorkbook wb) throws Exception {
-        // build 模式（不分页）：所有元素直接按全局 top 在唯一 sheet 上定位
         renderFloatElementsForPage(sheet, drawing, report, pageIndex, currentPageHeight,
                 rows, rowOffset, columns, creationHelper, wb, null, true, false);
     }
@@ -578,7 +543,6 @@ public abstract class ExcelBuilder {
                                               boolean withSheet, boolean paged) throws Exception {
         List<FloatElement> elements = collectAndSortFloatElements(report);
         XSSFDrawing xssfDrawing = null;
-        // 页内容区高度（磅），与 PDF/Word 一致使用纸张固定值，用于计算非重复元素的归属页
         Paper paper = report.getPaper();
         float paperExtent = paper.getOrientation() != null && paper.getOrientation().equals(Orientation.landscape)
                 ? paper.getWidth() : paper.getHeight();
@@ -617,7 +581,6 @@ public abstract class ExcelBuilder {
             int widthPx = elWidth != null ? elWidth.intValue() : 100;
             int heightPx = elHeight != null ? elHeight.intValue() : 75;
 
-            // from：通过 findRowPosition/findColPosition 定位实际行列及列内/行内偏移
             int[] fromColPos = findColPosition(columns, leftPx);
             int[] fromRowPos = findRowPosition(rows, topPx);
 
@@ -625,7 +588,6 @@ public abstract class ExcelBuilder {
             int fromDx = fromColPos[1];
             int fromRow = fromRowPos[0] + rowOffset;
             int fromDy = fromRowPos[1];
-            // 精确尺寸（EMU），用于 oneCellAnchor 的 ext 或 twoCellAnchor 的 to 计算
             int widthEMU = widthPx * 9525;
             int heightEMU = heightPx * 9525;
 
@@ -633,7 +595,6 @@ public abstract class ExcelBuilder {
                 if (el instanceof FloatImage) {
                     FloatImage fi = (FloatImage) el;
                     int pictureIndex;
-                    // 使用缓存避免重复下载/解码同一图片
                     String cacheKey = fi.getName() != null ? fi.getName() : String.valueOf(System.identityHashCode(fi));
                     if (pictureIndexCache != null && pictureIndexCache.containsKey(cacheKey)) {
                         pictureIndex = pictureIndexCache.get(cacheKey);
@@ -655,14 +616,10 @@ public abstract class ExcelBuilder {
                         }
                     }
 
-                    // 使用 oneCellAnchor（单锚点+精确尺寸），避免 twoCellAnchor 宽高依赖列宽行高
                     createOneCellAnchorPicture(sheet, drawing, wb, fromCol, fromDx, fromRow, fromDy, widthEMU, heightEMU, pictureIndex, fi);
                 } else if (el instanceof FloatText) {
                     FloatText ft = (FloatText) el;
 
-                    // 使用 oneCellAnchor（单锚点+精确尺寸），确保文本框尺寸精确
-                    // 先用 twoCellAnchor 创建文本框（POI 自动处理关系），
-                    // 再将 OOXML 中的 twoCellAnchor 替换为 oneCellAnchor
                     XSSFClientAnchor tempAnchor = (XSSFClientAnchor) creationHelper.createClientAnchor();
                     tempAnchor.setAnchorType(ClientAnchor.AnchorType.DONT_MOVE_AND_RESIZE);
                     tempAnchor.setCol1(fromCol);
@@ -674,7 +631,6 @@ public abstract class ExcelBuilder {
                     tempAnchor.setRow2(fromRow);
                     tempAnchor.setDy2((int) heightEMU);
 
-                    // SXSSFDrawing 不支持 createTextbox，需通过底层 XSSFDrawing 创建
                     if (xssfDrawing == null) {
                         XSSFSheet xssfSheet = wb.getXSSFWorkbook().getSheet(sheet.getSheetName());
                         xssfDrawing = xssfSheet.getDrawingPatriarch();
@@ -689,14 +645,11 @@ public abstract class ExcelBuilder {
                     if (value == null) {
                         value = "";
                     }
-                    // 先设置文本内容（在转换锚点之前，这样深拷贝时文本会被复制过去）
                     XDDFTextBody textBody = textbox.getTextBody();
                     if (textBody != null) {
                         textBody.setText(value);
                     }
 
-                    // 将 twoCellAnchor 替换为 oneCellAnchor，确保尺寸精确
-                    // setSp 会深拷贝，所以上面设置的文本内容会被复制
                     org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTShape ctShape =
                             convertTextboxToOneCellAnchor(xssfDrawing, fromCol, fromDx, fromRow, fromDy, widthEMU, heightEMU);
 
@@ -705,7 +658,6 @@ public abstract class ExcelBuilder {
                         continue;
                     }
 
-                    // 设置 spPr/xfrm/ext 为精确尺寸
                     org.openxmlformats.schemas.drawingml.x2006.main.CTShapeProperties ctSpPr = ctShape.getSpPr();
                     if (ctSpPr != null && ctSpPr.isSetXfrm()) {
                         org.openxmlformats.schemas.drawingml.x2006.main.CTTransform2D xfrm = ctSpPr.getXfrm();
@@ -718,7 +670,6 @@ public abstract class ExcelBuilder {
                         }
                     }
 
-                    // 通过底层 CT API 设置字体属性（使用 oneCellAnchor 中的 ctShape）
                     applyFloatTextFontProperties(ctShape, ft);
                 }
             } catch (Exception e) {
@@ -736,7 +687,6 @@ public abstract class ExcelBuilder {
             return;
         }
         CTTextParagraph ctPara = ctBody.getPArray(0);
-        // 设置段落对齐（水平）
         CTTextParagraphProperties pPr = ctPara.isSetPPr() ? ctPara.getPPr() : ctPara.addNewPPr();
         String align = ft.getAlign();
         if (StringUtils.isNotEmpty(align)) {
@@ -748,7 +698,6 @@ public abstract class ExcelBuilder {
                 pPr.setAlgn(STTextAlignType.L);
             }
         }
-        // 设置文本 run 的字体属性
         if (ctPara.sizeOfRArray() == 0) {
             return;
         }
@@ -785,7 +734,6 @@ public abstract class ExcelBuilder {
             rPr.setU(STTextUnderlineType.SNG);
         }
 
-        // 垂直对齐：通过文本框的 bodyPr anchor 属性设置
         org.openxmlformats.schemas.drawingml.x2006.main.CTTextBodyProperties bodyPr = ctBody.getBodyPr();
         if (bodyPr == null) {
             bodyPr = ctBody.addNewBodyPr();
@@ -801,7 +749,6 @@ public abstract class ExcelBuilder {
             }
         }
 
-        // 背景颜色：通过 spPr/solidFill 设置，无背景时显式设 noFill 避免默认填充
         org.openxmlformats.schemas.drawingml.x2006.main.CTShapeProperties spPr =
                 ctShape.getSpPr() != null ? ctShape.getSpPr() : ctShape.addNewSpPr();
         String bgcolor = ft.getBgcolor();
@@ -818,17 +765,14 @@ public abstract class ExcelBuilder {
                 bgClr.setVal(new byte[]{(byte) r, (byte) g, (byte) b});
             }
         } else {
-            // 无背景色时设 noFill，防止 Excel 默认填充
             if (!spPr.isSetNoFill()) {
                 spPr.addNewNoFill();
             }
-            // 清除可能存在的 solidFill
             if (spPr.isSetSolidFill()) {
                 spPr.unsetSolidFill();
             }
         }
 
-        // 边框：四边统一（前端已改为统一边框），取任一非空边框作为 spPr/ln
         Border border = ft.getTopBorder() != null ? ft.getTopBorder()
                 : ft.getBottomBorder() != null ? ft.getBottomBorder()
                 : ft.getLeftBorder() != null ? ft.getLeftBorder()
@@ -838,7 +782,6 @@ public abstract class ExcelBuilder {
                     spPr.isSetLn() ? spPr.getLn() : spPr.addNewLn();
             int borderW = border.getWidth() > 0 ? border.getWidth() : 1;
             ln.setW(borderW * 9525); // EMU per pixel
-            // 边框颜色
             String borderColorStr = border.getColor();
             if (StringUtils.isNotEmpty(borderColorStr)) {
                 String[] bcArr = borderColorStr.split(",");
@@ -853,7 +796,6 @@ public abstract class ExcelBuilder {
                     borderClr.setVal(new byte[]{(byte) r, (byte) g, (byte) b});
                 }
             }
-            // 边框线型
             org.openxmlformats.schemas.drawingml.x2006.main.CTPresetLineDashProperties dash =
                     ln.isSetPrstDash() ? ln.getPrstDash() : ln.addNewPrstDash();
             String styleName = border.getStyle() != null ? border.getStyle().toString() : "solid";

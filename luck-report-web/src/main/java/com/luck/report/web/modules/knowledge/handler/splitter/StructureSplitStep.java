@@ -2,7 +2,9 @@ package com.luck.report.web.modules.knowledge.handler.splitter;
 
 import java.util.regex.Pattern;
 
-/** FastGPT commonSplit stepReges 单步规则。 */
+/**
+ * FastGPT commonSplit stepReges 单步规则。
+ */
 class StructureSplitStep {
 
     final Pattern pattern;

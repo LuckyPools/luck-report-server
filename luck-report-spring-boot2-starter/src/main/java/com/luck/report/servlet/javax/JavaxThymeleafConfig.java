@@ -11,9 +11,7 @@ import org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver;
 import org.thymeleaf.templatemode.TemplateMode;
 
 /**
- * javax.servlet（Spring Boot 2.x）Thymeleaf 配置。
- * <p>使用 thymeleaf-spring5 创建独立的模板引擎，不与第三方项目的模板引擎冲突。
- * <p>仅当 classpath 上存在 Thymeleaf 时才加载，避免宿主项目无 Thymeleaf 时启动崩溃。
+ * javax.servlet（Spring Boot 2.x）Thymeleaf 配置，使用独立模板引擎避免与宿主冲突
  */
 @Configuration
 @ConditionalOnClass(name = "org.thymeleaf.spring5.SpringTemplateEngine")

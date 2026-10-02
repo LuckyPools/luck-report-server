@@ -7,7 +7,6 @@ import java.lang.annotation.Target;
 
 /**
  * 标记接口 / 类为匿名访问（无需 token 校验）。
- * <p>当 {@code luck-report.token.enabled=true} 时，标了此注解的接口直接放行。
  *
  * @author luck-report
  * @since 1.0.0

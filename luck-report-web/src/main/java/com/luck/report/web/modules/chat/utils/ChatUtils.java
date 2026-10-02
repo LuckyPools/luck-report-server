@@ -21,11 +21,6 @@ import com.luck.report.web.i18n.ReportI18n;
 
 /**
  * 大模型接口调用工具类
- * 封装 OkHttp 调用大模型 API 的公共逻辑，供 ChatController 和 ChatCompactController 复用
- * 统一管理 HTTP 客户端、请求构建、响应解析等通用操作
- *
- * 调用者：ChatController.chatStream() → ChatUtils.buildStreamCall()
- *         ChatCompactController.compact() → ChatUtils.askModel()
  *
  * @author luck
  */
@@ -37,7 +32,6 @@ public class ChatUtils {
 
     /**
      * 共享的 OkHttp 客户端实例
-     * 读超时 120 秒，适配流式场景；非流式场景由调用方自行控制超时
      */
     private static final OkHttpClient SHARED_CLIENT = new OkHttpClient.Builder()
             .connectTimeout(30, TimeUnit.SECONDS)
@@ -47,8 +41,6 @@ public class ChatUtils {
 
     /**
      * 根据模型配置获取 OkHttpClient
-     * 如果模型配置启用了代理，则基于 SHARED_CLIENT 派生一个带代理的客户端（共享连接池和线程池）；
-     * 否则直接使用无代理的共享客户端
      *
      * @param chatConfig 模型配置
      * @return OkHttpClient 实例
@@ -70,7 +62,6 @@ public class ChatUtils {
         OkHttpClient.Builder builder = SHARED_CLIENT.newBuilder()
                 .proxy(proxy);
 
-        // 配置代理认证
         String proxyUsername = chatConfig.getProxyUsername();
         String proxyPassword = chatConfig.getProxyPassword();
         if (proxyUsername != null && !proxyUsername.isEmpty()) {
@@ -87,8 +78,6 @@ public class ChatUtils {
 
     /**
      * 调用大模型 API（非流式）
-     * 构建 OpenAI 格式的请求体，发送 POST 请求，返回完整响应
-     * 适用于对话压缩等不需要流式输出的场景
      *
      * @param request 调用请求参数，包含 chatConfig、messages 等
      * @return AskModelResponse 响应结果，包含状态码和响应体
@@ -116,8 +105,6 @@ public class ChatUtils {
 
     /**
      * 构建流式请求的 OkHttp Call 对象
-     * 供 ChatController 等流式场景使用，调用方自行处理异步回调
-     * 自动设置 stream=true，支持 tools、stream_options 等参数
      *
      * @param request 调用请求参数
      * @return OkHttp Call 对象，可调用 enqueue() 进行异步请求
@@ -158,8 +145,6 @@ public class ChatUtils {
 
     /**
      * 构建 OpenAI 格式的请求体 JSON
-     * 将消息列表、模型参数、工具定义等组装为标准 OpenAI API 请求格式
-     * 支持 Function Calling（tools + tool_choice）和流式选项（stream_options）
      *
      * @param request 调用请求参数
      * @return JSON 格式的请求体字符串
@@ -170,15 +155,12 @@ public class ChatUtils {
         body.put("messages", request.getMessages());
         body.put("stream", request.isStream());
 
-        // 温度参数：优先使用请求指定的值，否则使用模型配置中的默认值
         if (request.getTemperature() != null) {
             body.put("temperature", request.getTemperature());
         } else if (request.getChatConfig().getTemperature() != null) {
             body.put("temperature", request.getChatConfig().getTemperature());
         }
 
-        // 仅当 AskModelRequest 显式指定时写入 API max_tokens（如压缩接口限制摘要长度）。
-        // ModelConfig.contextWindowTokens 表示上下文窗口，不作为输出上限下发。
         Integer maxTokens = request.getMaxTokens();
         if (maxTokens != null) {
             int capped = Math.min(maxTokens, 8192);
@@ -188,12 +170,9 @@ public class ChatUtils {
             body.put("max_tokens", capped);
         }
 
-        // 工具定义（Function Calling）
         if (request.getTools() != null && !request.getTools().isEmpty()) {
             body.put("tools", request.getTools());
 
-            // 确定 toolChoice：深度思考模式下部分模型（如阿里百炼 Qwen3）不支持 required/object，
-            // 需降级为 auto，避免 400 错误
             Object effectiveToolChoice = request.getToolChoice();
             if (effectiveToolChoice != null && Boolean.TRUE.equals(request.getDeepThink())) {
                 boolean isRequiredOrObject = "required".equals(effectiveToolChoice)
@@ -208,21 +187,15 @@ public class ChatUtils {
             }
         }
 
-        // 工具数量/toolChoice 已由 ChatService 调用入口统一打点，此处仅 debug 避免双份流水账
         log.debug("[ChatUtils] 请求体工具数量: {}, toolChoice: {}, deepThink: {}",
                 request.getTools() != null ? request.getTools().size() : 0,
                 request.getToolChoice(), request.getDeepThink());
 
-        // 流式选项
         if (request.getStreamOptions() != null) {
             body.put("stream_options", request.getStreamOptions());
         }
 
-        // 深度思考配置
-        // 启用后，大模型会先生成推理过程（reasoning_content），再生成最终回复
-        // 适用于阿里百炼 Qwen 等支持 thinking 参数的模型
         if (Boolean.TRUE.equals(request.getDeepThink())) {
-            // 构建 extra_body 配置，启用思考过程
             Map<String, Object> extraBody = new LinkedHashMap<>(1);
             Map<String, Object> thinking = new LinkedHashMap<>(2);
             thinking.put("type", "thinking");
@@ -234,7 +207,6 @@ public class ChatUtils {
 
         try {
             String jsonBody = objectMapper.writeValueAsString(body);
-            // 整包请求体仅 debug：生产排障靠 trace + tool 摘要 + DB 消息，避免刷屏与体积膨胀
             log.debug("[ChatUtils] 实际发送给LLM的请求体: {}", jsonBody);
             return jsonBody;
         } catch (Exception e) {
@@ -245,7 +217,6 @@ public class ChatUtils {
 
     /**
      * 获取共享的 ObjectMapper 实例
-     * 供 Controller 复用，避免重复创建
      *
      * @return ObjectMapper 实例
      */
@@ -255,7 +226,6 @@ public class ChatUtils {
 
     /**
      * 获取共享的 OkHttpClient 实例
-     * 供 Controller 复用，统一连接池管理
      *
      * @return OkHttpClient 实例
      */

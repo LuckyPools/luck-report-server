@@ -15,7 +15,6 @@
  ******************************************************************************/
 package com.luck.report.core.definition.value;
 
-
 import com.luck.report.core.expression.model.Expression;
 
 import java.io.Serializable;
@@ -43,7 +42,6 @@ public class ZxingValue implements Value, Serializable {
 
     @Override
     public String getValue() {
-        // 2019年1月23日 修复表达式时无法获取value数据
         return source == Source.expression ? expr : text;
     }
 
@@ -57,7 +55,6 @@ public class ZxingValue implements Value, Serializable {
      * @param type 类型（忽略）
      */
     public void setType(ValueType type) {
-        // 空实现，忽略type字段
     }
 
     /**
@@ -65,7 +62,6 @@ public class ZxingValue implements Value, Serializable {
      * @param value 值（忽略）
      */
     public void setValue(String value) {
-        // 空实现，忽略value字段
     }
 
     public int getWidth() {

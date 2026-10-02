@@ -19,29 +19,7 @@ import tech.amikos.chromadb.model.QueryEmbedding;
 import java.util.*;
 
 /**
- * 基于 Chroma 向量数据库的向量存储实现（纯向量操作）
- *
- * 使用 Chroma 底层 DefaultApi（非高层 Collection API），原因：
- * - 高层 Collection.query() 只接受 queryTexts（文本），内部自动用 EmbeddingFunction 转向量
- * - 我们的 VectorStore 接口设计是调用方提供向量，不需要 Chroma 内嵌的 EmbeddingFunction
- * - 底层 DefaultApi.getNearestNeighbors() 支持直接传 queryEmbeddings，符合接口设计
- *
- * 设计原则：
- * 1. 只负责向量数据的存储、检索、删除
- * 2. 不负责文本转向量（这是 EmbeddingService 的职责）
- * 3. 调用 add() 前，VectorDocument.vector 必须已填充
- * 4. 调用 search() 前，queryVector 必须已生成
- *
- * Bean 注册：
- * - 由 ChromaVectorStoreConfiguration 注册为 bean.chromaVectorStore
- *
- * Collection 结构
- * {
- *   "id": "文档唯一ID",
- *   "embedding": [向量数组],
- *   "metadata": { vectorType, businessKnowledgeId / agentKnowledgeId, ... },
- *   "document": "文本内容"
- * }
+ * 基于 Chroma 的向量存储实现
  *
  * @author luck
  */
@@ -50,14 +28,16 @@ public class ChromaVectorStoreImpl implements VectorStore {
     private static final Logger log = LoggerFactory.getLogger(ChromaVectorStoreImpl.class);
 
     private final Client chromaClient;
+
     private final DefaultApi api;
+
     private final String defaultCollectionName;
 
     /**
-     * 构造函数：由 ChromaVectorStoreConfiguration 注入 Client、DefaultApi 和 collectionName
+     * 构造函数
      *
-     * @param chromaClient Chroma HTTP 客户端（用于 Collection 管理）
-     * @param api Chroma 底层 API（用于直接传向量的增删查操作）
+     * @param chromaClient Chroma HTTP 客户端
+     * @param api Chroma 底层 API
      * @param collectionName 默认 Collection 名称
      */
     public ChromaVectorStoreImpl(Client chromaClient, DefaultApi api, String collectionName) {
@@ -66,8 +46,6 @@ public class ChromaVectorStoreImpl implements VectorStore {
         this.defaultCollectionName = collectionName;
         log.info("[ChromaVectorStore] 初始化，默认 Collection: {}", defaultCollectionName);
     }
-
-    // ==================== 第一层：基础接口（必选实现） ====================
 
     @Override
     public void add(List<VectorDocument> documents) {
@@ -87,31 +65,26 @@ public class ChromaVectorStoreImpl implements VectorStore {
         }
 
         try {
-            // 从第一个文档的 metadata 中提取 vectorType，动态选择 Collection
             String vectorType = extractVectorType(documents.get(0));
             String collectionName = vectorType != null
                 ? getCollectionNameByVectorType(vectorType)
                 : defaultCollectionName;
 
-            // 获取 Collection 的 ID（Chroma 内部用 collectionId 做 API 路径）
             String collectionId = getOrCreateCollectionId(collectionName);
             DefaultApi api = this.api;
 
-            // 构造 AddEmbedding 请求
             List<Object> embeddings = new ArrayList<>();
             List<Map<String, Object>> metadatas = new ArrayList<>();
             List<String> documentsList = new ArrayList<>();
             List<String> ids = new ArrayList<>();
 
             for (VectorDocument doc : documents) {
-                // float[] → List<Float>（Chroma API 需要）
                 List<Float> embeddingList = new ArrayList<>(doc.getVector().length);
                 for (float v : doc.getVector()) {
                     embeddingList.add(v);
                 }
                 embeddings.add(embeddingList);
 
-                // metadata: Map<String, Object> → Map<String, Object>（底层 API 支持 Object 值）
                 Map<String, Object> metadata = new HashMap<>(doc.getMetadata());
                 metadatas.add(metadata);
 
@@ -217,7 +190,6 @@ public class ChromaVectorStoreImpl implements VectorStore {
 
     /**
      * 统一向量检索入口
-     * 根据 VectorSearchParam 的字段组合过滤条件，所有检索场景都通过此方法完成
      *
      * @param param 检索参数，queryVector 必须已生成
      * @return 检索结果列表，按相似度降序排列
@@ -231,21 +203,19 @@ public class ChromaVectorStoreImpl implements VectorStore {
             );
         }
 
-        // idMetaKey 非空但 validIds 为空：无生效知识，直接返回空列表
+        // idMetaKey 非空且 validIds 为空时返回空列表
         if (param.getIdMetaKey() != null && (param.getValidIds() == null || param.getValidIds().isEmpty())) {
             log.info("无生效知识，跳过检索: vectorType={}, idMetaKey={}", param.getVectorType(), param.getIdMetaKey());
             return new ArrayList<>();
         }
 
         try {
-            // vectorType 为空时用默认 Collection，非空时按类型分 Collection
             String collectionName = (param.getVectorType() != null && !param.getVectorType().isEmpty())
                 ? getCollectionNameByVectorType(param.getVectorType())
                 : defaultCollectionName;
             String collectionId = getOrCreateCollectionId(collectionName);
             DefaultApi api = this.api;
 
-            // 统一构建 where 条件（metadataEquals + idMetaKey IN）
             Map<String, Object> where = buildWhere(param.getMetadataEquals(), param.getIdMetaKey(), param.getValidIds());
 
             QueryEmbedding queryRequest = buildQueryRequest(param.getQueryVector(), param.getTopK(), where);
@@ -270,11 +240,9 @@ public class ChromaVectorStoreImpl implements VectorStore {
 
     @Override
     public List<VectorStoreSearchResult> searchByFullText(VectorFullTextSearchParam param) {
-        // Chroma 无生产级倒排/BM25；混合检索时全文路返回空，由应用层降级为语义检索
+        // Chroma 无 BM25，混合检索时全文路返回空
         return Collections.emptyList();
     }
-
-    // ==================== 第二层：常用接口（推荐实现） ====================
 
     @Override
     public boolean deleteByVectorType(String vectorType) {
@@ -284,7 +252,6 @@ public class ChromaVectorStoreImpl implements VectorStore {
         }
 
         try {
-            // 按 vectorType 分 Collection，删除整个 Collection
             String collectionName = getCollectionNameByVectorType(vectorType);
             chromaClient.deleteCollection(collectionName);
             log.info("删除整个 Collection: {}", collectionName);
@@ -313,8 +280,6 @@ public class ChromaVectorStoreImpl implements VectorStore {
             return false;
         }
     }
-
-    // ==================== 第三层：高级接口（可选实现） ====================
 
     @Override
     public List<VectorDocument> listByVectorTypeAndMetadata(String vectorType, String metaKey, Object metaValue) {
@@ -364,7 +329,6 @@ public class ChromaVectorStoreImpl implements VectorStore {
             String collectionId = getOrCreateCollectionId(collectionName);
             DefaultApi api = this.api;
 
-            // 构造 where 过滤条件
             Map<String, Object> where = new HashMap<>();
             where.put(metaKey, metaValue);
 
@@ -381,8 +345,6 @@ public class ChromaVectorStoreImpl implements VectorStore {
             return false;
         }
     }
-
-    // ==================== 辅助方法 ====================
 
     /**
      * 从文档 metadata 中提取 vectorType
@@ -406,12 +368,7 @@ public class ChromaVectorStoreImpl implements VectorStore {
     }
 
     /**
-     * 通过 DefaultApi 获取或创建 Collection，返回 Collection 的 UUID
-     *
-     * 使用 DefaultApi 而非 Client 的原因：
-     * - Client.getOrCreateCollection(String) 不存在
-     * - Client.createCollection / getCollection 需要 EmbeddingFunction 参数
-     * - DefaultApi.createCollection 支持 getOrCreate 标志，且不需要 EmbeddingFunction
+     * 获取或创建 Collection，返回 UUID
      *
      * @param collectionName Collection 名称
      * @return Collection 的 UUID
@@ -425,7 +382,6 @@ public class ChromaVectorStoreImpl implements VectorStore {
 
             Object result = api.createCollection(createRequest);
 
-            // 增强日志：打印返回值类型和内容，便于调试
             log.debug("createCollection 返回值类型: {}, 内容: {}",
                      result != null ? result.getClass().getName() : "null", result);
 
@@ -439,7 +395,6 @@ public class ChromaVectorStoreImpl implements VectorStore {
                 return (String) idObj;
             }
 
-            // 返回值类型异常，打印详细信息
             log.error("createCollection 返回值类型异常: 期望 Map, 实际: {}",
                      result != null ? result.getClass().getName() : "null");
             throw new RuntimeException("Failed to get/create collection: " + collectionName +
@@ -472,8 +427,7 @@ public class ChromaVectorStoreImpl implements VectorStore {
     }
 
     /**
-     * 构建业务ID的 IN 过滤条件
-     * Chroma where 语法：{idMetaKey: {"$in": [v1, v2, ...]}}
+     * 构建业务 ID 的 IN 过滤条件
      *
      * @param idMetaKey metadata 中业务ID字段名，为 null 时返回 null
      * @param validIds 生效的业务ID列表
@@ -492,11 +446,6 @@ public class ChromaVectorStoreImpl implements VectorStore {
 
     /**
      * 统一构建 Chroma where 条件
-     * 组合 metadataEquals（等值过滤）和 idMetaKey IN（业务ID过滤）两种条件
-     * - 两者都为空：返回 null（不过滤）
-     * - 只有 metadataEquals：返回 {key1: val1, key2: val2, ...}
-     * - 只有 idMetaKey IN：返回 {idMetaKey: {"$in": [...]}}
-     * - 两者都有：返回 {"$and": [metadataEquals, {idMetaKey: {"$in": [...]}}]}
      *
      * @param metadataEquals metadata 等值过滤 Map，为 null 或空表示不过滤
      * @param idMetaKey 业务ID字段名，为 null 表示不按ID过滤
@@ -511,20 +460,16 @@ public class ChromaVectorStoreImpl implements VectorStore {
 
         Map<String, Object> idWhere = buildIdFilter(idMetaKey, validIds);
 
-        // 两者都为空，返回 null
         if (metaWhere == null && idWhere == null) {
             return null;
         }
-        // 只有 metadataEquals
         if (metaWhere != null && idWhere == null) {
             return metaWhere;
         }
-        // 只有 idMetaKey IN
         if (metaWhere == null) {
             return idWhere;
         }
 
-        // 两者都有，用 $and 组合
         List<Map<String, Object>> andConditions = new ArrayList<>();
         andConditions.add(metaWhere);
         andConditions.add(idWhere);
@@ -543,7 +488,6 @@ public class ChromaVectorStoreImpl implements VectorStore {
      * @return QueryEmbedding 请求对象
      */
     private QueryEmbedding buildQueryRequest(float[] queryVector, int topK, Map<String, Object> where) {
-        // float[] → List<Float>
         List<Float> embeddingList = new ArrayList<>(queryVector.length);
         for (float v : queryVector) {
             embeddingList.add(v);
@@ -599,16 +543,7 @@ public class ChromaVectorStoreImpl implements VectorStore {
     }
 
     /**
-     * 转换 Chroma 查询响应为 VectorStoreSearchResult
-     *
-     * 底层 DefaultApi.getNearestNeighbors() 返回 Object，
-     * 实际是 LinkedHashMap，结构如下：
-     * {
-     *   "ids": [["id1", "id2", ...]],
-     *   "distances": [[0.1, 0.2, ...]],
-     *   "documents": [["text1", "text2", ...]],
-     *   "metadatas": [[{...}, {...}, ...]]
-     * }
+     * 转换 Chroma 查询响应为检索结果
      *
      * @param response Chroma 查询响应
      * @param threshold 相似度阈值
@@ -641,7 +576,6 @@ public class ChromaVectorStoreImpl implements VectorStore {
         List<Map<String, Object>> metadatas = metadatasList != null && !metadatasList.isEmpty() ? metadatasList.get(0) : null;
 
         for (int i = 0; i < ids.size(); i++) {
-            // Chroma 返回 distance（L2 距离），转换为相似度
             double distance = distances != null ? distances.get(i).doubleValue() : 0.0;
             double similarity = 1.0 / (1.0 + distance);  // L2 距离转相似度：距离越小相似度越高
 

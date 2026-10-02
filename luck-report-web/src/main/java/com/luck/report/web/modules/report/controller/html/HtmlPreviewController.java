@@ -21,7 +21,6 @@ import java.util.Map;
 
 /**
  * HTML 预览控制器
- * <p>仅负责 HTTP 请求 / 响应转换，所有业务逻辑委托给 {@link HtmlPreviewService}。
  */
 @RestController("bean.htmlPreviewController")
 @RequestMapping("${luck-report.servletPrefix:}/html")
@@ -79,7 +78,7 @@ public class HtmlPreviewController {
     }
 
     /**
-     * 批量加载查询表单选项：按报表文件 + 数据集引用执行数据集，返回 label/value 选项
+     * 批量加载查询表单选项
      */
     @RequestMapping("/load_search_form_options")
     public ResultVO<SearchFormOptionsVo> loadSearchFormOptions(@RequestBody SearchFormOptionsRequest request) {

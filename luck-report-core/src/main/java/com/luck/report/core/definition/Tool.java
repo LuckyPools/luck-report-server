@@ -18,8 +18,7 @@ package com.luck.report.core.definition;
 import java.io.Serializable;
 
 /**
- * 预览工具栏配置。
- * <p>每个布尔字段对应预览页工具栏中的一个按钮或一组控件是否可见。
+ * 预览工具栏配置。每个布尔字段对应预览页工具栏中的一个按钮或一组控件是否可见。
  *
  * @author luck-report
  * @since 2026年08月29日
@@ -27,25 +26,45 @@ import java.io.Serializable;
 public class Tool implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** 是否显示工具栏整体 */
+    /**
+     * 是否显示工具栏整体
+     */
     private boolean show = true;
-    /** 打印按钮 */
+    /**
+     * 打印按钮
+     */
     private boolean print = true;
-    /** PDF直接打印按钮 */
+    /**
+     * PDF直接打印按钮
+     */
     private boolean pdfPrint = true;
-    /** PDF预览打印按钮 */
+    /**
+     * PDF预览打印按钮
+     */
     private boolean pdfPreviewPrint = true;
-    /** 导出PDF按钮 */
+    /**
+     * 导出PDF按钮
+     */
     private boolean pdf = true;
-    /** 导出Word按钮 */
+    /**
+     * 导出Word按钮
+     */
     private boolean word = true;
-    /** 导出Excel按钮 */
+    /**
+     * 导出Excel按钮
+     */
     private boolean excel = true;
-    /** 分页导出Excel按钮 */
+    /**
+     * 分页导出Excel按钮
+     */
     private boolean pagingExcel = true;
-    /** 分页分Sheet导出Excel按钮 */
+    /**
+     * 分页分Sheet导出Excel按钮
+     */
     private boolean sheetPagingExcel = true;
-    /** 分页控件（首页/上一页/下一页/末页等） */
+    /**
+     * 分页控件（首页/上一页/下一页/末页等）
+     */
     private boolean paging = true;
 
     /**

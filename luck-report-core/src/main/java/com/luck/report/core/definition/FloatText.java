@@ -24,33 +24,61 @@ package com.luck.report.core.definition;
 public class FloatText extends FloatElement {
     private static final long serialVersionUID = 1L;
 
-    /** 文本内容 */
+    /**
+     * 文本内容
+     */
     private String value;
-    /** 字体 */
+    /**
+     * 字体
+     */
     private String fontFamily;
-    /** 字号（像素） */
+    /**
+     * 字号（像素）
+     */
     private Integer fontSize;
-    /** 字体颜色，"R,G,B" 格式 */
+    /**
+     * 字体颜色，"R,G,B" 格式
+     */
     private String forecolor;
-    /** 是否粗体 */
+    /**
+     * 是否粗体
+     */
     private Boolean bold;
-    /** 是否斜体 */
+    /**
+     * 是否斜体
+     */
     private Boolean italic;
-    /** 是否下划线 */
+    /**
+     * 是否下划线
+     */
     private Boolean underline;
-    /** 水平对齐方式：left / center / right */
+    /**
+     * 水平对齐方式：left / center / right
+     */
     private String align;
-    /** 垂直对齐方式：top / middle / bottom */
+    /**
+     * 垂直对齐方式：top / middle / bottom
+     */
     private String valign;
-    /** 背景颜色，"R,G,B" 格式，空或null表示无背景 */
+    /**
+     * 背景颜色，"R,G,B" 格式，空或null表示无背景
+     */
     private String bgcolor;
-    /** 上边框 */
+    /**
+     * 上边框
+     */
     private Border topBorder;
-    /** 右边框 */
+    /**
+     * 右边框
+     */
     private Border rightBorder;
-    /** 下边框 */
+    /**
+     * 下边框
+     */
     private Border bottomBorder;
-    /** 左边框 */
+    /**
+     * 左边框
+     */
     private Border leftBorder;
 
     public FloatText() {

@@ -18,7 +18,6 @@ package com.luck.report.core.definition.dataset;
 import java.io.Serializable;
 import java.util.List;
 
-
 /**
  * @author Jacky.gao
  * @since 2016年12月27日

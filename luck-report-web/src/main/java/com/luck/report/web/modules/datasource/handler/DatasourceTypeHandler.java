@@ -5,7 +5,6 @@ import org.springframework.util.StringUtils;
 
 /**
  * 数据源类型处理器接口
- * 统一处理不同数据库类型的连接URL生成、Schema提取等逻辑
  *
  * @author luck
  */
@@ -41,7 +40,6 @@ public interface DatasourceTypeHandler {
 
     /**
      * 构建JDBC连接URL
-     * 子类需根据数据库类型实现具体的URL拼接逻辑
      *
      * @param datasource 数据源实体
      * @return JDBC连接URL
@@ -50,7 +48,6 @@ public interface DatasourceTypeHandler {
 
     /**
      * 解析连接URL
-     * 如果已有connectionUrl则直接返回，否则调用buildConnectionUrl生成
      *
      * @param datasource 数据源实体
      * @return JDBC连接URL
@@ -65,7 +62,6 @@ public interface DatasourceTypeHandler {
 
     /**
      * 提取Schema名称
-     * 默认返回databaseName，PostgreSQL/Oracle等需重写
      *
      * @param datasource 数据源实体
      * @return Schema名称

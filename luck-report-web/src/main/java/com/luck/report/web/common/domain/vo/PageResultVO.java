@@ -9,7 +9,6 @@ import java.util.List;
 
 /**
  * 分页结果封装类
- * 用于统一分页查询的返回格式，自带 code 和 message，无需再套 ResultVO
  *
  * @author luck
  * @param <T> 数据类型

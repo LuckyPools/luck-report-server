@@ -8,8 +8,6 @@ import java.util.List;
 
 /**
  * 聊天会话 Mapper
- * 提供 luck_chat_session 表的 CRUD 操作
- * SQL 定义在 resources/luck-report/sql/{dbType}/ChatSessionMapper.xml 中，支持多数据库方言
  *
  * @author luck
  */
@@ -17,7 +15,6 @@ public interface ChatSessionMapper {
 
     /**
      * 查询所有未删除的会话列表
-     * 按置顶优先、更新时间倒序排列
      *
      * @return 会话列表
      */
@@ -25,7 +22,6 @@ public interface ChatSessionMapper {
 
     /**
      * 根据用户ID查询会话列表
-     * 按置顶优先、更新时间倒序排列
      *
      * @param userId 用户ID（字符串形式）
      * @return 会话列表
@@ -34,7 +30,6 @@ public interface ChatSessionMapper {
 
     /**
      * 根据用户ID分页查询会话列表
-     * 分页由拦截器自动改写，SQL 中无需手写 LIMIT
      *
      * @param userId   用户ID（字符串形式）
      * @param offset   偏移量

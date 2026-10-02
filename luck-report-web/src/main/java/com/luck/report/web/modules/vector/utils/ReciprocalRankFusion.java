@@ -11,8 +11,6 @@ import java.util.Map;
 
 /**
  * 加权 Reciprocal Rank Fusion。
- * score(d) = w_v / (k + rank_v) + w_f / (k + rank_f)；rank 从 1 开始。
- * 同 id 累加 RRF；文档对象优先取向量侧（通常含完整 content）。
  */
 public final class ReciprocalRankFusion {
 

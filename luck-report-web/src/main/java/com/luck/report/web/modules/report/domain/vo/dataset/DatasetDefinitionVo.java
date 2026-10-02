@@ -7,11 +7,6 @@ import java.util.List;
 
 /**
  * 数据集定义 VO（聚合根）
- * 用于前端展示，对应 DatasetDefinition 的 VO 版本
- * <p>
- * 子类按数据集类型拆分：SqlDatasetDefinitionVo / BeanDatasetDefinitionVo；
- * 子类元素会被 Jackson 按实际运行时类型序列化，前端无需任何特殊处理
- * </p>
  *
  * @author system
  * @since 2026年

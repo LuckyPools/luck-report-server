@@ -5,7 +5,6 @@ import lombok.Getter;
 
 /**
  * 数据源类型枚举
- * 定义支持的数据源类型及其JDBC驱动和方言信息
  *
  * @author luck
  */
@@ -20,16 +19,24 @@ public enum ReportDatasourceTypeEnum {
     ORACLE(7, "oracle", "Oracle", "oracle.jdbc.OracleDriver"),
     HIVE(8, "hive", "Hive", "org.apache.hive.jdbc.HiveDriver");
 
-    /** 类型编码 */
+    /**
+     * 类型编码
+     */
     private final Integer code;
 
-    /** 类型标识名（用于前后端交互） */
+    /**
+     * 类型标识名（用于前后端交互）
+     */
     private final String typeName;
 
-    /** 显示名称 */
+    /**
+     * 显示名称
+     */
     private final String displayName;
 
-    /** JDBC驱动类名 */
+    /**
+     * JDBC驱动类名
+     */
     private final String driverClassName;
 
     /**

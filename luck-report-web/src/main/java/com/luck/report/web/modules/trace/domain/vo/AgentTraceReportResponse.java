@@ -10,12 +10,18 @@ import lombok.Data;
 @Data
 public class AgentTraceReportResponse {
 
-    /** 功能已关闭：前端停止上报，不再重试 */
+    /**
+     * 总开关已关闭，前端停止上报并清理缓存
+     */
     private boolean disabled;
 
-    /** 实际落盘条数 */
+    /**
+     * 实际落库条数
+     */
     private int accepted;
 
-    /** 超出单批上限被丢弃的条数 */
+    /**
+     * 因超长等规则被丢弃的条数
+     */
     private int dropped;
 }

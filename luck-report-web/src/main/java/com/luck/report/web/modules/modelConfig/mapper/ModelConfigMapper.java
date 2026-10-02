@@ -8,8 +8,6 @@ import java.util.List;
 
 /**
  * 模型配置Mapper接口
- * 提供模型配置数据的CRUD操作
- * SQL 定义在 resources/luck-report/sql/{dbType}/ModelConfigMapper.xml 中，支持多数据库方言
  *
  * @author luck
  */
@@ -48,7 +46,6 @@ public interface ModelConfigMapper {
 
     /**
      * 插入新的模型配置
-     * createTime/updateTime 由 Java 侧赋值，不依赖数据库函数
      *
      * @param modelConfig 模型配置实体
      * @return 影响的行数
@@ -57,7 +54,6 @@ public interface ModelConfigMapper {
 
     /**
      * 更新模型配置
-     * 动态SQL只更新非null的字段，updateTime 由 Java 侧赋值
      *
      * @param modelConfig 模型配置实体
      * @return 影响的行数
@@ -74,7 +70,6 @@ public interface ModelConfigMapper {
 
     /**
      * 分页条件查询模型配置
-     * 分页由拦截器自动改写，SQL 中无需手写 LIMIT
      *
      * @param queryDTO 查询条件
      * @param offset   偏移量

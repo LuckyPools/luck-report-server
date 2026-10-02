@@ -6,11 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * JSON 静态数据集定义
- * <p>
- * 静态数据集的数据以 JSON 数组字符串形式存储在 content 字段中，
- * 字段集合通过 {@link #getFields()} 从 content 中提取所有对象 key 去重得到。
- * </p>
+ * JSON 静态数据集定义；静态数据集的数据以 JSON 数组字符串形式存储在 content 字段中，字段集合通过 {@link #getFields()} 从 content 中提取所有对象 key 去重得到。
  *
  * @author luck-report
  * @since 2.0.5
@@ -19,18 +15,18 @@ public class JsonDatasetDefinition implements DatasetDefinition {
 
     private static final long serialVersionUID = 4581019308843195488L;
 
-    /** 数据集名称 */
+    /**
+     * 数据集名称
+     */
     private String name;
 
-    /** JSON 数组字符串，存储静态数据集的完整数据 */
+    /**
+     * JSON 数组字符串，存储静态数据集的完整数据
+     */
     private String content;
 
     /**
-     * 字段列表
-     * <p>
-     * 由 DatasourceParser 从 XML &lt;field&gt; 节点解析注入；
-     * 若为空，{@link #getFields()} 会回退到从 content 实时提取
-     * </p>
+     * 字段列表；由 DatasourceParser 从 XML &lt;field&gt; 节点解析注入；若为空，{@link #getFields()} 会回退到从 content 实时提取
      */
     private List<Field> fields;
 
@@ -41,11 +37,7 @@ public class JsonDatasetDefinition implements DatasetDefinition {
     }
 
     /**
-     * 获取字段列表
-     * <p>
-     * 优先返回 XML 解析注入的 fields；若为空则从 content 实时提取，
-     * 与前端 buildFields 逻辑保持一致：遍历 JSON 数组所有对象 key，去重并保持首次出现顺序
-     * </p>
+     * 获取字段列表；优先返回 XML 解析注入的 fields；若为空则从 content 实时提取，与前端 buildFields 逻辑保持一致：遍历 JSON 数组所有对象 key，去重并保持首次出现顺序
      *
      * @return 字段列表；content 为空或解析失败时返回空 List
      */

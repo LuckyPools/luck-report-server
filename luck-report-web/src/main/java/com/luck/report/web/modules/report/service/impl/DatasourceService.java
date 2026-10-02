@@ -64,9 +64,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * 数据源服务，负责数据源相关的所有业务逻辑：
- * 内置数据源加载、Bean 方法发现、数据库表 / 字段构建、SQL 预览、连接测试等。
- * <p>Bean 名：{@code bean.datasourceService}，避免与第三方系统 Bean 冲突。
+ * 数据源服务
  *
  * @author luck-report
  * @since 1.0.0
@@ -303,7 +301,6 @@ public class DatasourceService {
 
     /**
      * 测试数据库连接是否可用。
-     * 连接失败时抛出 RuntimeException，由全局异常处理器统一处理。
      */
     public Map<String, Object> testConnection(TestConnectionRequest req) {
         Connection conn = null;
@@ -326,8 +323,6 @@ public class DatasourceService {
         }
         return map;
     }
-
-    // -------------------- 内部辅助方法 --------------------
 
     /**
      * 根据请求构造 PreparedStatementCreator。
@@ -431,7 +426,6 @@ public class DatasourceService {
 
     /**
      * 解析列出表/视图时使用的 schema，过滤系统表。
-     * Oracle 用当前用户（大写）；SQL Server / PostgreSQL 用连接默认 schema；其它库不限定。
      */
     private String resolveTableSchema(String url, Connection conn, DatabaseMetaData metaData) throws SQLException {
         if (url == null) {

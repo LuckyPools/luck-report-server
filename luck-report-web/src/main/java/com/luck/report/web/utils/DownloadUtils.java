@@ -15,8 +15,6 @@ public class DownloadUtils {
 
     /**
      * 通过 DesignerService 解析报表的真实名称
-     * 对于 db:xxx 类型的 reportPath，通过 provider 查询数据库获取报表标题；
-     * 对于文件系统类型的 reportPath，通过 provider 获取文件名。
      *
      * @param designerService DesignerService 实例
      * @param reportPath        报表文件路径
@@ -32,7 +30,6 @@ public class DownloadUtils {
 
     /**
      * 构建下载文件名
-     * 根据报表文件名和用户指定的文件名生成最终的下载文件名
      *
      * @param reportFileName 报表文件名，用于在用户未指定文件名时作为默认名称，类型：String，可为空
      * @param fileName       用户指定的文件名，类型：String，可为空
@@ -59,8 +56,6 @@ public class DownloadUtils {
 
     /**
      * 构建下载响应头
-     * 根据报表文件名和用户指定的文件名生成最终的下载文件名，并设置HTTP响应头
-     * 使用 RFC 5987 标准解决中文文件名乱码问题
      *
      * @param response        HTTP响应对象，用于设置响应头，类型：ApiResponse，不可为空
      * @param reportFileName  报表文件名，用于在用户未指定文件名时作为默认名称，类型：String，可为空
@@ -87,6 +82,5 @@ public class DownloadUtils {
 
         return downloadFileName;
     }
-
 
 }

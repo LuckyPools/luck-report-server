@@ -15,7 +15,6 @@
  ******************************************************************************/
 package com.luck.report.core.build.assertor;
 
-
 /**
  * @author Jacky.gao
  * @since 2017年1月12日

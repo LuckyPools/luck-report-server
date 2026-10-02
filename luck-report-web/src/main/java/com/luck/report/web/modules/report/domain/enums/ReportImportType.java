@@ -5,17 +5,23 @@ package com.luck.report.web.modules.report.domain.enums;
  */
 public enum ReportImportType {
 
-    /** 当前 V2（不做结构转换） */
+    /**
+     * 当前 V2（不做结构转换）
+     */
     V2,
 
-    /** LuckReport V1（u-* 查询表单） */
+    /**
+     * LuckReport V1（u-* 查询表单）
+     */
     V1,
 
-    /** UReport2（search-form + 原生图表结构） */
+    /**
+     * UReport2（search-form + 原生图表结构）
+     */
     UREPORT;
 
     /**
-     * 方法说明：解析前端传入的导入类型参数
+     * 解析导入类型参数
      *
      * @param raw 原始参数，可空；空或未知时按 V2
      * @return 导入类型枚举

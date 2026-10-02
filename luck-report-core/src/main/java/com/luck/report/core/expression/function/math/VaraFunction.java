@@ -48,7 +48,6 @@ public class VaraFunction extends MathFunction {
         return result.divide(new BigDecimal(size), 8, BigDecimal.ROUND_HALF_UP);
     }
 
-
     @Override
     public String name() {
         return "vara";

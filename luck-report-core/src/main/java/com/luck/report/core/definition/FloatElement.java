@@ -18,10 +18,7 @@ package com.luck.report.core.definition;
 import java.io.Serializable;
 
 /**
- * 悬浮元素基类。所有悬浮元素（图片、文本等）共享的定位与层级属性。
- * 不绑定任何单元格，以绝对像素坐标浮于报表上方。
- * <p>新增悬浮类型时应继承本类，并在 {@link ReportDefinition} 中声明对应的
- * List 字段与 XML 序列化逻辑，保持与 FloatImage/FloatText 一致的规范。
+ * 悬浮元素基类。所有悬浮元素（图片、文本等）共享的定位与层级属性。不绑定任何单元格，以绝对像素坐标浮于报表上方。新增悬浮类型时应继承本类，并在 {@link ReportDefinition} 中声明对应的 List 字段与 XML 序列化逻辑，保持与 FloatImage/FloatText 一致的规范。
  *
  * @author luck-report
  * @since 1.0.0
@@ -29,19 +26,33 @@ import java.io.Serializable;
 public abstract class FloatElement implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** 宽度（像素） */
+    /**
+     * 宽度（像素）
+     */
     private Integer width;
-    /** 高度（像素） */
+    /**
+     * 高度（像素）
+     */
     private Integer height;
-    /** 距报表数据区顶部距离（像素） */
+    /**
+     * 距报表数据区顶部距离（像素）
+     */
     private Integer top;
-    /** 距报表数据区左侧距离（像素） */
+    /**
+     * 距报表数据区左侧距离（像素）
+     */
     private Integer left;
-    /** 层级，值越大越靠上，默认 0 */
+    /**
+     * 层级，值越大越靠上，默认 0
+     */
     private Integer layer;
-    /** 是否每页重复打印 */
+    /**
+     * 是否每页重复打印
+     */
     private boolean repeatPrint;
-    /** 元素名称（同一报表内唯一，用于列表展示与标识） */
+    /**
+     * 元素名称（同一报表内唯一，用于列表展示与标识）
+     */
     private String name;
 
     public FloatElement() {

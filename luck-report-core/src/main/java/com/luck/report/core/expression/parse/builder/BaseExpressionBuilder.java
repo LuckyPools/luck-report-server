@@ -47,7 +47,6 @@ public abstract class BaseExpressionBuilder implements ExpressionBuilder {
         throw new ReportParseException("Unknow simple value context " + valueContext);
     }
 
-
     protected BaseCondition buildConditions(ConditionsContext conditionsContext) {
         List<ConditionContext> conditionContextList = conditionsContext.condition();
         List<JoinContext> joins = conditionsContext.join();

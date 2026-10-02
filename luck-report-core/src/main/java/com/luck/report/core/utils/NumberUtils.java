@@ -2,7 +2,9 @@ package com.luck.report.core.utils;
 
 import java.math.BigDecimal;
 
-/** 文本出口数字展示，避免 Double.toString 科学计数法。 */
+/**
+ * 文本出口数字展示，避免 Double.toString 科学计数法。
+ */
 public final class NumberUtils {
 
     private NumberUtils() {

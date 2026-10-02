@@ -69,7 +69,6 @@ public class CellRightDuplicator {
         return null;
     }
 
-
     private void processSelfBlankCell(RightDuplicate rightDuplicate) {
         Cell newBlankCell = cell.newCell();
         newBlankCell.setValue(new SimpleValue(""));

@@ -8,8 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * 报表 XML 中自定义 JDBC 数据源 password 属性的加密工具。
- * <p>原地替换属性值，避免整文档 DOM 重写改变格式 / CDATA。
+ * 报表 XML 中自定义 JDBC 数据源 password 属性的加密工具。原地替换属性值，避免整文档 DOM 重写改变格式 / CDATA。
  */
 public final class ReportJdbcPasswordXmlUtils {
 

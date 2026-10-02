@@ -10,6 +10,7 @@ import javax.sql.DataSource;
 public class LuckJdbcContext {
 
     private final DataSource dataSource;
+
     private final DbType dbType;
 
     /**

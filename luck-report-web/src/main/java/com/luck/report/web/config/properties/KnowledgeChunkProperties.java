@@ -2,8 +2,6 @@ package com.luck.report.web.config.properties;
 
 /**
  * 知识库分块参数配置
- * <p>前缀：{@code luck-report.vector}（由 {@link com.luck.report.web.config.KnowledgeChunkConfiguration} 绑定）。
- * <p>与向量库 type/datasource 同级；单位为<strong>字符</strong>（本轮不做 tokenizer）。
  *
  * @author luck
  */

@@ -35,9 +35,7 @@ public interface BuildinDatasource {
     Connection getConnection();
     
     /**
-     * 获取数据源唯一标识
-     * 用于Agent调用table-relations接口时传递数据源信息
-     * 动态生成的内置数据源返回数据库中的ID，静态配置的内置数据源返回null
+     * 获取数据源唯一标识；用于Agent调用table-relations接口时传递数据源信息；动态生成的内置数据源返回数据库中的ID，静态配置的内置数据源返回null
      *
      * @return 数据源ID（String类型），如果未实现则返回null
      */

@@ -17,8 +17,6 @@ import java.util.stream.Collectors;
 
 /**
  * 向量文档 DAO
- * 使用 JdbcTemplate 操作 PostgreSQL 的 luck_vector_document 表
- * 通过 @Qualifier("bean.vectorJdbcTemplate") 注入 plugin 内部专属 JdbcTemplate（plugin 自治）
  *
  * @author luck
  */
@@ -48,7 +46,6 @@ public class PgSqlVectorDocumentDao {
     };
 
     public int insertOrUpdate(VectorDocumentRow row) {
-        // content_tsv 随 content 一并写入
         String sql = "INSERT INTO luck_vector_document (id, vector, content, content_tsv, metadata, vector_type, created_at) " +
                      "VALUES (?, ?::vector, ?, to_tsvector('simple', coalesce(?, '')), ?::jsonb, ?, NOW()) " +
                      "ON CONFLICT (id) DO UPDATE SET " +
@@ -80,7 +77,7 @@ public class PgSqlVectorDocumentDao {
     }
 
     public List<VectorDocumentRow> selectByVectorTypeAndMetadata(String vectorType, String metadataJson) {
-        // 0 AS similarity：复用 ROW_MAPPER（列举无需相似度）
+        // 列举无需相似度，填 0 以复用 ROW_MAPPER
         String sql = "SELECT id, vector, content, metadata, vector_type, 0 AS similarity "
                 + "FROM luck_vector_document "
                 + "WHERE vector_type = ? AND metadata @> ?::jsonb";
@@ -88,8 +85,7 @@ public class PgSqlVectorDocumentDao {
     }
 
     /**
-     * 统一向量检索方法
-     * 根据 vectorType、metadataJson、idMetaKey 动态拼接过滤条件
+     * 统一向量检索
      *
      * @param queryVectorStr 查询向量字符串
      * @param vectorType 知识类型，为 null 表示不按类型过滤
@@ -116,19 +112,16 @@ public class PgSqlVectorDocumentDao {
         params.add(queryVectorStr);
         params.add(threshold);
 
-        // 追加 vectorType 条件
         if (vectorType != null && !vectorType.isEmpty()) {
             sql.append("AND vector_type = ? ");
             params.add(vectorType);
         }
 
-        // 追加 metadata 等值条件（@> jsonb 包含匹配，支持多字段）
         if (metadataJson != null && !metadataJson.isEmpty()) {
             sql.append("AND metadata @> ?::jsonb ");
             params.add(metadataJson);
         }
 
-        // 追加业务ID的 IN 过滤条件（idMetaKey 已做白名单校验，安全拼接）
         appendIdFilter(sql, params, idMetaKey, validIds);
 
         sql.append("ORDER BY similarity DESC LIMIT ?");
@@ -139,7 +132,6 @@ public class PgSqlVectorDocumentDao {
 
     /**
      * 全文检索（tsvector + GIN）
-     * 按 content_tsv @@ plainto_tsquery 召回，ts_rank 排序
      *
      * @param queryText    查询原文
      * @param vectorType   知识类型，为 null 表示不按类型过滤
@@ -184,8 +176,7 @@ public class PgSqlVectorDocumentDao {
     }
 
     /**
-     * 追加业务ID的 IN 过滤条件到 SQL 和参数列表
-     * idMetaKey 为 null 或 validIds 为空时跳过；否则拼接 AND metadata->>'idMetaKey' IN (?, ...)
+     * 追加业务 ID 的 IN 过滤条件
      *
      * @param sql SQL 构建器
      * @param params 参数列表
@@ -202,8 +193,7 @@ public class PgSqlVectorDocumentDao {
     }
 
     /**
-     * 校验 metadata 字段名合法性，防止 SQL 注入
-     * 只允许字母、数字、下划线，且不能以数字开头
+     * 校验 metadata 字段名，防止 SQL 注入
      *
      * @param metaKey metadata 字段名，为 null 时跳过校验
      * @throws IllegalArgumentException 如果字段名非法

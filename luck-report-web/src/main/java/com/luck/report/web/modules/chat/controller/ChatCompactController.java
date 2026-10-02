@@ -14,8 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * 对话压缩控制器
- * 接收前端传入的早期对话消息，调用 LLM 生成结构化摘要，
- * 替代原始消息以减少上下文 token 消耗
  *
  * @author luck
  */
@@ -29,7 +27,6 @@ public class ChatCompactController {
 
     /**
      * 对话压缩接口（POST）
-     * 委托 ChatService 处理压缩逻辑
      *
      * @param request 压缩请求，包含 messages、existingSummary、reportSnapshot、compactPrompt、modelId 等
      * @return ResultVO<CompactResult> 压缩结果，包含 summary 和 keyOperations

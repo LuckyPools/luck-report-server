@@ -12,11 +12,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * 静态数据源定义
- * <p>
- * 静态数据源无需数据库连接，其数据集以 JSON 数组字符串形式存储在
- * {@link JsonDatasetDefinition#getContent()} 中，取数时直接反序列化为 List<Map>。
- * </p>
+ * 静态数据源定义；静态数据源无需数据库连接，其数据集以 JSON 数组字符串形式存储在{@link JsonDatasetDefinition#getContent()} 中，取数时直接反序列化为 List<Map>。
  *
  * @author luck-report
  * @since 2.0.5
@@ -25,10 +21,14 @@ public class StaticDatasourceDefinition implements DatasourceDefinition, Seriali
 
     private static final long serialVersionUID = 1L;
 
-    /** 数据源名称 */
+    /**
+     * 数据源名称
+     */
     private String name;
 
-    /** 数据集列表 */
+    /**
+     * 数据集列表
+     */
     private List<DatasetDefinition> datasets;
 
     /**
@@ -38,11 +38,7 @@ public class StaticDatasourceDefinition implements DatasourceDefinition, Seriali
     }
 
     /**
-     * 构建静态数据集的运行时 Dataset 列表
-     * <p>
-     * 静态数据源是唯一不需要 Connection 的数据源类型，直接把 JSON content
-     * 反序列化为 List<Map> 包装成 Dataset 返回。
-     * </p>
+     * 构建静态数据集的运行时 Dataset 列表；静态数据源是唯一不需要 Connection 的数据源类型，直接把 JSON content；反序列化为 List<Map> 包装成 Dataset 返回。
      *
      * @param datasetDefs 数据集定义列表，可为空
      * @return 运行时 Dataset 列表；入参为空时返回空 List
@@ -119,6 +115,5 @@ public class StaticDatasourceDefinition implements DatasourceDefinition, Seriali
      * @param type 数据源类型
      */
     public void setType(DatasourceType type) {
-        // 空实现，忽略 type 字段
     }
 }

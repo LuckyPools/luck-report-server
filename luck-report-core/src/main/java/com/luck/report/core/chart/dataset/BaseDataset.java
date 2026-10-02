@@ -15,7 +15,6 @@
  ******************************************************************************/
 package com.luck.report.core.chart.dataset;
 
-
 import java.io.Serializable;
 import java.util.List;
 
@@ -26,12 +25,16 @@ import java.util.List;
 public abstract class BaseDataset implements Dataset, Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** ECharts 官方默认色板（与前端选择弹窗 / ECHARTS_COLORS 一致） */
+    /**
+     * ECharts 官方默认色板（与前端选择弹窗 / ECHARTS_COLORS 一致）
+     */
     private static final String[] DEFAULT_COLORS = {
             "84, 112, 198", "145, 204, 117", "250, 200, 88", "238, 102, 102", "115, 192, 222", "154, 96, 180"
     };
 
-    /** 用户自定义调色板（r,g,b）；空或 null 时回退 DEFAULT_COLORS */
+    /**
+     * 用户自定义调色板（r,g,b）；空或 null 时回退 DEFAULT_COLORS
+     */
     private List<String> colorPalette;
 
     public void setColorPalette(List<String> colorPalette) {

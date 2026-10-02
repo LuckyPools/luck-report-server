@@ -109,7 +109,6 @@ public class JdbcDatasourceDefinition implements DatasourceDefinition, Serializa
      * @param type 数据源类型
      */
     public void setType(DatasourceType type) {
-        // 空实现，忽略type字段
     }
 
     @Override

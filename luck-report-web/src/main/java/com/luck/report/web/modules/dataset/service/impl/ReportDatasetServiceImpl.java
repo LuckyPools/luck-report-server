@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
 
 /**
  * 公共数据集服务实现
- * 提供公共数据集CRUD、分页查询、状态管理和数据源信息回填
  *
  * @author luck
  */
@@ -43,7 +42,9 @@ public class ReportDatasetServiceImpl implements ReportDatasetService {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    /** 数据集类型常量 */
+    /**
+     * 数据集类型常量
+     */
     private static final String TYPE_SQL = "sql";
     private static final String TYPE_JSON = "json";
 
@@ -103,7 +104,6 @@ public class ReportDatasetServiceImpl implements ReportDatasetService {
             throw new ReportBizException("error.dataset.notExistId", id);
         }
         validateSave(dto);
-        // 改名时需排除自身再查重
         checkNameUnique(dto.getName(), id);
         ReportDataset entity = buildEntity(id, dto);
         entity.setUpdateBy(SecurityUtils.getCurrentUserId());
@@ -146,7 +146,7 @@ public class ReportDatasetServiceImpl implements ReportDatasetService {
     }
 
     /**
-     * 保存前统一校验：类型合法、内容与安全校验（名称唯一性由create/update单独校验）
+     * 保存前统一校验
      *
      * @param dto 保存参数
      */
@@ -164,7 +164,7 @@ public class ReportDatasetServiceImpl implements ReportDatasetService {
     }
 
     /**
-     * 校验SQL类型公共数据集：数据源必填且active、SQL必填且通过安全校验
+     * 校验SQL类型公共数据集
      *
      * @param dto 保存参数
      */
@@ -190,7 +190,7 @@ public class ReportDatasetServiceImpl implements ReportDatasetService {
     }
 
     /**
-     * 校验JSON类型公共数据集：内容必填且为合法JSON数组
+     * 校验JSON类型公共数据集
      *
      * @param dto 保存参数
      */
@@ -247,7 +247,6 @@ public class ReportDatasetServiceImpl implements ReportDatasetService {
         entity.setId(id);
         entity.setName(dto.getName());
         entity.setType(dto.getType());
-        // json类型不绑定数据源，强制置空防止前端误传
         entity.setDatasourceId(TYPE_SQL.equals(dto.getType()) ? dto.getDatasourceId() : null);
         entity.setSqlContent(TYPE_SQL.equals(dto.getType()) ? dto.getSqlContent() : null);
         entity.setJsonContent(TYPE_JSON.equals(dto.getType()) ? dto.getJsonContent() : null);

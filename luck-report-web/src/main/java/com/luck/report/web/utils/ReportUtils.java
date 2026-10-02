@@ -2,7 +2,7 @@ package com.luck.report.web.utils;
 public class ReportUtils {
 
     /**
-     * 新建报表的空白模板（位于 classpath:template/template.ureport.xml）
+     * 新建报表的空白模板
      */
     private static final String DEFAULT_REPORT_TEMPLATE = "template/template.ureport.xml";
 

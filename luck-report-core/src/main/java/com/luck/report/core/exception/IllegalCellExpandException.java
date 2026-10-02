@@ -28,8 +28,9 @@ public class IllegalCellExpandException extends ReportException {
         super("Cell expand is " + cell.getExpand() + " is invalid.");
     }
 
-
-    /** errorArgs 依次对应 {0}、{1} */
+    /**
+     * errorArgs 依次对应 {0}、{1}
+     */
     public IllegalCellExpandException(String errorCode, Object... errorArgs) {
         super(errorCode, errorArgs);
     }

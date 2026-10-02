@@ -72,7 +72,9 @@ public class StructureTextSplitter implements TextSplitter {
         return chunks;
     }
 
-    /** FastGPT commonSplit（char） */
+    /**
+     * FastGPT commonSplit（char）
+     */
     List<String> commonSplit(String rawText) {
         if (!Double.isFinite(overlapRatio) || overlapRatio < 0 || overlapRatio >= 1) {
             throw new IllegalArgumentException(
@@ -400,7 +402,9 @@ public class StructureTextSplitter implements TextSplitter {
         return CODE_BLOCK_WHOLE.matcher(str.trim()).matches();
     }
 
-    /** FastGPT splitTextByCharLengthLimit */
+    /**
+     * FastGPT splitTextByCharLengthLimit
+     */
     private static List<String> splitTextByCharLengthLimit(
             String text, int maxLength, int stepLength) {
         List<String> chunks = new ArrayList<String>();

@@ -14,7 +14,6 @@ import java.util.List;
 
 /**
  * 聊天消息服务实现
- * 管理消息的保存、查询、批量保存等操作
  *
  * @author luck
  */

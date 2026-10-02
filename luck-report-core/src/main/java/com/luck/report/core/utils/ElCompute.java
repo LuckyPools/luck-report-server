@@ -201,7 +201,6 @@ public class ElCompute {
         throw new ReportComputeException("Unkown operate " + op + "");
     }
 
-
     private void addDataStack(StringBuilder dataSb) {
         if (dataSb.length() == 0) return;
         String data = dataSb.toString();

@@ -140,7 +140,6 @@ public class CellDownDuplicator {
         context.addBlankCell(newBlankCell);
     }
 
-
     /**
      * 父格随子格向下扩展加高；未合并时先按 1 行计再加块高
      *

@@ -15,8 +15,6 @@
  ******************************************************************************/
 package com.luck.report.core.definition.value;
 
-
-
 import java.io.Serializable;
 
 /**
@@ -48,7 +46,6 @@ public class SimpleValue implements Value, Serializable {
      * @param type 类型（忽略）
      */
     public void setType(ValueType type) {
-        // 空实现，忽略type字段
     }
 
     @Override

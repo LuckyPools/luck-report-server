@@ -322,8 +322,6 @@ public class JavaxApiRequest implements ApiRequest {
         return sc != null ? wrapServletContext(sc) : null;
     }
 
-    // ─── 内部包装方法 ────────────────────────────────────
-
     private static Cookie wrapCookie(javax.servlet.http.Cookie c) {
         return new Cookie() {
             @Override

@@ -6,32 +6,45 @@ import org.springframework.util.StringUtils;
 
 /**
  * 知识库文档分块策略枚举
- * 存库值为小写字符串，与前端下拉选项一致
  *
  * @author luck
  */
 @Getter
 public enum SplitterType {
 
-    /** 固定字符窗口切分 */
+    /**
+     * 固定字符窗口切分
+     */
     TOKEN("token"),
 
-    /** 递归分隔符切分（默认） */
+    /**
+     * 递归分隔符切分（默认）
+     */
     RECURSIVE("recursive"),
 
-    /** FastGPT 结构感知切分（MD 标题/代码/表） */
+    /**
+     * FastGPT 结构感知切分（MD 标题/代码/表）
+     */
     STRUCTURE("structure"),
 
-    /** FastGPT Markdown 表行窗切分 */
+    /**
+     * FastGPT Markdown 表行窗切分
+     */
     TABLE("table"),
 
-    /** 按句子边界切分 */
+    /**
+     * 按句子边界切分
+     */
     SENTENCE("sentence"),
 
-    /** 按段落边界切分 */
+    /**
+     * 按段落边界切分
+     */
     PARAGRAPH("paragraph"),
 
-    /** 基于语义相似度切分 */
+    /**
+     * 基于语义相似度切分
+     */
     SEMANTIC("semantic");
 
     private final String value;

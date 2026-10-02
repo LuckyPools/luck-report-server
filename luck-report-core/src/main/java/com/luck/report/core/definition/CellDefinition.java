@@ -26,7 +26,6 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.Serializable;
 import java.util.*;
 
-
 /**
  * @author Jacky.gao
  * @since 2016年11月1日

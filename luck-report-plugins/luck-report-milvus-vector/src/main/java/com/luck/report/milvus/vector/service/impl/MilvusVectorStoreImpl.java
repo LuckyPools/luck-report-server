@@ -40,28 +40,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
- * 基于 Milvus V2 API 的向量存储实现
- *
- * 使用 Milvus 官方 Java SDK V2 接口（MilvusClientV2）操作 Milvus 向量数据库
- * 单 Collection 设计，通过 vectorType 字段区分知识类型，通过 metadata JSON 字段存储元数据
- * 稠密检索使用 COSINE；全文检索使用 Sparse-BM25（content → sparse Function）
- *
- * Collection Schema:
- * - id: VarChar(128)，主键，不自动生成
- * - vector: FloatVector，维度由配置决定（IVF_FLAT + COSINE）
- * - vectorType: VarChar(64)，知识类型
- * - content: VarChar(65535)，enableAnalyzer=true，分块正文
- * - metadata: JSON
- * - sparse: SparseFloatVector，由 BM25 Function 从 content 生成（客户端勿写入）
- *
- * 要求：Milvus Server ≥ 2.5，milvus-sdk-java ≥ 2.5（本仓库为 2.6.18）。
- * 旧 Collection 无 sparse 时无法原地升级：请删除后重启重建，否则全文路关闭、hybrid 降级为纯向量。
- *
- * 过滤表达式语法（Milvus boolean expression）：
- * - 等值：vectorType == "X"
- * - metadata 等值：metadata["key"] == "value"
- * - metadata IN：metadata["key"] in ["v1", "v2"]
- * - 组合用 and 连接
+ * 基于 Milvus V2 的向量存储实现
  *
  * @author luck
  */
@@ -69,21 +48,20 @@ public class MilvusVectorStoreImpl implements VectorStore {
 
     private static final Logger log = LoggerFactory.getLogger(MilvusVectorStoreImpl.class);
 
-    /** metadata key 合法字符校验：仅允许字母、数字、下划线，防止表达式注入 */
     private static final Pattern META_KEY_PATTERN = Pattern.compile("^[a-zA-Z0-9_]+$");
 
-    /** Gson 反序列化 Map<String, Object> 的 Type，供 fromJson 使用 */
     private static final Type MAP_TYPE = new TypeToken<Map<String, Object>>() {}.getType();
 
     private final MilvusClientV2 client;
+
     private final String collectionName;
+
     private final int dimension;
+
     private final Gson gson = new Gson();
 
-    /** 当前 Collection 是否具备 Sparse-BM25 全文能力 */
     private volatile boolean fullTextEnabled;
 
-    /** Collection 字段名常量 */
     private static final String FIELD_ID = "id";
     private static final String FIELD_VECTOR = "vector";
     private static final String FIELD_VECTOR_TYPE = "vectorType";
@@ -92,7 +70,6 @@ public class MilvusVectorStoreImpl implements VectorStore {
     private static final String FIELD_SPARSE = "sparse";
     private static final String BM25_FUNCTION_NAME = "content_bm25";
 
-    /** filter-only query 单页上限（Milvus 默认 max） */
     private static final long LIST_QUERY_LIMIT = 16384L;
 
     /**
@@ -110,8 +87,7 @@ public class MilvusVectorStoreImpl implements VectorStore {
     }
 
     /**
-     * 初始化 Collection：不存在则按 BM25 schema 创建；已存在则加载并探测是否含 sparse。
-     * 不自动 drop 旧库。
+     * 初始化 Collection，不自动 drop 旧库
      */
     private void initCollection() {
         Boolean has = client.hasCollection(HasCollectionReq.builder().collectionName(collectionName).build());
@@ -239,8 +215,7 @@ public class MilvusVectorStoreImpl implements VectorStore {
     }
 
     /**
-     * 构建单行 upsert 数据（JsonObject）
-     * 仅写入 id/vector/vectorType/content/metadata；sparse 由服务端 BM25 Function 从 content 生成。
+     * 构建单行 upsert 数据
      *
      * @param doc 向量文档
      * @return Gson JsonObject
@@ -248,7 +223,6 @@ public class MilvusVectorStoreImpl implements VectorStore {
     private JsonObject buildRow(VectorDocument doc) {
         JsonObject row = new JsonObject();
         row.addProperty(FIELD_ID, doc.getId());
-        // vector 字段：float[] → List<Float> → JsonElement
         List<Float> vectorList = new ArrayList<>(doc.getVector().length);
         for (float v : doc.getVector()) {
             vectorList.add(v);
@@ -400,7 +374,7 @@ public class MilvusVectorStoreImpl implements VectorStore {
             );
         }
 
-        // idMetaKey 非空但 validIds 为空：无生效知识，直接返回空列表
+        // idMetaKey 非空且 validIds 为空时返回空列表
         if (param.getIdMetaKey() != null && (param.getValidIds() == null || param.getValidIds().isEmpty())) {
             log.info("无生效知识，跳过检索: vectorType={}, idMetaKey={}", param.getVectorType(), param.getIdMetaKey());
             return new ArrayList<>();
@@ -468,7 +442,7 @@ public class MilvusVectorStoreImpl implements VectorStore {
 
         try {
             SearchResp resp = client.search(reqBuilder.build());
-            // BM25 分与余弦不可比，不做相似度阈值截断（threshold=0）
+            // BM25 与余弦不可比，不做阈值截断
             List<VectorStoreSearchResult> results = convertSearchResults(resp, 0.0d);
             log.info("Milvus 全文检索: vectorType={}, metadata={}, topK={}, 找到 {} 条结果",
                     param.getVectorType(), param.getMetadataEquals(), param.getTopK(), results.size());
@@ -479,8 +453,6 @@ public class MilvusVectorStoreImpl implements VectorStore {
             return Collections.emptyList();
         }
     }
-
-    // ==================== 表达式构建辅助方法 ====================
 
     /**
      * 构建搜索过滤表达式，组合 vectorType、metadataEquals、idMetaKey IN 三种条件
@@ -592,11 +564,8 @@ public class MilvusVectorStoreImpl implements VectorStore {
         }
     }
 
-    // ==================== 结果转换辅助方法 ====================
-
     /**
-     * 转换 Milvus V2 搜索结果为 VectorStoreSearchResult 列表
-     * COSINE 度量下 score 即相似度，低于 threshold 的结果被过滤
+     * 转换 Milvus 搜索结果为检索结果
      *
      * @param searchResp Milvus V2 搜索响应
      * @param threshold  相似度阈值
@@ -608,7 +577,6 @@ public class MilvusVectorStoreImpl implements VectorStore {
             return results;
         }
 
-        // V2 返回结构：外层 List 对应查询向量，内层 List 对应该向量的匹配结果
         List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
         if (searchResults == null || searchResults.isEmpty()) {
             return results;
@@ -616,7 +584,6 @@ public class MilvusVectorStoreImpl implements VectorStore {
 
         for (SearchResp.SearchResult sr : searchResults.get(0)) {
             float score = sr.getScore();
-            // COSINE metric：score 即余弦相似度，低于阈值跳过
             if (score < threshold) {
                 continue;
             }
@@ -650,8 +617,7 @@ public class MilvusVectorStoreImpl implements VectorStore {
     }
 
     /**
-     * 从搜索结果的 entity Map 中提取 metadata
-     * V2 的 getEntity() 返回 Map<String, Object>，metadata 字段值类型可能为 JsonObject/String/Map
+     * 从搜索结果提取 metadata
      *
      * @param entity 搜索结果 entity Map
      * @return metadata Map，无法解析时返回空 Map
@@ -664,15 +630,12 @@ public class MilvusVectorStoreImpl implements VectorStore {
         if (metaObj == null) {
             return new HashMap<>();
         }
-        // JsonObject（Gson）：直接反序列化
         if (metaObj instanceof JsonObject) {
             return gson.fromJson((JsonObject) metaObj, MAP_TYPE);
         }
-        // String：尝试 JSON 解析
         if (metaObj instanceof String) {
             return parseMetadataJson((String) metaObj);
         }
-        // Map 或其他类型：尝试 Gson 转换
         JsonElement element = gson.toJsonTree(metaObj);
         if (element.isJsonObject()) {
             return gson.fromJson(element, MAP_TYPE);

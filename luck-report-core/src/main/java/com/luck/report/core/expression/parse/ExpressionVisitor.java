@@ -242,7 +242,6 @@ public class ExpressionVisitor extends ReportParserBaseVisitor<Expression> {
         return expr;
     }
 
-
     private Expression parseExpr(ExprContext exprContext) {
         List<BaseExpression> expressions = new ArrayList<BaseExpression>();
         List<Operator> operators = new ArrayList<Operator>();

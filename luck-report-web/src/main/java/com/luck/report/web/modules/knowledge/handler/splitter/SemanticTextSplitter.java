@@ -12,9 +12,6 @@ import java.util.regex.Pattern;
 
 /**
  * 语义分块器
- * 移植自 data-agent 的 SemanticTextSplitter，适配为使用本项目的 EmbeddingService
- * 滑动窗口 Embedding + 语义相似度切分 + 最大长度强制切分
- * 尽可能把句子往一个块里塞，直到超长或语义突变才切分
  *
  * @author luck
  */
@@ -60,7 +57,6 @@ public class SemanticTextSplitter implements TextSplitter {
             return new ArrayList<>();
         }
 
-        // 1. 提取句子
         List<String> sentences = extractSentences(text);
         if (sentences.isEmpty()) {
             List<String> result = new ArrayList<>();
@@ -68,18 +64,14 @@ public class SemanticTextSplitter implements TextSplitter {
             return result;
         }
 
-        // 2. 只有一句，直接返回
         if (sentences.size() == 1) {
             return splitLargeChunk(sentences.get(0));
         }
 
-        // 3. 构建滑动窗口上下文
         List<String> contextSentences = buildContextSentences(sentences);
 
-        // 4. 计算 Embeddings
         List<float[]> embeddings = batchEmbed(contextSentences);
 
-        // 5. 基于语义+长度双重约束合并
         return combineSentences(sentences, embeddings);
     }
 
@@ -90,7 +82,6 @@ public class SemanticTextSplitter implements TextSplitter {
         for (int i = 0; i < sentences.size(); i++) {
             String sentence = sentences.get(i);
 
-            // 单句超出最大长度
             if (sentence.length() > maxChunkSize) {
                 if (currentChunk.length() > 0) {
                     chunks.add(currentChunk.toString().trim());
@@ -103,11 +94,9 @@ public class SemanticTextSplitter implements TextSplitter {
             boolean shouldSplit = false;
 
             if (currentChunk.length() > 0) {
-                // 长度检查
                 if (currentChunk.length() + sentence.length() > maxChunkSize) {
                     shouldSplit = true;
                 }
-                // 语义检查
                 else if (i < embeddings.size() && i > 0 && i - 1 < embeddings.size()) {
                     double similarity = cosineSimilarity(embeddings.get(i - 1), embeddings.get(i));
                     if (similarity < similarityThreshold && currentChunk.length() >= minChunkSize) {

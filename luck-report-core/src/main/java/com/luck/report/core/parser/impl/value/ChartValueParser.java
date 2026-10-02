@@ -207,8 +207,8 @@ public class ChartValueParser extends ValueParser {
     }
 
     /**
-     * 解析 <labels> 子节点为 Labels 对象
-     * 字段缺失时走 Labels 默认值（不影响旧报表）
+     * 解析 <labels> 子节点为 Labels 对象；字段缺失时走 Labels 默认值（不影响旧报表）
+     *
      * @param element labels XML 元素，不可为空
      * @return Labels 对象
      */
@@ -254,8 +254,8 @@ public class ChartValueParser extends ValueParser {
     }
 
     /**
-     * 解析 <font> 子节点为 Font 对象（数据标签字体配置）
-     * 字段缺失时走 Font 默认值（不影响旧报表）
+     * 解析 <font> 子节点为 Font 对象（数据标签字体配置）；字段缺失时走 Font 默认值（不影响旧报表）
+     *
      * @param element font XML 元素，不可为空
      * @return Font 对象
      */

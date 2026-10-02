@@ -7,9 +7,6 @@ import java.util.List;
 
 /**
  * 聊天消息 Mapper
- * 提供 luck_chatmodeessage 表的 CRUD 操作，支持单条插入和批量插入
- * 使用 Spring Boot 默认主数据源
- * SQL 定义在 resources/luck-report/sql/{dbType}/ChatMessageMapper.xml 中，支持多数据库方言
  *
  * @author luck
  */
@@ -17,7 +14,6 @@ public interface ChatMessageMapper {
 
     /**
      * 根据会话ID查询消息列表
-     * 按创建时间升序排列，保证消息顺序与对话顺序一致
      *
      * @param sessionId 会话ID
      * @return 消息列表
@@ -42,7 +38,6 @@ public interface ChatMessageMapper {
 
     /**
      * 插入单条消息
-     * createTime 由 Java 侧赋值，不依赖数据库函数
      *
      * @param message 消息实体
      * @return 影响行数
@@ -51,8 +46,6 @@ public interface ChatMessageMapper {
 
     /**
      * 批量插入消息
-     * Agentic Loop 结束后，前端一次性同步本轮新增的所有消息
-     * createTime 由 Java 侧赋值，不依赖数据库函数
      *
      * @param messages 消息列表
      * @return 影响行数
@@ -69,7 +62,6 @@ public interface ChatMessageMapper {
 
     /**
      * 根据会话ID删除所有消息
-     * 物理删除，由 chat_session 的 ON DELETE CASCADE 级联触发
      *
      * @param sessionId 会话ID
      * @return 影响行数

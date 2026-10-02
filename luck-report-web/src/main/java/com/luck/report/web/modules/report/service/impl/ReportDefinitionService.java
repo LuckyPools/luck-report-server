@@ -24,7 +24,6 @@ public class ReportDefinitionService {
 
     /**
      * 从缓存获取报表定义并重建父子引用关系。
-     * 如果缓存中不存在报表定义，抛出 ReportDesignException 异常。
      *
      * @param reportPath 报表文件名，作为缓存键，不能为空
      * @return 报表定义对象，已重建父子引用关系

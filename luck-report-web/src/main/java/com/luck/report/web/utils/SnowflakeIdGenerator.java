@@ -4,15 +4,6 @@ import com.luck.report.core.exception.ReportBizException;
 
 /**
  * Snowflake ID 生成器（静态工具类）
- * 1 位符号位 + 41 位时间戳 + 5 位 datacenterId + 5 位 workerId + 12 位序列号 = 64 位 Long
- * 返回 19 位数字字符串，避免 Long 类型 ID 在前端 JS 丢失精度
- *
- * workerId / datacenterId 通过 JVM 启动参数 -D 注入：
- *   -Dsnowflake.worker-id=1
- *   -Dsnowflake.datacenter-id=1
- * 未配置时默认为 1。
- *
- * 起始时间戳：2024-01-01 00:00:00 UTC (1704067200000L)
  *
  * @author luck
  */

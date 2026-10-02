@@ -37,10 +37,14 @@ public interface ReportCache {
 
     <T> T get(String key, Class<T> clazz);
 
-    /** 使用默认过期时间（见 {@link #DEFAULT_EXPIRE_SECONDS}）。 */
+    /**
+     * 使用默认过期时间（见 {@link #DEFAULT_EXPIRE_SECONDS}）。
+     */
     <T> void put(String key, T value);
 
-    /** @param time 过期秒数 */
+    /**
+     * @param time 过期秒数
+     */
     <T> void put(String key, T value, long time);
 
     boolean exists(String key);
@@ -49,7 +53,9 @@ public interface ReportCache {
 
     Set<String> keys(String keyPatten);
 
-    /** @param time 过期秒数 */
+    /**
+     * @param time 过期秒数
+     */
     boolean setExpire(String key, long time);
 
 }

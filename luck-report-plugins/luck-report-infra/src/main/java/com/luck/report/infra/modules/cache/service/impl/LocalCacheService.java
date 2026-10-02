@@ -19,9 +19,6 @@ public class LocalCacheService implements ReportCache {
 
     private boolean disabled;
 
-    /**
-     * 默认过期时间，单位：秒
-     */
     private long defaultExpireSeconds = DEFAULT_EXPIRE_SECONDS;
 
     private final Cache<String, CacheEntry> cache;
@@ -51,6 +48,7 @@ public class LocalCacheService implements ReportCache {
 
     private static class CacheEntry {
         private final Object value;
+
         private final long expireTimeNanos;
 
         public CacheEntry(Object value, long expireSeconds) {
@@ -143,7 +141,9 @@ public class LocalCacheService implements ReportCache {
         return result;
     }
 
-    /** Caffeine 不支持直接改过期时间，通过重新 put 实现 */
+    /**
+     * Caffeine 不支持直接改过期时间，通过重新 put 实现
+     */
     @Override
     public boolean setExpire(String key, long time) {
         CacheEntry entry = cache.getIfPresent(key);

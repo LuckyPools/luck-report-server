@@ -7,7 +7,6 @@ import java.util.List;
 
 /**
  * 聊天会话服务接口
- * 管理会话的创建、查询、更新、删除等生命周期操作
  *
  * @author luck
  */
@@ -57,7 +56,6 @@ public interface ChatSessionService {
 
     /**
      * 更新会话最后活动时间
-     * 每次发送消息或保存消息时调用，用于会话列表排序
      *
      * @param sessionId 会话ID，不可为空
      */

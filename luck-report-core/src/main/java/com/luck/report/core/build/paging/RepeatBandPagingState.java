@@ -94,7 +94,6 @@ public class RepeatBandPagingState {
      * @return 跟组模式为模板槽位数；整块模式下 block 仍空时回退模板行数
      */
     public int repeatFooterRowCount() {
-        // 表尾常在文末，首行正文时 block 可能仍空，回退模板行数
         if (footerGroupMode) {
             return templateFooters.size();
         }

@@ -25,7 +25,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * 聊天对话服务：流式转发与对话压缩。
+ * 聊天对话服务
  */
 @Service("bean.chatService")
 @AllArgsConstructor
@@ -35,7 +35,6 @@ public class ChatServiceImpl implements ChatService {
 
     /**
      * 不支持 required/object 形态 tool_choice 的模型缓存（如思考型 deepseek）。
-     * 首次 400 降级成功后写入，后续构建时直接降级，避免稳态 400 往返。
      */
     private static final java.util.concurrent.ConcurrentHashMap<String, Boolean> TOOL_CHOICE_INCOMPATIBLE_MODELS =
             new java.util.concurrent.ConcurrentHashMap<>();
@@ -51,7 +50,6 @@ public class ChatServiceImpl implements ChatService {
     public SseEmitter chatStream(ChatRequest request) {
         SseEmitter emitter = new SseEmitter(300000L);
 
-        // Tomcat 线程上 Filter 已注入 MDC；异步线程不携带 ThreadLocal，需提前捕获
         final String traceId = MDC.get(TraceIdHandler.MDC_TRACE_ID);
 
         try {
@@ -71,7 +69,6 @@ public class ChatServiceImpl implements ChatService {
                     effectiveToolChoice = "auto";
                 }
 
-                // 能力缓存命中：直接降级 auto，跳过 400 往返
                 if (effectiveToolChoice != null
                         && isRequiredOrObjectToolChoice(effectiveToolChoice)
                         && Boolean.TRUE.equals(TOOL_CHOICE_INCOMPATIBLE_MODELS.get(chatConfig.getModelName()))) {
@@ -126,8 +123,6 @@ public class ChatServiceImpl implements ChatService {
                             String errorMsg = response.body() != null ? response.body().string() : "Unknown error";
                             log.error("大模型API返回错误: status={}, body={}", response.code(), errorMsg);
 
-                            // thinking + tool_choice=required/object → 400 时降级 auto 重试
-                            // 大小写不敏感：deepseek 为 "Thinking mode..."，百炼为 "thinking mode..."
                             String lowerMsg = errorMsg.toLowerCase();
                             if (response.code() == 400 && lowerMsg.contains("tool_choice")
                                     && lowerMsg.contains("thinking mode")
@@ -195,7 +190,6 @@ public class ChatServiceImpl implements ChatService {
                         call.cancel();
                     }
                 });
-                // onTimeout 在容器超时线程触发，需恢复 traceId
                 emitter.onTimeout(withContext(traceId, () -> {
                     log.warn("SseEmitter超时，取消LLM请求");
                     emitterCompleted.set(true);
@@ -234,7 +228,6 @@ public class ChatServiceImpl implements ChatService {
             try {
                 localeAware.run();
             } finally {
-                // 线程池复用，必须清理以免串 traceId
                 MDC.remove(TraceIdHandler.MDC_TRACE_ID);
             }
         };
@@ -242,7 +235,6 @@ public class ChatServiceImpl implements ChatService {
 
     /**
      * 包装 OkHttp Callback 传播 traceId 与语言。
-     * 内联语言恢复（onResponse 抛 IOException，无法用 Runnable 表达）。
      */
     private Callback withContext(String traceId, Callback callback) {
         final ReportLocale locale = ReportLocaleContext.get();
@@ -330,7 +322,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     /**
-     * 解析 SSE：文本 → message，思考 → reasoning_content，tool_calls → tool_use，结束时推 token_usage。
+     * 解析 SSE
      */
     @SuppressWarnings("unchecked")
     private void processStreamResponse(BufferedSource source, SseEmitter emitter, int inputTextLength,
@@ -409,7 +401,6 @@ public class ChatServiceImpl implements ChatService {
                     continue;
                 }
 
-                // JSON 编码 data：避免 SseEmitter 按 \n 拆行、前端 trim 误删空格；与 tool_use 一致
                 Object content = delta.get("content");
                 if (content != null && !content.toString().isEmpty()) {
                     String contentStr = content.toString();
@@ -433,7 +424,6 @@ public class ChatServiceImpl implements ChatService {
                         int index = indexObj != null ? ((Number) indexObj).intValue() : 0;
                         Map<String, Object> accumulated = accumulatedToolCalls.computeIfAbsent(index, k -> new LinkedHashMap<>());
 
-                        // 后续 chunk 可能带空 id/type/name，仅非空时覆盖
                         if (tc.containsKey("id")) {
                             Object id = tc.get("id");
                             if (id != null && !id.toString().isEmpty()) {
@@ -477,7 +467,6 @@ public class ChatServiceImpl implements ChatService {
                     Object promptTokens = usage.get("prompt_tokens");
                     Object completionTokens = usage.get("completion_tokens");
                     Object totalTokensObj = usage.get("total_tokens");
-                    // usage 可能存在但值为 null（如百炼）
                     if (promptTokens != null && completionTokens != null) {
                         hasRealUsage = true;
                         inputTokens = ((Number) promptTokens).intValue();
@@ -523,7 +512,6 @@ public class ChatServiceImpl implements ChatService {
             try {
                 input = ChatUtils.getObjectMapper().readValue(argumentsStr, Map.class);
             } catch (Exception e) {
-                // 解析失败带回原始串与错误，供 LLM 错误反馈识别
                 log.warn("解析tool_call arguments失败: toolName={}, length={}, 完整内容=[{}], error={}",
                         toolName,
                         argumentsStr != null ? argumentsStr.length() : 0,
@@ -608,7 +596,6 @@ public class ChatServiceImpl implements ChatService {
 
     /**
      * 将 contextMessages + 当前 message 转为 OpenAI 消息。
-     * tool_result → tool（需 tool_call_id）；assistant 带 tool_calls 时需完整回传，思考模式还需 reasoning_content。
      */
     private List<Map<String, Object>> buildMessages(ChatRequest request) {
         List<Map<String, Object>> messages = new ArrayList<>();
@@ -637,7 +624,6 @@ public class ChatServiceImpl implements ChatService {
                         toolCallsList.add(tcMap);
                     }
                     assistantMsg.put("tool_calls", toolCallsList);
-                    // 思考模式续接：回放 assistant(tool_calls) 须带 reasoning_content，否则网关 400
                     if (ctx.getReasoningContent() != null && !ctx.getReasoningContent().isEmpty()) {
                         assistantMsg.put("reasoning_content", ctx.getReasoningContent());
                     }
@@ -651,7 +637,6 @@ public class ChatServiceImpl implements ChatService {
             }
         }
 
-        // Agent 循环中 message 可能为空（已在 contextMessages 中）
         if (request.getMessage() != null && !request.getMessage().isEmpty()) {
             Map<String, Object> userMsg = new LinkedHashMap<>(2);
             userMsg.put("role", "user");
@@ -762,7 +747,6 @@ public class ChatServiceImpl implements ChatService {
             String content = (String) message.get("content");
             if (content == null || content.isEmpty()) return null;
 
-            // 中文引号会导致 JSON 解析失败
             content = content.replace('\u201C', '"').replace('\u201D', '"')
                              .replace('\u2018', '\'').replace('\u2019', '\'');
 

@@ -15,7 +15,6 @@ import java.util.UUID;
 
 /**
  * 聊天会话服务实现
- * 管理会话的创建、查询、更新、删除等生命周期操作
  *
  * @author luck
  */

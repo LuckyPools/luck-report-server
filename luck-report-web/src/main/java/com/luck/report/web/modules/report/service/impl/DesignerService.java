@@ -51,7 +51,6 @@ import java.util.stream.Collectors;
 
 /**
  * 报表设计器服务，负责设计器相关业务（脚本校验、新建 / 保存 / 删除 / 加载报表等）。
- * <p>Bean 名：{@code bean.designerService}，避免与第三方系统 Bean 冲突。
  *
  * @author luck-report
  * @since 1.0.0
@@ -61,7 +60,9 @@ public class DesignerService implements ApplicationContextAware {
 
     private static final Logger logger = LoggerFactory.getLogger(DesignerService.class);
 
-    /** 异常消息中的单元格名模式：如 [B3]、[AB12]，用于回查 XML 定义行号 */
+    /**
+     * 异常消息中的单元格名模式：如 [B3]、[AB12]，用于回查 XML 定义行号
+     */
     private static final Pattern CELL_NAME_IN_MESSAGE = Pattern.compile("\\[([A-Za-z]{1,3}\\d+)\\]");
 
     private final List<ReportProvider> reportProviders = new ArrayList<>();
@@ -75,7 +76,7 @@ public class DesignerService implements ApplicationContextAware {
     private ReportParser reportParser;
 
     /**
-     * 脚本验证：解析脚本中的表达式并收集错误信息。
+     * 脚本验证
      */
     public List<ErrorInfo> scriptValidation(String content) {
         CharStream input = CharStreams.fromString(content);
@@ -90,7 +91,7 @@ public class DesignerService implements ApplicationContextAware {
     }
 
     /**
-     * 条件脚本验证：解析条件表达式并收集错误信息。
+     * 条件脚本验证
      */
     public List<ErrorInfo> conditionScriptValidation(String content) {
         CharStream input = CharStreams.fromString(content);
@@ -133,7 +134,6 @@ public class DesignerService implements ApplicationContextAware {
 
     /**
      * 加载报表定义。
-     * <p>优先从预览作用域缓存加载；缓存不存在时通过 {@link ReportRender} 解析。
      */
     public ReportDefinitionVo loadReport(String reportPath) {
         if (reportPath == null) {
@@ -146,7 +146,6 @@ public class DesignerService implements ApplicationContextAware {
             if (obj instanceof ReportDefinitionWrapper) {
                 ReportDefinitionWrapper wrapper = (ReportDefinitionWrapper) obj;
                 reportDefinition = wrapper.getReportDefinition();
-                // 移除上传文件的缓存
                 ReportScopedCache.removeObject(reportPath);
             }
         }
@@ -169,7 +168,6 @@ public class DesignerService implements ApplicationContextAware {
 
     /**
      * 将报表 XML 解析为定义 VO，不落盘、不写缓存。
-     * <p>供 Virtual 引擎校验与转换为前端 JSON，无副作用。
      *
      * @param content 报表 XML，非空
      * @param reportPath 可选解析上下文路径；空则使用占位 path
@@ -200,7 +198,6 @@ public class DesignerService implements ApplicationContextAware {
             if (msg == null || msg.trim().isEmpty()) {
                 msg = e.getClass().getSimpleName();
             }
-            // 补充消息中涉及的单元格名在原文中的行号，便于调用方（如 AI 解析工具）按行定位
             throw new ReportDesignException(appendCellDefinitionLineHint(msg, content));
         } finally {
             IOUtils.closeQuietly(inputStream);
@@ -208,7 +205,8 @@ public class DesignerService implements ApplicationContextAware {
     }
 
     /**
-     * 方法说明：从异常消息中提取单元格名，回查原始 XML 中该单元格定义所在行号并追加到消息尾部
+     * 为解析失败消息追加单元格定义行号
+     *
      * @param msg 解析失败的异常消息，可为空（为空时原样返回）
      * @param content 原始报表 XML 全文，可为空（为空时原样返回）
      * @return 追加行号提示后的消息；无法定位时返回原消息
@@ -239,19 +237,18 @@ public class DesignerService implements ApplicationContextAware {
     }
 
     /**
-     * 方法说明：在 XML 原文中查找单元格定义（name="X"）首次出现的行号
+     * 查找单元格定义所在行号
+     *
      * @param content 原始报表 XML 全文，不可为空
      * @param cellName 单元格名（如 B3），不可为空
      * @return 1 起始的行号；未找到返回 -1
      */
     private int findCellDefinitionLine(String content, String cellName) {
-        // 仅匹配定义属性（name="B3"），避免误命中 leftCell/topCell 等引用属性；兼容单双引号
         Pattern namePattern = Pattern.compile("name\\s*=\\s*[\"']" + Pattern.quote(cellName) + "[\"']");
         Matcher matcher = namePattern.matcher(content);
         if (!matcher.find()) {
             return -1;
         }
-        // 统计定义位置之前的换行数 +1 得到 1 起始行号
         int lineBreaks = 0;
         for (int i = 0; i < matcher.start(); i++) {
             if (content.charAt(i) == '\n') {
@@ -262,7 +259,7 @@ public class DesignerService implements ApplicationContextAware {
     }
 
     /**
-     * 保存报表文件：解析 XML 内容、写入缓存并调用 Provider 持久化。
+     * 保存报表文件
      */
     public ReportFile saveReportFile(String title, String reportPath, String content) {
         if (reportPath == null) {
@@ -300,8 +297,6 @@ public class DesignerService implements ApplicationContextAware {
 
     /**
      * 加载所有已启用的报表提供者元数据列表。
-     * 仅返回基础信息（name/prefix/disabled），不包含任何文件。
-     * 禁用的 provider（{@code disabled() == true}）和未命名的 provider（{@code getName() == null}）会被过滤。
      */
     public List<ReportProviderVo> listReportProviders() {
         List<ReportProviderVo> list = new ArrayList<>();
@@ -313,9 +308,6 @@ public class DesignerService implements ApplicationContextAware {
 
     /**
      * 加载每个 provider 在指定路径下的报表文件列表（含目录）。
-     * <p>复用 {@link #listReportProviders()} 的过滤逻辑：先获取已启用的 provider 列表，
-     * 再遍历每个 provider 调用 {@code getReportFiles(path)} 收集文件，
-     * 最终组装为 {@code List<ReportProviderDetailVo>}（与 {@link #listReportProviders()} 形式一致）。
      */
     public List<ReportProviderDetailVo> loadReportFiles(String path) {
         List<ReportProviderDetailVo> result = new ArrayList<>();
@@ -332,7 +324,6 @@ public class DesignerService implements ApplicationContextAware {
 
     /**
      * 分页查询报表列表。
-     * <p>过滤与分页下沉到 {@link ReportProvider#pageReportFiles(int, int, Map)}，避免在调用方拉取全量数据。
      *
      * @param queryDTO 查询条件
      * @return 分页结果
@@ -350,7 +341,6 @@ public class DesignerService implements ApplicationContextAware {
                 return PageResultVO.error("Report provider not found");
             }
 
-            // 透传给 Provider 的参数：路径、名称模糊匹配、是否包含目录项
             Map<String, Object> params = new HashMap<>(4);
             if (directory != null && !directory.isEmpty()) {
                 params.put("path", directory);
@@ -358,7 +348,6 @@ public class DesignerService implements ApplicationContextAware {
             if (reportName != null && !reportName.isEmpty()) {
                 params.put("name", reportName);
             }
-            // 设计器场景下不展示目录项，仅展示报表文件
             params.put("includeDirectory", Boolean.FALSE);
 
             ReportFilePage result = targetProvider.pageReportFiles(pageNum, pageSize, params);
@@ -371,7 +360,9 @@ public class DesignerService implements ApplicationContextAware {
         }
     }
 
-    /** 根据 prefix 查找对应的 ReportProvider。 */
+    /**
+     * 根据 prefix 查找对应的 ReportProvider。
+     */
     private ReportProvider findProviderByPrefix(String prefix) {
         if (prefix == null) {
             return null;
@@ -384,7 +375,9 @@ public class DesignerService implements ApplicationContextAware {
         return null;
     }
 
-    /** 过滤出已启用且命名的 provider 列表，供 {@link #listReportProviders()} 与 {@link #loadReportFiles(String)} 复用。 */
+    /**
+     * 过滤出已启用且命名的 provider 列表，供 {@link #listReportProviders()} 与 {@link #loadReportFiles(String)} 复用。
+     */
     private List<ReportProvider> getValidProviders() {
         return reportProviders.stream()
                 .filter(p -> !p.disabled() && p.getName() != null)
@@ -392,7 +385,7 @@ public class DesignerService implements ApplicationContextAware {
     }
 
     /**
-     * 新建报表：使用空白模板在指定 Provider 下创建报表。
+     * 新建报表
      * @return 创建结果，code=0 成功，data 为保存后的 {@link ReportFile}（path 不含 provider 前缀）；
      *         非 0 为错误码，message 为错误信息
      */
@@ -415,13 +408,11 @@ public class DesignerService implements ApplicationContextAware {
                 return ResultVO.error(404, "Provider [" + providerPrefix + "] not found available report provider.");
             }
 
-            // 检查报表是否已存在
             ReportFile existingFile = targetProvider.getReportFile(fileName);
             if(existingFile != null){
                 return ResultVO.error(409, "Report [" + fileName + "] already exists in provider [" + providerPrefix + "].");
             }
 
-            // 读取空白模板
             String content;
             InputStream templateStream = null;
             try {
@@ -439,7 +430,6 @@ public class DesignerService implements ApplicationContextAware {
                 IOUtils.closeQuietly(templateStream);
             }
 
-            // 解析模板并写入缓存
             InputStream contentStream = null;
             try {
                 contentStream = IOUtils.toInputStream(content, "utf-8");
@@ -453,7 +443,6 @@ public class DesignerService implements ApplicationContextAware {
                 IOUtils.closeQuietly(contentStream);
             }
 
-            // 保存并取回权威 ReportFile（path 不带 provider 前缀）
             ReportFile savedFile = targetProvider.saveReport(fileName, reportPath, content);
             if (savedFile == null) {
                 return ResultVO.error(500, "Provider returned empty ReportFile after save.");
@@ -466,8 +455,7 @@ public class DesignerService implements ApplicationContextAware {
     }
 
     /**
-     * 复制报表：读取源报表内容，保存到同一 provider 下的新 reportPath。
-     * <p>新 reportPath 由调用方决定（推荐格式：{@code providerPrefix + newName}），由 provider 自行决定是否追加后缀 / 是否将 newName 视为主键 id。
+     * 复制报表
      *
      * @param sourceFilePath 源报表唯一路径（带 provider 前缀），如 file:xxx.ureport.xml / db:123
      * @param newFilePath    目标报表唯一路径（带 provider 前缀），如 file:xxx_copy.ureport.xml / db:xxx_copy
@@ -496,12 +484,10 @@ public class DesignerService implements ApplicationContextAware {
             } catch (ReportDesignException e) {
                 return ResultVO.error(404, "Provider for [" + sourceFilePath + "] not found available report provider.");
             }
-            // 新路径与源路径必须属于同一 provider；若新路径前缀指向其他 provider，复制会失去归属，视为非法
             if (!newFilePath.startsWith(provider.getPrefix())) {
                 return ResultVO.error(400, "Target path [" + newFilePath + "] must share the same provider prefix [" + provider.getPrefix() + "] as source.");
             }
 
-            // 读取源报表内容
             String content;
             InputStream sourceStream = null;
             try {
@@ -517,7 +503,6 @@ public class DesignerService implements ApplicationContextAware {
                 IOUtils.closeQuietly(sourceStream);
             }
 
-            // 解析并写入缓存（与 createReport 保持一致，使新报表可在预览作用域中正确加载）
             InputStream contentStream = null;
             try {
                 contentStream = IOUtils.toInputStream(content, "utf-8");
@@ -556,7 +541,7 @@ public class DesignerService implements ApplicationContextAware {
     }
 
     /**
-     * 暴露给同包或同模块的内部辅助：获取当前已注入的 provider 列表副本。
+     * 暴露给同包或同模块的内部辅助
      */
     public List<ReportProvider> getReportProviders() {
         return Collections.unmodifiableList(reportProviders);

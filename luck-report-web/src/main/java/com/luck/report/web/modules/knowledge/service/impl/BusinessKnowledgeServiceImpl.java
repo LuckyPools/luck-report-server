@@ -83,7 +83,9 @@ public class BusinessKnowledgeServiceImpl implements BusinessKnowledgeService {
         return knowledge == null ? null : businessKnowledgeConverter.toVo(knowledge);
     }
 
-    /** 事务内写库，提交后再向量化，避免半截数据 */
+    /**
+     * 事务内写库，提交后再向量化，避免半截数据
+     */
     @Override
     public BusinessKnowledgeVO createKnowledge(CreateBusinessKnowledgeDTO createKnowledgeDTO) {
         validateCreateKnowledgeDTO(createKnowledgeDTO);

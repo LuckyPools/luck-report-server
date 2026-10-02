@@ -17,7 +17,6 @@ import java.io.OutputStream;
 
 /**
  * PDF导出控制器
- * <p>仅负责 HTTP 请求 / 响应转换，业务逻辑委托给 {@link ReportExportService}。
  */
 @RestController("bean.exportPdfController")
 @RequestMapping("${luck-report.servletPrefix:}/pdf")

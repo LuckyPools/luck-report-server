@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
 
 /**
  * 报表文件实体类
- * 对应 luck_report_template 表，用于数据库存储报表模板
  *
  * @author luck
  */
@@ -17,9 +16,13 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class ReportTemplate extends DataEntity<ReportTemplate> {
 
-    /** 报表标题 */
+    /**
+     * 报表标题
+     */
     private String title;
 
-    /** 报表模板内容（XML） */
+    /**
+     * 报表模板内容（XML）
+     */
     private String template;
 }

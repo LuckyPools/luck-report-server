@@ -2,7 +2,6 @@ package com.luck.report.core.definition.searchform.component;
 
 import com.luck.report.core.definition.searchform.RenderContext;
 
-
 public class InputComponent extends BaseInputComponent {
     private static final long serialVersionUID = 1L;
     private String placeholder;

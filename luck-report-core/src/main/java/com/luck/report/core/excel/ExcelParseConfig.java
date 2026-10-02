@@ -9,14 +9,12 @@ package com.luck.report.core.excel;
 public class ExcelParseConfig {
 
     /**
-     * 指定解析的 Sheet 索引（从 0 开始）
-     * <p>优先级高于 sheetName，为 null 时降级使用 sheetName</p>
+     * 指定解析的 Sheet 索引（从 0 开始）；优先级高于 sheetName，为 null 时降级使用 sheetName
      */
     private Integer sheetIndex;
 
     /**
-     * 指定解析的 Sheet 名称
-     * <p>当 sheetIndex 为 null 时生效，为 null 时默认读取第一个 Sheet</p>
+     * 指定解析的 Sheet 名称；当 sheetIndex 为 null 时生效，为 null 时默认读取第一个 Sheet
      */
     private String sheetName;
 

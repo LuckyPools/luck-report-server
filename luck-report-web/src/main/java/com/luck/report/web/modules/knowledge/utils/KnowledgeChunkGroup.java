@@ -4,7 +4,9 @@ import com.luck.report.infra.modules.vector.domain.dto.VectorStoreSearchResult;
 
 import java.util.List;
 
-/** 同一知识下已选中的 chunk 组（按最高分代表该知识）。 */
+/**
+ * 同一知识下已选中的 chunk 组（按最高分代表该知识）。
+ */
 final class KnowledgeChunkGroup {
 
     private final double bestScore;

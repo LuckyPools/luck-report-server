@@ -32,13 +32,9 @@ public class Labels implements Serializable {
     private FontStyle fontStyle = FontStyle.normal;
     private String fontColor = "#666";
     private int padding = 10;
-    // 图例图标宽（对应 ECharts legend.itemWidth）
     private int itemWidth = 25;
-    // 图例图标高（对应 ECharts legend.itemHeight）
     private int itemHeight = 14;
-    // 图例项间距（对应 ECharts legend.itemGap）
     private int itemGap = 10;
-    // 字体粗细（对应 ECharts legend.textStyle.fontWeight；与 fontStyle 区分， fontStyle 仅控制斜体）
     private String fontWeight = "normal";
 
     public String toJson() {

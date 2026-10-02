@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 
 /**
  * 数据源视图对象
- * 返回给前端的数据源信息，隐藏敏感字段
  *
  * @author luck
  */
@@ -21,54 +20,86 @@ import java.time.LocalDateTime;
 @Builder
 public class ReportDatasourceVO {
 
-    /** 主键ID */
+    /**
+     * 主键ID
+     */
     private String id;
 
-    /** 数据源名称 */
+    /**
+     * 数据源名称
+     */
     private String name;
 
-    /** 数据源类型 */
+    /**
+     * 数据源类型
+     */
     private String type;
 
-    /** 主机地址 */
+    /**
+     * 主机地址
+     */
     private String host;
 
-    /** 端口号 */
+    /**
+     * 端口号
+     */
     private Integer port;
 
-    /** 数据库名 */
+    /**
+     * 数据库名
+     */
     private String databaseName;
 
-    /** 用户名 */
+    /**
+     * 用户名
+     */
     private String username;
 
-    /** 密码（仅写入时使用，toVO 不设置此字段，响应中为 null） */
+    /**
+     * 密码（仅写入时使用，toVO 不设置此字段）
+     */
     private String password;
 
-    /** 完整JDBC连接URL */
+    /**
+     * 完整JDBC连接URL
+     */
     private String connectionUrl;
 
-    /** 是否启用 */
+    /**
+     * 是否启用
+     */
     private Boolean enabled;
 
-    /** 连接测试状态：success/failed/unknown */
+    /**
+     * 连接测试状态：success/failed/unknown
+     */
     private String testStatus;
 
-    /** 描述 */
+    /**
+     * 描述
+     */
     private String description;
 
-    /** 已初始化的表名列表（JSON格式存储，如["table1","table2"]） */
+    /**
+     * 已初始化的表名列表（JSON格式存储）
+     */
     private String initializedTables;
 
-    /** 创建人ID */
+    /**
+     * 创建人ID
+     */
     private String createBy;
 
-    /** 创建时间 */
+    /**
+     * 创建时间
+     */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
 
-    /** 更新时间 */
+    /**
+     * 更新时间
+     */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updateTime;

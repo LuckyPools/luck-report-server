@@ -1,18 +1,6 @@
-/*******************************************************************************
- * Copyright 2017 Bstek
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License.  You may obtain a copy
- * of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
- * License for the specific language governing permissions and limitations under
- * the License.
- ******************************************************************************/
+/**
+ * ****************************************************************************
+ */
 package com.luck.report.web.modules.report.converter;
 
 import com.luck.report.core.definition.CellDefinition;
@@ -52,7 +40,6 @@ import java.util.List;
 
 /**
  * VO转换工具类
- * 用于将实体类转换为前端展示用的VO类
  *
  * @author system
  * @since 2024年
@@ -62,7 +49,6 @@ public final class DefinitionVoConverter {
     private static final Logger logger = LoggerFactory.getLogger(DefinitionVoConverter.class);
 
     private DefinitionVoConverter() {
-        // 私有构造器，防止实例化
     }
 
     /**
@@ -142,7 +128,6 @@ public final class DefinitionVoConverter {
             return vo;
         }
 
-        // 默认返回简单的 ValueVo
         ValueVo vo = new ValueVo();
         vo.setValue(value.getValue());
         vo.setType(value.getType());
@@ -239,7 +224,6 @@ public final class DefinitionVoConverter {
         ConditionVo vo = new ConditionVo();
         if (condition instanceof BaseCondition) {
             BaseCondition bc = (BaseCondition) condition;
-            // 优先使用 operation 字段，若为空则使用 op 枚举的 name 作为兜底
             String operation = bc.getOperation();
             if (operation == null || operation.isEmpty()) {
                 if (bc.getOp() != null) {
@@ -247,7 +231,6 @@ public final class DefinitionVoConverter {
                 }
             }
             vo.setOperation(operation);
-            // 将 Join 枚举转换为字符串
             if (bc.getJoin() != null) {
                 vo.setJoin(bc.getJoin().name());
             }
@@ -260,9 +243,7 @@ public final class DefinitionVoConverter {
 
     /**
      * 转换 SqlDatasetDefinition 为 SqlDatasetDefinitionVo
-     * <p>
-     * 显式忽略 sqlExpression 字段，避免把后端表达式对象序列化到前端
-     * </p>
+     *
      * @param dataset SQL 数据集定义
      * @return VO 对象；入参为 null 时返回 null
      */
@@ -271,10 +252,8 @@ public final class DefinitionVoConverter {
             return null;
         }
         SqlDatasetDefinitionVo vo = new SqlDatasetDefinitionVo();
-        // 公共字段（name/fields）继承自 DatasetDefinitionVo
         vo.setName(dataset.getName());
         vo.setFields(dataset.getFields());
-        // 显式赋值而非 BeanUtils 整体拷贝，确保不会误带入 sqlExpression
         vo.setSql(dataset.getSql());
         vo.setParameters(dataset.getParameters());
         return vo;
@@ -299,9 +278,7 @@ public final class DefinitionVoConverter {
 
     /**
      * 转换 JsonDatasetDefinition 为 JsonDatasetDefinitionVo
-     * <p>
-     * 静态数据集 VO 需回传 content 字段，供前端编辑器回显 JSON 数据
-     * </p>
+     *
      * @param dataset JSON 静态数据集定义
      * @return VO 对象；入参为 null 时返回 null
      */
@@ -318,9 +295,7 @@ public final class DefinitionVoConverter {
 
     /**
      * 转换 DatasetDefinition 为对应 VO（多态分发）
-     * <p>
-     * 当前支持 SqlDatasetDefinition / BeanDatasetDefinition；未识别类型记录 warn 日志并按父类 VO 输出
-     * </p>
+     *
      * @param dataset 数据集定义
      * @return VO 对象；入参为 null 时返回 null
      */
@@ -337,7 +312,6 @@ public final class DefinitionVoConverter {
         if (dataset instanceof JsonDatasetDefinition) {
             return toVo((JsonDatasetDefinition) dataset);
         }
-        // 兜底：未识别子类时仅拷贝公共字段，避免静默丢字段
         logger.warn("未识别的 DatasetDefinition 子类: {}", dataset.getClass().getName());
         DatasetDefinitionVo vo = new DatasetDefinitionVo();
         vo.setName(dataset.getName());
@@ -363,10 +337,7 @@ public final class DefinitionVoConverter {
 
     /**
      * 转换 DatasourceDefinition 为对应 VO（多态分发）
-     * <p>
-     * 支持 JdbcDatasourceDefinition / BuildinDatasourceDefinition / SpringBeanDatasourceDefinition；
-     * 未识别类型走父类 DatasourceDefinitionVo 兜底，避免 NPE 与字段丢失
-     * </p>
+     *
      * @param datasource 数据源定义
      * @return VO 对象；入参为 null 时返回 null
      */
@@ -391,14 +362,11 @@ public final class DefinitionVoConverter {
             springVo.setBeanId(spring.getBeanId());
             vo = springVo;
         } else if (datasource instanceof StaticDatasourceDefinition) {
-            // 静态数据源：无额外字段，用基类 DatasourceDefinitionVo
             vo = new DatasourceDefinitionVo();
         } else {
-            // 兜底：未识别子类时仅拷贝公共字段
             logger.warn("未识别的 DatasourceDefinition 子类: {}", datasource.getClass().getName());
             vo = new DatasourceDefinitionVo();
         }
-        // 公共字段：name / type / datasets
         vo.setName(datasource.getName());
         vo.setType(datasource.getType());
         vo.setDatasets(toDatasetVoList(datasource.getDatasets()));

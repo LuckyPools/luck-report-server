@@ -5,7 +5,9 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/** 读写 ureport XML 根节点 reportId（仅改起始标签，不整树序列化）。 */
+/**
+ * 读写 ureport XML 根节点 reportId（仅改起始标签，不整树序列化）。
+ */
 public final class ReportIdXmlUtils {
 
     public static final String ATTR_REPORT_ID = "reportId";
@@ -59,7 +61,9 @@ public final class ReportIdXmlUtils {
         return xml.substring(0, tag.start()) + "<ureport" + newAttrs + ">" + xml.substring(tag.end());
     }
 
-    /** 15~19 位纯数字，用于区分雪花 id 与按标题创建的路径。 */
+    /**
+     * 15~19 位纯数字，用于区分雪花 id 与按标题创建的路径。
+     */
     public static boolean isSnowflakeId(String id) {
         return id != null && SNOWFLAKE_ID.matcher(id.trim()).matches();
     }

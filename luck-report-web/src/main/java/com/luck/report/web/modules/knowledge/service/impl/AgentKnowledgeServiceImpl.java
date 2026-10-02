@@ -50,8 +50,6 @@ import java.util.stream.Collectors;
 
 /**
  * 智能体知识服务实现类
- * 提供智能体知识的增删改查和向量化管理功能
- * 关系型数据库存储元数据，向量数据库存储嵌入向量
  *
  * @author luck
  */
@@ -93,15 +91,12 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
 
     /**
      * 创建智能体知识
-     * 先在事务内插入MySQL，事务提交后再同步到向量存储
-     * 使用编程式事务确保向量操作在事务外执行，避免 @Transactional 提前绑定MySQL连接导致数据源切换失效
      *
      * @param createKnowledgeDTO 创建智能体知识DTO
      * @return 智能体知识VO
      */
     @Override
     public AgentKnowledgeVO createKnowledge(CreateAgentKnowledgeDTO createKnowledgeDTO) {
-        // 参数校验
         validateCreateKnowledgeDTO(createKnowledgeDTO);
 
         AgentKnowledge entity = agentKnowledgeConverter.toEntityForCreate(createKnowledgeDTO);
@@ -109,7 +104,6 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
         entity.setCreateBy(SecurityUtils.getCurrentUserId());
         entity.setUpdateBy(SecurityUtils.getCurrentUserId());
 
-        // 对于文档类型，读取文件内容
         if (KnowledgeType.DOCUMENT.getValue().equals(createKnowledgeDTO.getType())
                 && createKnowledgeDTO.getFile() != null) {
             String fileContent = readFileContent(createKnowledgeDTO.getFile());
@@ -120,21 +114,19 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
             }
         }
 
-        // MySQL操作放在编程式事务内，事务提交后释放连接
         transactionTemplate.executeWithoutResult(status -> {
             if (agentKnowledgeMapper.insert(entity) <= 0) {
                 throw new ReportBizException("error.knowledge.agentAddFailed");
             }
         });
 
-        // 向量操作在事务外执行，使用 plugin 自治的 vector 数据源
         embedToVectorStore(entity);
 
         return agentKnowledgeConverter.toVo(entity);
     }
 
     /**
-     * 读取文件内容：经 DocumentParser 抽成纯文本，再交给后续切分/向量化
+     * 读取文件内容
      *
      * @param file 上传的文件
      * @return 文件内容字符串
@@ -144,7 +136,7 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
     }
 
     /**
-     * 参数校验：文档类型必须有文件，QA/FAQ类型必须有问题和内容
+     * 参数校验
      *
      * @param dto 创建智能体知识DTO
      */
@@ -164,7 +156,7 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
     }
 
     /**
-     * Phase 1 策略 A：创建时若指定 modelId 与默认嵌入模型不一致，告警；可配置为直接拒绝。
+     * 校验嵌入模型与默认模型一致性
      */
     private void validateEmbeddingModelConsistency(String modelId) {
         if (!StringUtils.hasText(modelId)) {
@@ -188,8 +180,6 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
 
     /**
      * 将知识向量化并存储到向量库
-     * 文档类型使用分块策略切分后逐块向量化，QA/FAQ类型作为单个文档向量化
-     * 成功则更新状态为COMPLETED，失败则更新状态为FAILED
      *
      * @param knowledge 智能体知识实体
      */
@@ -212,8 +202,6 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
 
     /**
      * 将智能体知识转换为向量文档列表
-     * 文档类型：根据 splitterType 分块策略切分为多个文档
-     * QA/FAQ类型：作为单个文档返回
      *
      * @param knowledge 智能体知识实体
      * @return 向量文档列表
@@ -235,7 +223,6 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
             }
         }
 
-        // 文档类型进行分块，QA/FAQ不切分
         List<String> chunks;
         if (knowledge.getType() == KnowledgeType.DOCUMENT) {
             SplitterType resolved = SplitterTypeResolver.resolve(
@@ -285,7 +272,6 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
 
     /**
      * 更新智能体知识
-     * 先在事务内更新MySQL，事务提交后再同步到向量存储
      *
      * @param id 智能体知识ID
      * @param updateKnowledgeDTO 更新智能体知识DTO
@@ -302,14 +288,12 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
         knowledge.setUpdateBy(SecurityUtils.getCurrentUserId());
         knowledge.setEmbeddingStatus(EmbeddingStatus.PROCESSING);
 
-        // MySQL操作放在编程式事务内
         transactionTemplate.executeWithoutResult(status -> {
             if (agentKnowledgeMapper.update(knowledge) <= 0) {
                 throw new ReportBizException("error.knowledge.agentUpdateFailed");
             }
         });
 
-        // 向量操作在事务外执行
         try {
             syncToVectorStore(knowledge);
             knowledge.setEmbeddingStatus(EmbeddingStatus.COMPLETED);
@@ -332,10 +316,8 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
      * @param knowledge 智能体知识实体
      */
     private void syncToVectorStore(AgentKnowledge knowledge) {
-        // 先删除旧的向量数据
         deleteVectorByKnowledgeId(knowledge.getId());
 
-        // 添加新的向量数据（使用分块策略）
         List<VectorDocument> documents = convertToVectorDocuments(knowledge);
         reportAgentVectorStore.addDocuments(documents, knowledge.getModelId());
         log.info("成功更新向量存储, id: {}, 分块数: {}", knowledge.getId(), documents.size());
@@ -343,7 +325,6 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
 
     /**
      * 删除智能体知识
-     * 先在事务外删除向量数据，再在事务内逻辑删除MySQL数据
      *
      * @param id 智能体知识ID
      * @return 是否删除成功
@@ -356,10 +337,8 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
             return true;
         }
 
-        // 向量操作在事务外执行
         deleteVectorByKnowledgeId(id);
 
-        // MySQL操作放在编程式事务内
         transactionTemplate.executeWithoutResult(status -> {
             knowledge.setDelFlag(1);
             knowledge.setUpdateBy(SecurityUtils.getCurrentUserId());
@@ -389,7 +368,6 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
      * @param knowledgeId 智能体知识ID
      */
     private void deleteVectorByKnowledgeId(String knowledgeId) {
-        // 调用新的组合删除接口：按 vectorType + metadata 字段删除
         reportAgentVectorStore.deleteByMetadata(
             AgentKnowledgeMetadataConstant.AGENT_KNOWLEDGE,
             AgentKnowledgeMetadataConstant.DB_AGENT_KNOWLEDGE_ID,
@@ -419,7 +397,6 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
 
     /**
      * 更新智能体知识是否生效
-     * 仅更新MySQL，不更新向量库；检索时通过动态过滤已生效ID列表来隔离未生效数据
      *
      * @param id 智能体知识ID
      * @param enabled 是否生效
@@ -433,7 +410,6 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
             throw new ReportBizException("error.knowledge.agentNotFoundId", id);
         }
 
-        // 仅更新MySQL生效状态，向量库数据保留；检索时由调用方传入已生效ID列表进行动态过滤
         knowledge.setEnabled(Boolean.TRUE.equals(enabled));
         agentKnowledgeMapper.update(knowledge);
 
@@ -442,7 +418,6 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
 
     /**
      * 重试向量化
-     * 对失败的智能体知识重新进行向量化
      *
      * @param id 智能体知识ID
      */
@@ -457,17 +432,14 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
             throw new ReportBizException("error.knowledge.agentProcessing");
         }
 
-        // 未生效的不处理
         if (!Boolean.TRUE.equals(knowledge.getEnabled())) {
             throw new ReportBizException("error.knowledge.agentNotEnabled");
         }
 
-        // 重置状态为待处理
         knowledge.setEmbeddingStatus(EmbeddingStatus.PENDING);
         knowledge.setErrorMsg(null);
         agentKnowledgeMapper.update(knowledge);
 
-        // 重新向量化
         try {
             syncToVectorStore(knowledge);
             knowledge.setEmbeddingStatus(EmbeddingStatus.COMPLETED);
@@ -497,7 +469,6 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
 
     /**
      * 根据ID列表批量查询智能体知识实体
-     * 用于向量检索结果回填原文内容
      *
      * @param ids 智能体知识ID列表
      * @return 智能体知识实体列表
@@ -512,7 +483,6 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
 
     /**
      * 查询所有已生效的智能体知识ID列表
-     * 用于向量检索时动态过滤，只检索 is_enabled=1 且 embedding_status=COMPLETED 的知识
      *
      * @return 已生效的智能体知识ID列表
      */
@@ -523,8 +493,6 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
 
     /**
      * 回填智能体知识原文内容
-     * 优先使用向量库返回的 content（分块文本），仅在 content 为空时从 MySQL 回填兜底
-     * 按 knowledge 裁剪：同一知识保留得分最高的 Top-N 块，<strong>分条返回</strong>（各块保留自身 score）
      *
      * @param results 向量检索结果列表（会被原地替换为裁剪后的分条结果）
      */
@@ -536,7 +504,6 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
 
         int recallCount = results.size();
 
-        // 1. 从 metadata 中提取所有 agentKnowledgeId
         List<String> ids = results.stream()
                 .map(r -> r.getDocument().getMetadata())
                 .filter(m -> m != null && m.containsKey(AgentKnowledgeMetadataConstant.DB_AGENT_KNOWLEDGE_ID))
@@ -550,7 +517,6 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
             return;
         }
 
-        // 2. 批量查询智能体知识（用于补充 title 和兜底回填 content）
         List<AgentKnowledge> knowledgeList = selectByIds(ids);
         if (knowledgeList.isEmpty()) {
             log.warn("根据 agentKnowledgeId 未查询到任何智能体知识: ids={}", ids);
@@ -560,7 +526,6 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
         Map<String, AgentKnowledge> knowledgeMap = knowledgeList.stream()
                 .collect(Collectors.toMap(AgentKnowledge::getId, k -> k, (a, b) -> a));
 
-        // 3. 对每条结果补全空 content / title
         for (VectorStoreSearchResult result : results) {
             Map<String, Object> metadata = result.getDocument().getMetadata();
             if (metadata == null || !metadata.containsKey(AgentKnowledgeMetadataConstant.DB_AGENT_KNOWLEDGE_ID)) {
@@ -587,7 +552,6 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
             metadata.put("title", knowledge.getTitle());
         }
 
-        // 4. 同知识 Top-N 分条保留（各 chunk 自带 score），跨知识最多 finalTopK 个
         List<VectorStoreSearchResult> selected = AgentKnowledgeChunkMerger.selectTopChunksByKnowledge(
                 results,
                 retrievalProperties.getMergeTopN(),

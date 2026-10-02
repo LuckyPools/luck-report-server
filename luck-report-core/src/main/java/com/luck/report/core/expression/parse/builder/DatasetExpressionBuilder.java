@@ -55,7 +55,6 @@ public class DatasetExpressionBuilder extends BaseExpressionBuilder {
         return expr;
     }
 
-
     private List<Condition> toConditionList(BaseCondition head) {
         List<Condition> list = new ArrayList<Condition>();
         BaseCondition cursor = head;

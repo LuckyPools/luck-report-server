@@ -16,8 +16,8 @@
 package com.luck.report.core.exception;
 
 /**
- * 报表服务异常
- * 用于报表服务层抛出的异常
+ * 报表服务异常；用于报表服务层抛出的异常
+ *
  * @author luck
  */
 public class ReportServiceException extends ReportException {
@@ -31,8 +31,9 @@ public class ReportServiceException extends ReportException {
         super(ex);
     }
 
-
-    /** errorArgs 依次对应 {0}、{1} */
+    /**
+     * errorArgs 依次对应 {0}、{1}
+     */
     public ReportServiceException(String errorCode, Object... errorArgs) {
         super(errorCode, errorArgs);
     }

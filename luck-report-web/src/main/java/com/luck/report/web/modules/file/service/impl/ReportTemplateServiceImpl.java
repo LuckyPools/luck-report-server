@@ -93,7 +93,6 @@ public class ReportTemplateServiceImpl implements ReportTemplateService {
         if (reportTemplate == null || reportTemplate.getId() == null) {
             throw new ReportBizException("error.template.nullId");
         }
-        // 防范：强制丢弃模板内容字段，模板修改只允许走 saveReport（设计器保存链路）
         reportTemplate.setTemplate(null);
         reportTemplate.setUpdateBy(SecurityUtils.getCurrentUserId());
         reportTemplate.setUpdateTime(LocalDateTime.now());

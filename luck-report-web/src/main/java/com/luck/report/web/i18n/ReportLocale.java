@@ -7,13 +7,19 @@ import java.util.Locale;
  */
 public enum ReportLocale {
 
-    /** 简体中文 */
+    /**
+     * 简体中文
+     */
     ZH("zh"),
 
-    /** 英文 */
+    /**
+     * 英文
+     */
     EN("en");
 
-    /** 未获取到语言时的兜底值 */
+    /**
+     * 未获取到语言时的兜底值
+     */
     public static final ReportLocale DEFAULT = ZH;
 
     private final String code;
@@ -26,7 +32,9 @@ public enum ReportLocale {
         return code;
     }
 
-    /** 兼容 zh / zh_CN / zh-CN / en_US 等写法；无法识别返回 null */
+    /**
+     * 兼容 zh / zh_CN / zh-CN / en_US 等写法；无法识别返回 null
+     */
     public static ReportLocale of(String value) {
         if (value == null) {
             return null;

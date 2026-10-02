@@ -114,7 +114,6 @@ public class ScatterDataset extends BaseDataset {
      * @param type 类型（忽略）
      */
     public void setType(String type) {
-        // 空实现，忽略type字段
     }
 
     public String getDatasetName() {

@@ -34,7 +34,6 @@ public abstract class ContainerComponent implements Component, Serializable {
     }
 
     public void setType(String type) {
-        // ContainerComponent 不需要设置 type
     }
 
     public List<Component> getChildren() {

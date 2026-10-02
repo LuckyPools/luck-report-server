@@ -16,7 +16,9 @@ import java.util.Map;
  */
 public interface ApiRequest {
 
-    /** 原生 request；降级使用时需自行处理 javax/jakarta 差异 */
+    /**
+     * 原生 request；降级使用时需自行处理 javax/jakarta 差异
+     */
     Object getNativeRequest();
 
     String getAuthType();
@@ -139,7 +141,9 @@ public interface ApiRequest {
         boolean isHttpOnly();
     }
 
-    /** 不能 extends InputStream（抽象类），由适配器委托原生流 */
+    /**
+     * 不能 extends InputStream（抽象类），由适配器委托原生流
+     */
     interface ServletInputStream {
         int read() throws IOException;
         int read(byte[] b) throws IOException;

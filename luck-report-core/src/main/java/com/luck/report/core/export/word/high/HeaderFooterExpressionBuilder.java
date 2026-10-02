@@ -25,7 +25,6 @@ import com.luck.report.core.build.paging.HeaderFooter;
 public class HeaderFooterExpressionBuilder {
     public HeaderFooter buildHeaderFooter(HeaderFooter headerFooterDef, Context context) {
         HeaderFooter hf = new HeaderFooter();
-        //String left=headerFooterDef.getLeft();
 
         return hf;
     }

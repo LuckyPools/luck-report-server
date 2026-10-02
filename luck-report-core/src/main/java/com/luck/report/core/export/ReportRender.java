@@ -99,8 +99,7 @@ public class ReportRender implements ApplicationContextAware {
     }
 
     /**
-     * 重建 CellDefinition 的 leftParentCell 和 topParentCell 引用，
-     * 解决从缓存反序列化后 @JsonIgnore 字段丢失的问题。
+     * 重建 CellDefinition 的 leftParentCell 和 topParentCell 引用，解决从缓存反序列化后 @JsonIgnore 字段丢失的问题。
      *
      * @param cells 所有单元格定义列表，不能为空
      */

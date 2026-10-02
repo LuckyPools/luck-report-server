@@ -43,7 +43,9 @@ import java.util.Map;
  * @since 2017年3月20日
  */
 public class ImageUtils {
-    /** 解码/缩放后长边上限，避免超大图 BufferedImage 占满堆。 */
+    /**
+     * 解码/缩放后长边上限，避免超大图 BufferedImage 占满堆。
+     */
     public static final int DEFAULT_MAX_IMAGE_EDGE = 1920;
 
     private static Map<ImageType, ImageProcessor<?>> imageProcessorMap = new HashMap<ImageType, ImageProcessor<?>>();
@@ -84,8 +86,7 @@ public class ImageUtils {
     }
 
     /**
-     * 将base64编码的图片按指定宽高缩放后返回新的base64数据。
-     * 未指定宽高时，若源图超过 {@link #DEFAULT_MAX_IMAGE_EDGE} 仍会等比缩小。
+     * 将base64编码的图片按指定宽高缩放后返回新的base64数据。未指定宽高时，若源图超过 {@link #DEFAULT_MAX_IMAGE_EDGE} 仍会等比缩小。
      */
     public static String scaleBase64Image(String base64Data, int width, int height) {
         String cacheKey = "base64|" + width + "x" + height + "|" + Integer.toHexString(base64Data.hashCode())

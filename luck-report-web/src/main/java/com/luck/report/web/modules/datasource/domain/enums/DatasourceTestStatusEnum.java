@@ -16,6 +16,8 @@ public enum DatasourceTestStatusEnum {
     FAILED("failed"),
     UNKNOWN("unknown");
 
-    /** 状态标识（与数据库存储一致） */
+    /**
+     * 状态标识（与数据库存储一致）
+     */
     private final String value;
 }

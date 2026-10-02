@@ -8,8 +8,6 @@ import java.util.List;
 
 /**
  * 公共数据集Mapper
- * 操作 luck_report_dataset 表
- * SQL 定义在 resources/luck-report/sql/{dbType}/ReportDatasetMapper.xml 中，支持多数据库方言
  *
  * @author luck
  */

@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
 
 /**
  * 数据源管理Controller
- * 提供数据源的增删改查、连接测试、表管理、Schema初始化和逻辑外键管理接口
  *
  * @author luck
  */
@@ -262,7 +261,6 @@ public class ReportDatasourceController {
 
     /**
      * 初始化表Schema到向量数据库
-     * 将指定表的Schema信息向量化存储，供agent查询使用
      *
      * @param id      数据源ID
      * @param request 初始化请求，包含表名列表
@@ -390,7 +388,7 @@ public class ReportDatasourceController {
     }
 
     /**
-     * 构建 Schema：向量检索召回相关表结构并合并逻辑外键
+     * 构建 Schema
      *
      * @param id    数据源ID
      * @param query 用户自然语言查询
@@ -410,8 +408,6 @@ public class ReportDatasourceController {
 
     /**
      * 获取与查询相关的表结构信息（结构化 SchemaDTO）
-     * 传入查询文本，通过向量检索召回相关表并组装为结构化 SchemaDTO
-     * 支持通过数据源ID或名称查询（二选一），返回结构化数据由前端/Agent 转发给 LLM 消费
      *
      * @param name   数据源名称（与id二选一）
      * @param id     数据源ID（与name二选一）
@@ -424,7 +420,6 @@ public class ReportDatasourceController {
         @RequestParam(value = "id", required = false) String id,
         @RequestParam(value = "query") String query) {
         try {
-            // 优先使用ID，ID为空时通过名称查询
             String datasourceId = id;
             if (datasourceId == null && name != null) {
                 ReportDatasourceVO reportDatasource = reportDatasourceService.getDatasourceByName(name);
@@ -448,8 +443,6 @@ public class ReportDatasourceController {
 
     /**
      * 跨数据源搜索Schema
-     * 遍历所有active状态的数据源，通过向量检索召回与查询相关的表结构
-     * 返回每个匹配数据源的基本信息和格式化的Schema提示词，供Agent快速定位合适的数据源
      *
      * @param query 用户自然语言查询
      * @return 搜索结果列表，每项包含数据源ID、名称、类型和Schema提示词
@@ -468,8 +461,6 @@ public class ReportDatasourceController {
 
     /**
      * 获取内置数据源列表（包含ID和名称）
-     * 返回所有注册到Spring容器的BuildinDatasource Bean信息
-     * 用于设计器端获取可用的数据源列表
      *
      * @return 内置数据源列表，每项包含name和id
      */

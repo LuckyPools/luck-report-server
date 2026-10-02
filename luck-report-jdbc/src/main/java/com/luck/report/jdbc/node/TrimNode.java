@@ -127,8 +127,8 @@ public class TrimNode implements SqlNode {
         if (raw == null || raw.isEmpty()) {
             return new String[0];
         }
-        // 保留每段尾部空格：MyBatis 的 "AND |OR " 必须匹配 "AND "/"OR "，
-        // 若 trim 成 "OR" 会误伤 "ORDER BY"
+        // 保留尾部空格：MyBatis "AND |OR " 需匹配带空格前缀
+        // 否则 trim 成 "OR" 会误伤 "ORDER BY"
         return raw.split("\\|", -1);
     }
 }

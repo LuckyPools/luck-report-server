@@ -57,22 +57,19 @@ public class JavaxServletConfiguration implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        String prefix = servletPrefix == null || servletPrefix.isEmpty() ? "report" : servletPrefix;
+        String prefix = servletPrefix == null || servletPrefix.isEmpty() ? "" : servletPrefix;
 
-        // 1. Token 拦截器（order=1）- 校验 token 有效性（含匿名报表检查）
         registry.addInterceptor(new JavaxTokenInterceptor(tokenService, tokenProperties, reportRoleMapper))
                 .addPathPatterns(ReportUrls.managePathPatterns(prefix))
                 .addPathPatterns(ReportUrls.previewPathPatterns(prefix))
                 .addPathPatterns("/" + prefix + "/res/**")
                 .excludePathPatterns("/" + prefix + "/auth/**");
 
-        // 2. 管理端拦截器（order=2）- 校验用户是否为 admin 角色
         registry.addInterceptor(new JavaxManageInterceptor(tokenService, tokenProperties))
                 .addPathPatterns(ReportUrls.managePathPatterns(prefix))
                 .excludePathPatterns("/" + prefix + "/auth/**")
                 .order(2);
 
-        // 3. 预览/导出拦截器（order=3）- 校验用户是否有权访问指定报表（含匿名报表放行）
         registry.addInterceptor(new JavaxPreviewInterceptor(reportAccessChecker, tokenProperties))
                 .addPathPatterns(ReportUrls.previewPathPatterns(prefix))
                 .excludePathPatterns("/" + prefix + "/auth/**")

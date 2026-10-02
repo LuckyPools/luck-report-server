@@ -7,8 +7,6 @@ import java.util.List;
 
 /**
  * 报表文件 Mapper
- * 操作 luck_report_template 表
- * SQL 定义在 resources/luck-report/sql/{dbType}/ReportTemplateMapper.xml 中，支持多数据库方言
  *
  * @author luck
  */

@@ -31,8 +31,6 @@ import java.io.OutputStream;
 
 /**
  * 报表管理控制器
- * <p>仅负责 HTTP 请求 / 响应转换与参数校验，业务逻辑委托给
- * {@link ReportManageService}，避免在 Controller 中堆积业务代码。
  *
  * @author luck-report
  * @since 1.0.0
@@ -53,7 +51,9 @@ public class ManageController {
         return reportManageService.queryReports(queryDTO);
     }
 
-    /** 报表元数据详情（不含模板 XML） */
+    /**
+     * 报表元数据详情（不含模板 XML）
+     */
     @GetMapping("/get_report")
     public ResultVO<ReportFile> getReport(@RequestParam String file) {
         return reportManageService.getReport(file);
@@ -77,15 +77,12 @@ public class ManageController {
 
     /**
      * 导出报表模板源文件（XML），供前端下载。
-     * <p>接收完整 reportPath（带 provider 前缀），写出字节流。
-     * 与 query_reports 列表接口不同：本接口返回 XML 源文件而非渲染结果。
      */
     @RequestMapping("/export_template")
     public void exportTemplate(@RequestParam("reportPath") String reportPath) throws IOException {
         ApiResponse resp = HttpUtils.getResponse();
         ResultVO<ReportExportTemplateVo> vo = reportManageService.exportTemplate(reportPath);
         if (vo.getCode() != 0 || vo.getData() == null) {
-            // 业务错误：以 JSON 形式写回 4xx/5xx
             resp.setStatus(vo.getCode() != 0 && vo.getCode() >= 400 ? vo.getCode() : 500);
             resp.setContentType("application/json;charset=UTF-8");
             String body = "{\"code\":" + vo.getCode() + ",\"message\":\"" +
@@ -122,7 +119,6 @@ public class ManageController {
         if (originalName == null || originalName.trim().isEmpty()) {
             return ResultVO.error(400, "File name cannot be empty");
         }
-        // 去除路径部分，仅保留 basename
         int slashIdx = Math.max(originalName.lastIndexOf('/'), originalName.lastIndexOf('\\'));
         if (slashIdx >= 0) {
             originalName = originalName.substring(slashIdx + 1);

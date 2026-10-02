@@ -60,7 +60,6 @@ public class GetFunction implements Function {
         if (!list.isEmpty()) {
             int realIndex;
             if (index < 0) {
-                // -1 表示最后一项，-2 表示倒数第二项，以此类推
                 realIndex = list.size() + index;
             } else {
                 realIndex = index - 1;

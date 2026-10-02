@@ -28,7 +28,6 @@ import java.util.Map;
 
 /**
  * 报表导出服务，统一处理 Excel / Excel97 / PDF / Word 导出业务。
- * <p>Bean 名：{@code bean.reportExportService}，避免与第三方系统 Bean 冲突。
  *
  * @author luck-report
  * @since 1.0.0

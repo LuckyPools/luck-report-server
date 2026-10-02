@@ -29,13 +29,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Agent 链路日志服务实现
- * 校验前端上报的日志条目后，逐条以 JSON 行格式输出到 {@code agent-trace.logger-name} 指定的 logger
- *
- * <p>本类不附带任何日志配置：starter 被第三方引入时，日志落到哪由宿主的 logback 决定。
- * 因此日志体自带 traceId 而不依赖 MDC pattern，宿主不配也能按 traceId 检索。
- *
- * <p>本类是系统边界：入参完全由客户端控制，开关、频次、条数、字段长度、traceId 字符
- * 每一道都要自己守，不能假设"前端已经限流过了"。
  *
  * @author luck
  */
@@ -44,19 +37,24 @@ public class AgentTraceServiceImpl implements AgentTraceService {
 
     private final AgentTraceProperties properties;
 
-    /** 链路日志通道，logger 名可配置，宿主据此决定是否隔离到独立文件 */
+    /**
+     * 链路日志通道，logger 名可配置，宿主据此决定是否隔离到独立文件
+     */
     private final Logger traceLog;
 
-    /** 限流计数：key = ip|窗口序号，value = 该窗口内已处理次数 */
+    /**
+     * 限流计数：key = ip|窗口序号，value = 该窗口内已处理次数
+     */
     private final ConcurrentHashMap<String, AtomicInteger> rateBuckets = new ConcurrentHashMap<>();
 
     /**
      * 已输出过 client_context 的 traceId 集合，保证同一轮链路只打一次上下文
-     * （前端可能分多批上报，旧逻辑每批都打导致刷屏）
      */
     private final Set<String> printedClientContextTraceIds = ConcurrentHashMap.newKeySet();
 
-    /** client_context 去重集合上限，超限整体清空，防止长驻进程无限增长 */
+    /**
+     * client_context 去重集合上限，超限整体清空，防止长驻进程无限增长
+     */
     private static final int MAX_CLIENT_CONTEXT_TRACE_IDS = 2048;
 
     public AgentTraceServiceImpl(@Qualifier("bean.agentTraceProperties") AgentTraceProperties properties) {
@@ -64,22 +62,30 @@ public class AgentTraceServiceImpl implements AgentTraceService {
         this.traceLog = LoggerFactory.getLogger(properties.getLoggerName());
     }
 
-    /** 级别白名单：前端 debug 级不上报，越界级别统一降级 info */
+    /**
+     * 级别白名单：前端 debug 级不上报，越界级别统一降级 info
+     */
     private static final Set<String> ALLOWED_LEVELS = Collections.unmodifiableSet(
             new HashSet<>(Arrays.asList("info", "warn", "error")));
-    /** 各字段截断上限（接口侧防线，不信任客户端） */
+    /**
+     * 各字段截断上限（接口侧防线，不信任客户端）
+     */
     private static final int MAX_DATA_LENGTH = 8192;
     private static final int MAX_MESSAGE_LENGTH = 1000;
     private static final int MAX_NAMESPACE_LENGTH = 64;
     private static final int MAX_CONTEXT_LENGTH = 500;
     private static final int MAX_VERSION_LENGTH = 64;
 
-    /** 客户端时间戳的输出格式，便于直接人读 */
+    /**
+     * 客户端时间戳的输出格式，便于直接人读
+     */
     private static final DateTimeFormatter TIME_FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS").withZone(ZoneId.systemDefault());
 
     private static final long RATE_WINDOW_MS = 60_000L;
-    /** 限流桶数量上限，达到后触发一次过期清理，防止异常 IP 把 Map 撑大 */
+    /**
+     * 限流桶数量上限，达到后触发一次过期清理，防止异常 IP 把 Map 撑大
+     */
     private static final int MAX_RATE_BUCKETS = 4096;
 
     /**
@@ -91,7 +97,6 @@ public class AgentTraceServiceImpl implements AgentTraceService {
     @Override
     public AgentTraceReportResult reportLogs(AgentTraceReportRequest request) {
         AgentTraceReportResult result = new AgentTraceReportResult();
-        // 关闭时前端停报，后续校验与落盘都不必再做
         if (!properties.isEnabled()) {
             result.setDisabled(true);
             return result;
@@ -112,7 +117,6 @@ public class AgentTraceServiceImpl implements AgentTraceService {
             logs = logs.subList(0, maxBatchSize);
         }
 
-        // 客户端上下文按 traceId 去重：同一轮链路只落一次
         printClientContext(request, logs.get(0).getTraceId());
         for (AgentTraceLogVO entry : logs) {
             printEntry(entry);
@@ -134,8 +138,6 @@ public class AgentTraceServiceImpl implements AgentTraceService {
         Map<String, Object> line = new LinkedHashMap<>(9);
         line.put("traceId", TraceIdHandler.sanitize(entry.getTraceId()));
         line.put("seq", entry.getSeq());
-        // ct = 客户端产生时间，st = 服务端落盘时间。客户端时钟可能不准（差几分钟很常见），
-        // 跨端合并排序一律以 st（与行首时间一致）为准，ct 仅用于同端内排序
         line.put("ct", entry.getTimestamp() != null
                 ? TIME_FORMATTER.format(Instant.ofEpochMilli(entry.getTimestamp())) : null);
         line.put("st", TIME_FORMATTER.format(Instant.ofEpochMilli(now)));
@@ -157,7 +159,6 @@ public class AgentTraceServiceImpl implements AgentTraceService {
 
     /**
      * 输出本批日志的客户端上下文（版本/UA/页面）
-     * 同一 traceId 只输出一次，避免多批上报重复刷屏
      *
      * @param request 上报请求，AgentTraceReportRequest，不可为空
      * @param traceId 本批首个条目的 traceId，String，可为空
@@ -191,7 +192,9 @@ public class AgentTraceServiceImpl implements AgentTraceService {
         traceLog.info(toJsonSafely(line));
     }
 
-    /** 级别白名单过滤，越界降级 info */
+    /**
+     * 级别白名单过滤，越界降级 info
+     */
     private String normalizeLevel(String level) {
         return level != null && ALLOWED_LEVELS.contains(level) ? level : "info";
     }
@@ -214,7 +217,9 @@ public class AgentTraceServiceImpl implements AgentTraceService {
         return rateBuckets.computeIfAbsent(key, k -> new AtomicInteger()).incrementAndGet() <= limit;
     }
 
-    /** 清理过期窗口的计数桶，保留当前窗口与上一个窗口 */
+    /**
+     * 清理过期窗口的计数桶，保留当前窗口与上一个窗口
+     */
     private void purgeExpiredBuckets(long currentWindow) {
         for (String key : rateBuckets.keySet()) {
             int idx = key.lastIndexOf('|');
@@ -235,7 +240,6 @@ public class AgentTraceServiceImpl implements AgentTraceService {
 
     /**
      * 取限流维度（客户端 IP）
-     * 走 infra 的 ApiRequest 抽象，避免在 web 模块直接依赖 javax/jakarta servlet API
      *
      * @return 客户端 IP，String；取不到时返回 unknown
      */
@@ -245,7 +249,9 @@ public class AgentTraceServiceImpl implements AgentTraceService {
         return isBlank(addr) ? "unknown" : addr;
     }
 
-    /** 长度截断，null 安全 */
+    /**
+     * 长度截断，null 安全
+     */
     private String truncate(String text, int maxLength) {
         if (text == null || text.length() <= maxLength) {
             return text;
@@ -270,14 +276,12 @@ public class AgentTraceServiceImpl implements AgentTraceService {
         try {
             return ChatUtils.getObjectMapper().readTree(data);
         } catch (Exception e) {
-            // 非合法 JSON（如降级的 String() 输出），原样保留
             return data;
         }
     }
 
     /**
      * 序列化为 JSON 文本，失败时降级为 Map.toString 保证不丢日志
-     * 降级分支不经过 Jackson，换行不会被转义，因此手动替换，杜绝伪造日志行
      *
      * @param line 组装好的日志行字段，Map，不可为空
      * @return JSON 文本

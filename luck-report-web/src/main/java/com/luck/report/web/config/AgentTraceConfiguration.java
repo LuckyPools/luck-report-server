@@ -7,7 +7,6 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * Agent 链路日志自动装配
- * <p>与 {@link TokenConfiguration} 同模式，按"所有 bean 统一 bean.* 前缀"约定暴露 Bean 名。
  *
  * @author luck
  */

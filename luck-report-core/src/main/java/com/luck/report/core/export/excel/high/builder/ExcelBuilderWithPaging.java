@@ -60,7 +60,6 @@ public class ExcelBuilderWithPaging extends ExcelBuilder {
             List<Column> columns = report.getColumns();
             Map<Row, Map<Column, com.luck.report.core.model.Cell>> cellMap = report.getRowColCellMap();
             int columnSize = columns.size();
-            // 从 Paper 冻结锚点解析展开后物理行列数；列不随分页变化，全局算一次，行按每页 rows 在循环内算
             int freezeRowCount = FreezeUtils.computeFreezeRowCount(report, paper.getFreezeRowCellName());
             int freezeColCount = FreezeUtils.computeFreezeColCount(report, paper.getFreezeColCellName());
             int freezeColSplit = FreezeUtils.computeVisibleColCount(columns, freezeColCount);
@@ -234,7 +233,6 @@ public class ExcelBuilderWithPaging extends ExcelBuilder {
                     row.setHeight((short) UnitUtils.pointToTwip(r.getHeight()));
                     rowNumber++;
                 }
-                // 渲染当前页的悬浮元素
                 if (hasFloat) {
                     float currentPageHeight = 0;
                     for (Row r : rows) {
@@ -243,7 +241,6 @@ public class ExcelBuilderWithPaging extends ExcelBuilder {
                     renderFloatElementsForPage(sheet, drawing, report, floatPageIndex, currentPageHeight, rows, rowOffset, columns, creationHelper, wb, pictureIndexCache, withSheet, true);
                 }
                 floatPageIndex++;
-                // 每页各自冻结：行按当前页可见行数，列用全局有效列数
                 int freezeRowSplit = FreezeUtils.computeVisibleRowCount(rows, freezeRowCount);
                 if (freezeRowSplit > 0 || freezeColSplit > 0) {
                     sheet.createFreezePane(freezeColSplit, freezeRowSplit);

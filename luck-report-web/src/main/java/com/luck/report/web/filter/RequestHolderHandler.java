@@ -13,7 +13,6 @@ public class RequestHolderHandler {
 
     /**
      * Called before the request chain proceeds. Sets the ApiRequest into RequestHolder.
-     * <p>同时解析并绑定本次请求的语言到 ReportLocaleContext，供异常出口按语言返回文案。
      */
     public void beforeRequest(Object nativeRequest) {
         ApiRequest apiRequest = HttpUtils.wrapRequest(nativeRequest);
@@ -26,7 +25,6 @@ public class RequestHolderHandler {
 
     /**
      * Called after the request chain completes. Cleans RequestHolder.
-     * <p>必须一并清理 ReportLocaleContext，否则线程复用会残留上一次请求的语言。
      */
     public void afterRequest() {
         if (logger.isDebugEnabled()) {

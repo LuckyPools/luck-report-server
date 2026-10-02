@@ -57,7 +57,6 @@ public class CurrentValueExpressionCondition extends BaseCondition {
      * @param type
      */
     public void setType(ConditionType type) {
-        // 空实现，忽略type字段
     }
 
     public Expression getRightExpression() {

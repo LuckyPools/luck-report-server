@@ -168,8 +168,7 @@ public abstract class BaseCondition implements Condition {
     }
 
     /**
-     * 默认实现递归处理 nextCondition 链。
-     * 子类根据需要覆盖，并在覆盖方法中调用 super.fetchCellName()。
+     * 默认实现递归处理 nextCondition 链。子类根据需要覆盖，并在覆盖方法中调用 super.fetchCellName()。
      */
     @Override
     public List<String> fetchCellName() {

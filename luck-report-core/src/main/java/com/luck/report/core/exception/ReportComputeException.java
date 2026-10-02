@@ -30,8 +30,9 @@ public class ReportComputeException extends ReportException {
         super(msg);
     }
 
-
-    /** errorArgs 依次对应 {0}、{1} */
+    /**
+     * errorArgs 依次对应 {0}、{1}
+     */
     public ReportComputeException(String errorCode, Object... errorArgs) {
         super(errorCode, errorArgs);
     }

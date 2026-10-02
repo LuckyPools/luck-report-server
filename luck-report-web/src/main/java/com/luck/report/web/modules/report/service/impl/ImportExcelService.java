@@ -23,13 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Excel 导入服务，负责两类职责：
- * <ul>
- *   <li>导入 Excel 为报表定义并写入缓存</li>
- *   <li>Excel 转 JSON（静态数据集导入向导）：获取 Sheet 摘要、按配置解析为 JSON</li>
- * </ul>
- * <p>Bean 名：{@code bean.importExcelService}，避免与第三方系统 Bean 冲突。
- * <p>调用方：ImportExcelController#importExcel / getExcelSheet / parseExcelToJson。
+ * Excel 导入服务
  *
  * @author luck-report
  * @since 1.0.0
@@ -108,8 +102,6 @@ public class ImportExcelService {
 
     /**
      * 按配置参数解析 Excel 为 JSON 字符串
-     * <p>前端传入的行号参数（headerRowIndex/firstDataRowIndex/lastDataRowIndex）采用从 1 开始的语义，
-     * 内部会转换为 POI 所需的从 0 开始的索引。</p>
      *
      * @param file              Excel 文件，不可为空
      * @param sheetIndex        指定解析的 Sheet 索引（从 0 开始，可为空），为空时默认读取第一个 Sheet
@@ -133,7 +125,6 @@ public class ImportExcelService {
         validateExcelFile(file);
         validateRowIndexes(headerRowIndex, firstDataRowIndex, lastDataRowIndex);
 
-        // 构建解析配置：将 1-based 行号转换为 POI 所需的 0-based 索引
         ExcelParseConfig config = new ExcelParseConfig();
         config.setSheetIndex(sheetIndex);
         config.setHeaderRowIndex(headerRowIndex - 1);
@@ -149,7 +140,6 @@ public class ImportExcelService {
         try (InputStream inputStream = file.getInputStream()) {
             return ExcelToJsonUtil.parseToJson(inputStream, config);
         } catch (ReportException e) {
-            // 业务异常直接抛出，保留原始错误信息
             throw e;
         } catch (IllegalStateException e) {
             logger.error("Excel格式错误: {}", e.getMessage());

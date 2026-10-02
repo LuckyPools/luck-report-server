@@ -8,8 +8,6 @@ import java.util.List;
 
 /**
  * 数据源Mapper
- * 操作 luck_reportDatasource 表
- * SQL 定义在 resources/luck-report/sql/{dbType}/ReportDatasourceMapper.xml 中，支持多数据库方言
  *
  * @author luck
  */
@@ -120,7 +118,6 @@ public interface ReportDatasourceMapper {
 
     /**
      * 分页条件查询数据源
-     * 分页由拦截器自动改写，SQL 中无需手写 LIMIT
      *
      * @param queryDTO 查询条件
      * @param offset   偏移量

@@ -56,7 +56,6 @@ public class DownCellbuilder {
         cell.setDuplicateRange(duplicateRange);
     }
 
-
     private void buildRowsBlankCells(CellDefinition cell, List<CellDefinition> cells, Range range) {
         Map<String, BlankCellInfo> blankCellNamesMap = cell.getNewBlankCellsMap();
         int start = range.getStart(), end = range.getEnd();
@@ -87,7 +86,6 @@ public class DownCellbuilder {
             buildRowsBlankCells(cell, cells, new Range(end, nextEnd));
         }
     }
-
 
     private Range buildRowRange(List<Range> rangeList) {
         Range rowRange = new Range();
@@ -121,7 +119,6 @@ public class DownCellbuilder {
         }
         return range;
     }
-
 
     private void buildChildrenBlankCells(CellDefinition cell, List<CellDefinition> cells, Range childRange) {
         int startRowNumber = cell.getRowNumber();

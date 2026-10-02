@@ -23,10 +23,14 @@ public enum DbType {
     CLICK_HOUSE("clickhouse", "clickhouse 数据库"),
     GBASE("gbase", "南大通用(华库)数据库"),
     GBASE_8S("gbase-8s", "南大通用数据库 GBase 8s"),
-    /** @deprecated */
+    /**
+     * @deprecated
+     */
     @Deprecated
     GBASEDBT("gbasedbt", "南大通用数据库"),
-    /** @deprecated */
+    /**
+     * @deprecated
+     */
     @Deprecated
     GBASE_INFORMIX("gbase 8s", "南大通用数据库 GBase 8s"),
     OSCAR("oscar", "神通数据库"),

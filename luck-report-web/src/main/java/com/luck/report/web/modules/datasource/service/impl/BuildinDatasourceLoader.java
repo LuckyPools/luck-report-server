@@ -18,15 +18,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 内置数据源加载器
- * 实现 SmartInitializingSingleton 接口，在所有单例 Bean 初始化完成后从数据库加载数据源配置
- * 创建 DynamicBuildinDatasource 实例并缓存，供 Utils 类对外提供内置数据源配置
- *
- * 加载顺序：
- * 1. Spring 容器初始化所有单例 Bean（包括数据源、Mapper 等）
- * 2. SmartInitializingSingleton.afterSingletonsInstantiated() 被调用
- * 3. 从数据库查询已启用的数据源配置
- * 4. 为每条数据源创建 DynamicBuildinDatasource 实例并缓存
- * 5. Utils 类通过 getBuildinDatasources() 获取所有内置数据源
  *
  * @author luck
  */
@@ -34,13 +25,19 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component("bean.buildinDatasourceLoader")
 public class BuildinDatasourceLoader implements SmartInitializingSingleton, BuildinDatasourceRegistry {
 
-    /** 数据源 Mapper */
+    /**
+     * 数据源 Mapper
+     */
     private final ReportDatasourceMapper datasourceMapper;
 
-    /** 动态数据源管理器 */
+    /**
+     * 动态数据源管理器
+     */
     private final DynamicDatasourceManager dynamicDatasourceManager;
 
-    /** 内置数据源缓存：数据源名称 -> BuildinDatasource */
+    /**
+     * 内置数据源缓存：数据源名称 -> BuildinDatasource
+     */
     private final Map<String, BuildinDatasource> buildinDatasourceMap = new ConcurrentHashMap<>();
 
     /**
@@ -57,14 +54,12 @@ public class BuildinDatasourceLoader implements SmartInitializingSingleton, Buil
 
     /**
      * 所有单例 Bean 初始化完成后调用
-     * 从数据库加载已启用的数据源配置，创建 DynamicBuildinDatasource 实例
      */
     @Override
     public void afterSingletonsInstantiated() {
         log.info("开始加载内置数据源...");
 
         try {
-            // 查询所有已启用的数据源
             List<ReportDatasource> datasources = datasourceMapper.selectByEnabled(Boolean.TRUE);
 
             if (datasources == null || datasources.isEmpty()) {
@@ -72,7 +67,6 @@ public class BuildinDatasourceLoader implements SmartInitializingSingleton, Buil
                 return;
             }
 
-            // 为每条数据源创建 DynamicBuildinDatasource 实例
             int loadedCount = 0;
             for (ReportDatasource datasource : datasources) {
                 try {
@@ -141,7 +135,6 @@ public class BuildinDatasourceLoader implements SmartInitializingSingleton, Buil
 
     /**
      * 刷新内置数据源缓存
-     * 重新从数据库加载数据源配置
      */
     public void refresh() {
         log.info("刷新内置数据源缓存...");
@@ -161,7 +154,6 @@ public class BuildinDatasourceLoader implements SmartInitializingSingleton, Buil
             buildinDatasourceMap.put(datasource.getName(), buildinDatasource);
             log.info("添加/更新内置数据源: id={}, name={}", datasource.getId(), datasource.getName());
         } else {
-            // 如果未启用，则移除
             removeDatasource(datasource.getName());
         }
     }

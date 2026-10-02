@@ -59,7 +59,9 @@ public class DataSeqFunction implements Function {
         return seq != null ? seq : 1;
     }
 
-    /** 按版面行序为同名实例建立序号表，整次报表构建中每个名字只建一次 */
+    /**
+     * 按版面行序为同名实例建立序号表，整次报表构建中每个名字只建一次
+     */
     private Map<Cell, Integer> buildIndexMap(List<Row> rows, List<Cell> siblings) {
         final Map<Row, Integer> rowPos = new IdentityHashMap<Row, Integer>();
         if (rows != null) {

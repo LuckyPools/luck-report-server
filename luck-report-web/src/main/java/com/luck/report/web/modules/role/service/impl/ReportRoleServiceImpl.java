@@ -35,7 +35,6 @@ import java.util.stream.Collectors;
 
 /**
  * 角色 × 报表 绑定关系数据服务实现。
- * <p>参考 {@code modules/modelConfig/} 命名风格（{@code RoleDataServiceImpl}）。
  *
  * @author luck-report
  * @since 1.2.0
@@ -48,7 +47,9 @@ public class ReportRoleServiceImpl implements ReportRoleService, ApplicationCont
     private final TokenService tokenService;
     private final TokenProperties tokenProperties;
 
-    /** 由 {@link #setApplicationContext} 注入的 ReportProvider 列表副本。 */
+    /**
+     * 由 {@link #setApplicationContext} 注入的 ReportProvider 列表副本。
+     */
     private List<ReportProvider> reportProviders = Collections.emptyList();
 
     public ReportRoleServiceImpl(@Qualifier("bean.reportRoleMapper") ReportRoleMapper roleMapper,
@@ -58,8 +59,6 @@ public class ReportRoleServiceImpl implements ReportRoleService, ApplicationCont
         this.tokenService = tokenService;
         this.tokenProperties = tokenProperties;
     }
-
-    // ==================== 管理端：列表/绑定/保存/删除 ====================
 
     @Override
     public List<RoleInfo> listAllRoles() {
@@ -72,7 +71,6 @@ public class ReportRoleServiceImpl implements ReportRoleService, ApplicationCont
         } catch (Exception e) {
             log.warn("调用 TokenService.listAllRoles() 失败: {}", e.getMessage());
         }
-        // 追加内置匿名角色
         roles.add(new RoleInfo(AnonymousRole.CODE, AnonymousRole.NAME));
         return roles;
     }
@@ -84,7 +82,6 @@ public class ReportRoleServiceImpl implements ReportRoleService, ApplicationCont
             return Collections.emptyList();
         }
 
-        // 角色名通过 listAllRoles() 解析（第三方角色 + 内置匿名角色）
         Map<String, String> nameMap = new HashMap<>();
         try {
             List<RoleInfo> allRoles = listAllRoles();
@@ -102,7 +99,6 @@ public class ReportRoleServiceImpl implements ReportRoleService, ApplicationCont
         List<ReportRoleListVo> result = new ArrayList<>(roleCodes.size());
         for (String roleCode : roleCodes) {
             int hasAll = roleMapper.countAllBindingByRole(roleCode);
-            // 复用：bindings 用来计算 bindingCount（不含 '*'），与 selectDistinctRoleCodes + countAllBindingByRole 一致
             int count = roleMapper.countBindingsByRole(roleCode);
             result.add(new ReportRoleListVo(roleCode, nameMap.get(roleCode), count - hasAll, hasAll > 0));
         }
@@ -161,10 +157,8 @@ public class ReportRoleServiceImpl implements ReportRoleService, ApplicationCont
         if (!StringUtils.hasText(provider)) {
             throw new ReportBizException("error.role.providerEmpty");
         }
-        // 1) 物理删除该角色在指定 provider 下的全部绑定（LIKE 'provider%'）
         roleMapper.deleteByRoleCodeAndProvider(roleCode, provider);
 
-        // 2) 写具体 file_path（去重 + 过滤 provider 前缀以防越权）
         Set<String> seen = new HashSet<>();
         if (reportPaths != null) {
             for (String fp : reportPaths) {
@@ -185,8 +179,6 @@ public class ReportRoleServiceImpl implements ReportRoleService, ApplicationCont
             }
         }
 
-        // 3) hasAll 时再写一条 '*'；hasAll=false 时同时清除已有的 '*'（用户明确取消"全部报表"）
-        //    注意：'*' 不带 provider 前缀，deleteByRoleCodeAndProvider 的 LIKE 'provider%' 不会命中它，必须显式删
         if (hasAll) {
             ReportRole reportRole = new ReportRole();
             reportRole.setRoleCode(roleCode);
@@ -211,21 +203,11 @@ public class ReportRoleServiceImpl implements ReportRoleService, ApplicationCont
         log.info("删除角色全部绑定: roleCode={}, rows={}", roleCode, rows);
     }
 
-    // ==================== 预览鉴权 ====================
-
     /**
-     * 预览鉴权核心：当前用户能否访问该报表（reportPath 已带 provider 前缀）。
-     * <ol>
-     *   <li>总开关 token.enabled = false → 全部放行（dev）</li>
-     *   <li>命中 admin-roles → 全部放行（管理员）</li>
-     *   <li>存在 luck_report_role.file_path = '*' 且 role_code 在用户角色中 → 全部放行</li>
-     *   <li>该报表绑定的 role_code 集合与用户角色有交集 → 放行</li>
-     *   <li>其他 → 拒绝</li>
-     * </ol>
+     * 预览鉴权核心
      */
     @Override
     public boolean canPreview(ApiRequest request, String reportPath) {
-        // 2. 管理员白名单
         List<String> userRoles = tokenService.getCurrentUserRoles(request);
         if (userRoles == null || userRoles.isEmpty()) {
             return false;
@@ -235,7 +217,6 @@ public class ReportRoleServiceImpl implements ReportRoleService, ApplicationCont
                 && userRoles.stream().anyMatch(admins::contains)) {
             return true;
         }
-        // 3. '*' 通配
         List<String> allRoles = roleMapper.selectRoleCodesByFilePath("*");
         if (allRoles != null && !allRoles.isEmpty()) {
             Set<String> allSet = new HashSet<>(allRoles);
@@ -243,7 +224,6 @@ public class ReportRoleServiceImpl implements ReportRoleService, ApplicationCont
                 return true;
             }
         }
-        // 4. 精确匹配（reportPath 已带 provider 前缀，如 'file:test.ureport.xml' 或 'db:1'）
         if (reportPath == null || reportPath.isEmpty()) {
             return false;
         }
@@ -255,9 +235,9 @@ public class ReportRoleServiceImpl implements ReportRoleService, ApplicationCont
         return userRoles.stream().anyMatch(boundSet::contains);
     }
 
-    // ==================== 内部辅助 ====================
-
-    /** 根据 prefix 查找 ReportProvider。 */
+    /**
+     * 根据 prefix 查找 ReportProvider。
+     */
     private ReportProvider findProviderByPrefix(String prefix) {
         if (prefix == null) {
             return null;

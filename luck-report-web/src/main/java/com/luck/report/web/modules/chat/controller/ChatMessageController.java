@@ -18,14 +18,6 @@ import java.util.List;
 
 /**
  * 聊天消息控制器
- * 提供消息的查询、单条保存、批量保存等 REST 接口
- * URL 模式参照 data-agent-management：/sessions/{sessionId}/messages
- *
- * 消息存储流程（方案A：Loop 结束后批量存）：
- * 1. 用户发消息 → 前端 MemoryManager 追加到内存
- * 2. Agentic Loop 运行 → 全程前端内存管理
- * 3. Loop 结束 → 前端调用 POST /sessions/{sessionId}/messages/save_batch 批量保存
- * 4. 进入旧对话 → 前端调用 GET /sessions/{sessionId}/messages/list 加载历史
  *
  * @author luck
  */
@@ -42,7 +34,6 @@ public class ChatMessageController {
 
     /**
      * 根据会话ID查询消息列表
-     * 前端进入旧对话时调用，从 DB 加载历史消息到前端 MemoryManager
      *
      * @param sessionId 会话ID
      * @return 消息列表，按创建时间升序
@@ -55,7 +46,6 @@ public class ChatMessageController {
 
     /**
      * 保存单条消息
-     * 适用于非 Agent 场景或需要实时保存的场景
      *
      * @param sessionId 会话ID
      * @param dto       消息请求体
@@ -78,7 +68,6 @@ public class ChatMessageController {
 
         ChatMessage saved = chatMessageService.saveMessage(message);
 
-        // 更新会话活动时间，用于会话列表排序
         chatSessionService.updateSessionTime(sessionId);
 
         return ResultVOUtils.success("success.chat.messageSaved", saved);
@@ -86,8 +75,6 @@ public class ChatMessageController {
 
     /**
      * 批量保存消息
-     * Agentic Loop 结束后，前端一次性同步本轮新增的所有消息
-     * 包含完整的对话链路：user → assistant(tool_calls) → tool_result → assistant 最终回复
      *
      * @param sessionId 会话ID
      * @param batchDTO  批量消息请求体
@@ -101,7 +88,6 @@ public class ChatMessageController {
             return ResultVOUtils.error("error.chat.messageListEmpty");
         }
 
-        // DTO 转 Entity
         List<ChatMessage> messages = new ArrayList<>();
         for (ChatMessageDTO dto : batchDTO.getMessages()) {
             ChatMessage message = new ChatMessage();
@@ -115,7 +101,6 @@ public class ChatMessageController {
 
         int count = chatMessageService.batchSaveMessages(messages);
 
-        // 更新会话活动时间
         chatSessionService.updateSessionTime(sessionId);
 
         return ResultVOUtils.success("success.chat.messagesSaved", count);
@@ -123,7 +108,6 @@ public class ChatMessageController {
 
     /**
      * 删除单条消息
-     * 前端删除消息按钮调用，物理删除
      *
      * @param id 消息ID
      * @return 操作结果
@@ -131,7 +115,6 @@ public class ChatMessageController {
     @DeleteMapping("/{sessionId}/messages/delete/{id}")
     public ResultVO<Void> deleteMessage(@PathVariable String sessionId,
                                         @PathVariable String id) {
-        // sessionId 仅用于路径一致性，删除按消息 id
         chatMessageService.deleteMessage(id);
         return ResultVOUtils.<Void>success("success.chat.messageDeleted", null);
     }

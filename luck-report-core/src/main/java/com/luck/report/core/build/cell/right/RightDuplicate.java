@@ -79,9 +79,7 @@ public class RightDuplicate {
     }
 
     /**
-     * 将本次展开产生的新列按目标列号插入报表
-     * duplicate 会先建子列再建父列，newColList 追加顺序与 tempColumnNumber 不一致；
-     * 插入前必须按 tempColumnNumber 排序，与 DownDuplicate 按 tempRowNumber 排序对称。
+     * 将本次展开产生的新列按目标列号插入报表；duplicate 会先建子列再建父列，newColList 追加顺序与 tempColumnNumber 不一致；插入前必须按 tempColumnNumber 排序，与 DownDuplicate 按 tempRowNumber 排序对称。
      */
     public void complete() {
         if (minColNumber < 1) {

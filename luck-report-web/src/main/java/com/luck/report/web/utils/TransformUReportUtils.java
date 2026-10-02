@@ -109,7 +109,7 @@ public class TransformUReportUtils {
     }
 
     /**
-     * 方法说明：将 UReport2 报表 XML 字符串转化为 V2 结构（查询表单 + SQL 占位符）
+     * 将 UReport2 报表 XML 转换为 V2
      *
      * @param xmlContent 原始 XML，非空
      * @return 转化后的 XML 字符串
@@ -139,7 +139,7 @@ public class TransformUReportUtils {
     }
 
     /**
-     * 方法说明：将 dom4j Document 序列化为 UTF-8 XML 字符串
+     * 将 Document 序列化为 XML 字符串
      *
      * @param doc 文档，非空
      * @return XML 文本
@@ -156,7 +156,6 @@ public class TransformUReportUtils {
 
     /**
      * 转换search-form元素为form元素
-     * 设置form标签的必要属性（v2，基于 ant-design-vue），并转换所有子grid元素为row元素
      *
      * @param oldForm 原版search-form元素
      * @param newForm 新版form元素
@@ -183,7 +182,6 @@ public class TransformUReportUtils {
 
     /**
      * 转换grid元素为row元素
-     * 设置row标签的必要属性（v2，基于 ant-design-vue），并转换所有子col元素
      *
      * @param oldGrid 原版grid元素
      * @param newRow 新版row元素
@@ -221,7 +219,6 @@ public class TransformUReportUtils {
 
     /**
      * 转换col元素
-     * 遍历col的所有子元素，如果是grid则递归转换为row，否则转换为对应的新版组件
      *
      * @param oldCol 原版col元素
      * @param parentRow 父级row元素，新组件将添加到此元素中
@@ -249,7 +246,6 @@ public class TransformUReportUtils {
 
     /**
      * 转换组件元素
-     * 根据组件类型调用对应的转换方法，忽略按钮组件
      *
      * @param oldComponent 原版组件元素
      * @param newComponent 新版组件元素
@@ -302,7 +298,6 @@ public class TransformUReportUtils {
 
     /**
      * 转换input-text组件为input组件
-     * 设置文本输入框的必要属性和样式（v2，基于 ant-design-vue）
      *
      * @param oldComponent 原版input-text元素
      * @param newComponent 新版input元素
@@ -331,7 +326,6 @@ public class TransformUReportUtils {
 
     /**
      * 转换input-datetime组件为date-picker组件
-     * 设置日期选择器的必要属性，转换日期格式（v2，基于 ant-design-vue）
      *
      * @param oldComponent 原版input-datetime元素
      * @param newComponent 新版date-picker元素
@@ -362,7 +356,6 @@ public class TransformUReportUtils {
 
     /**
      * 转换input-radio组件为radio-group组件
-     * 设置单选框组的必要属性，转换所有option子元素（v2，基于 ant-design-vue）
      *
      * @param oldComponent 原版input-radio元素
      * @param newComponent 新版radio-group元素
@@ -392,7 +385,6 @@ public class TransformUReportUtils {
 
     /**
      * 转换input-checkbox组件为checkbox-group组件
-     * 设置复选框组的必要属性，转换所有option子元素（v2，基于 ant-design-vue）
      *
      * @param oldComponent 原版input-checkbox元素
      * @param newComponent 新版checkbox-group元素
@@ -422,7 +414,6 @@ public class TransformUReportUtils {
 
     /**
      * 转换input-select组件为select组件
-     * 设置下拉选择框的必要属性，转换所有option子元素（v2，基于 ant-design-vue）
      *
      * @param oldComponent 原版input-select元素
      * @param newComponent 新版select元素
@@ -453,7 +444,6 @@ public class TransformUReportUtils {
 
     /**
      * 通用组件转换方法
-     * 为不支持的组件类型添加通用属性
      *
      * @param oldComponent 原版组件元素
      * @param newComponent 新版组件元素
@@ -491,7 +481,6 @@ public class TransformUReportUtils {
 
     /**
      * 转换日期格式
-     * 将原版日期格式（yyyy-mm-dd）转换为新版日期格式（YYYY-MM-DD）
      *
      * @param oldFormat 原版日期格式字符串
      * @return 新版日期格式字符串
@@ -514,7 +503,6 @@ public class TransformUReportUtils {
 
     /**
      * 生成随机的formId
-     * 用于唯一标识表单组件
      *
      * @return 3位随机数字字符串
      */
@@ -524,7 +512,6 @@ public class TransformUReportUtils {
 
     /**
      * 生成唯一的renderKey
-     * 用于组件渲染时的唯一标识
      *
      * @return 基于时间戳和随机数的唯一字符串
      */
@@ -533,10 +520,8 @@ public class TransformUReportUtils {
     }
 
     /**
-     * 递归转换XML中所有 <sql> 元素的参数占位符：:paramName → #{paramName}
-     * 排除数字后的冒号（时间格式如 12:30:00）和标识符后的冒号，支持中文参数名。
-     * 使用 CDATA 重新写入内容，避免 setText 丢失 CDATA 包装导致 pretty print
-     * 时 trimText 把 SQL 中的换行折叠成空格。
+     * 递归转换XML中所有 <sql> 元素的参数占位符
+     *
      * @param element 当前XML元素
      */
     private static void transformSqlElements(Element element) {
@@ -546,18 +531,14 @@ public class TransformUReportUtils {
             if ("sql".equals(child.getName())) {
                 String text = child.getText();
                 if (text != null && text.contains(":")) {
-                    // 排除数字后的冒号（如时间 12:30:00）和标识符后的冒号，支持中文参数名
                     String converted = text.replaceAll(
                             "(?<![a-zA-Z0-9_\\p{L}]):([a-zA-Z_\\p{L}][a-zA-Z0-9_\\p{L}]*)",
                             "#{$1}"
                     );
-                    // 用 CDATA 重新写入，保留原始换行格式；setText 会把 CDATA 变成普通文本，
-                    // 进而被 OutputFormat.createPrettyPrint() 的 trimText 折叠掉换行
                     child.clearContent();
                     child.addCDATA(converted);
                 }
             } else {
-                // 非sql元素继续递归查找
                 transformSqlElements(child);
             }
         }

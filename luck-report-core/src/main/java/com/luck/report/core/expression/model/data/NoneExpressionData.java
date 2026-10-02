@@ -36,6 +36,5 @@ public class NoneExpressionData implements ExpressionData<Object>, Serializable 
      * @param data 数据对象（忽略）
      */
     public void setData(Object data) {
-        // 空实现，忽略data字段
     }
 }

@@ -6,20 +6,25 @@ import com.luck.report.core.exception.ReportBizException;
 
 /**
  * 模型类型枚举
- * 区分对话 / 嵌入 / 重排序模型，用于 Index 的 modelType 字段
  *
  * @author luck
  */
 @Getter
 public enum ModelType {
 
-    /** 对话模型（如 qwen3.6-plus） */
+    /**
+     * 对话模型（如 qwen3.6-plus）
+     */
     CHAT("CHAT"),
 
-    /** 嵌入模型（如 text-embedding-v3） */
+    /**
+     * 嵌入模型（如 text-embedding-v3）
+     */
     EMBEDDING("EMBEDDING"),
 
-    /** 重排序模型（如 qwen3-rerank、bge-reranker） */
+    /**
+     * 重排序模型（如 qwen3-rerank、bge-reranker）
+     */
     RERANK("RERANK");
 
     private final String code;

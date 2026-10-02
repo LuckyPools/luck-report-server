@@ -9,7 +9,9 @@ package com.luck.report.core.definition.searchform.component;
 public class TreeSelectComponent extends BaseOptionComponent {
     private static final long serialVersionUID = 1L;
 
-    /** 默认展开全部树节点 */
+    /**
+     * 默认展开全部树节点
+     */
     private boolean treeDefaultExpandAll;
 
     /**

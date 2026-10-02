@@ -23,11 +23,16 @@ public final class KnowledgeContentCleaner {
     private KnowledgeContentCleaner() {
     }
 
-    /** 默认对齐 Dify automatic：remove_extra_spaces=true，remove_urls_emails=false。 */
+    /**
+     * 默认对齐 Dify automatic：remove_extra_spaces=true，remove_urls_emails=false。
+     */
     public static String clean(String text) {
         return clean(text, true, false);
     }
 
+    /**
+     * 清洗文本：控制字符、多余空白，可选去除 URL/邮箱。
+     */
     public static String clean(String text, boolean removeExtraSpaces, boolean removeUrlsEmails) {
         if (text == null || text.isEmpty()) {
             return text == null ? "" : text;
@@ -45,7 +50,6 @@ public final class KnowledgeContentCleaner {
 
         if (removeUrlsEmails) {
             text = EMAIL.matcher(text).replaceAll("");
-            // (type, textOrAlt, url) — 对齐 Dify placeholders 元组列表
             List<String> types = new ArrayList<>();
             List<String> texts = new ArrayList<>();
             List<String> urls = new ArrayList<>();
@@ -88,7 +92,9 @@ public final class KnowledgeContentCleaner {
         return text;
     }
 
-    /** figure 薄适配 + Dify clean（automatic 默认）。 */
+    /**
+     * figure 薄适配 + Dify clean（automatic 默认）。
+     */
     public static String prepareDocumentText(String raw) {
         return clean(KnowledgeHtmlFigureAdapter.adapt(raw == null ? "" : raw));
     }

@@ -49,7 +49,6 @@ public class StdevpFunction extends MathFunction {
         return Math.sqrt(result.doubleValue());
     }
 
-
     @Override
     public String name() {
         return "stdevp";

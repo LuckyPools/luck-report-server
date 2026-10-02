@@ -20,12 +20,6 @@ import java.util.List;
 
 /**
  * 聊天会话控制器
- * 提供会话的创建、查询、重命名、置顶、删除等 REST 接口
- * 前端进入对话页面时通过此接口加载会话列表，进入旧对话时通过此接口获取会话信息
- *
- * <p>用户身份解析：所有"当前用户"相关的接口（/sessions/me/list、/sessions/me/page、
- * POST /sessions/create、DELETE /sessions/me/delete）均通过 {@link TokenService#getCurrentUserId(ApiRequest)}
- * 从第三方系统获取真实用户 ID，前端不再传 userId。
  *
  * @author luck
  */
@@ -40,7 +34,6 @@ public class ChatSessionController {
 
     /**
      * 查询所有未删除的会话列表
-     * 按置顶优先、更新时间倒序返回
      *
      * @return 会话列表
      */
@@ -52,7 +45,6 @@ public class ChatSessionController {
 
     /**
      * 查询当前用户的会话列表
-     * 用户 ID 由 TokenService 从第三方系统解析，前端无需传递
      *
      * @return 当前用户的会话列表
      */
@@ -65,7 +57,6 @@ public class ChatSessionController {
 
     /**
      * 分页查询当前用户的会话列表
-     * 按置顶优先、更新时间倒序返回，支持滚动加载
      *
      * @param pageNum  页码，从1开始，默认1
      * @param pageSize 每页数量，默认10
@@ -75,7 +66,6 @@ public class ChatSessionController {
     public ResultVO<PageResultVO<ChatSession>> getSessionsOfMeWithPage(
             @RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "10") int pageSize) {
-        // 限制每页最大数量，防止一次加载过多
         pageSize = Math.min(pageSize, 50);
         String userId = resolveCurrentUserId();
         PageResultVO<ChatSession> result = chatSessionService.findByUserIdWithPage(userId, pageNum, pageSize);
@@ -99,8 +89,6 @@ public class ChatSessionController {
 
     /**
      * 创建新会话
-     * 前端首次发送消息时调用，返回包含 UUID 的会话对象
-     * 用户 ID 由 TokenService 从第三方系统解析，前端无需传递 userId
      *
      * @param title 可选，会话标题
      * @return 新建的会话实体
@@ -163,7 +151,6 @@ public class ChatSessionController {
 
     /**
      * 删除当前用户下的所有会话（软删除）
-     * 用户 ID 由 TokenService 从第三方系统解析
      *
      * @return 操作结果
      */
@@ -176,8 +163,6 @@ public class ChatSessionController {
 
     /**
      * 解析当前请求的用户 ID。
-     * <p>通过 TokenService.getCurrentUserId 获取第三方系统返回的用户 ID 字符串，
-     * 为空（未登录或解析失败）抛出 TokenException。
      *
      * @return 当前用户 ID（字符串形式）
      */

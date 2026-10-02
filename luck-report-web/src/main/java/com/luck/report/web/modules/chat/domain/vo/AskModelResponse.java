@@ -2,18 +2,21 @@ package com.luck.report.web.modules.chat.domain.vo;
 
 /**
  * 大模型调用响应结果
- * 封装非流式调用的响应数据，供调用方直接使用
- *
- * 调用者：ChatCompactController.compact() → ChatUtils.askModel()
  *
  * @author luck
  */
 public class AskModelResponse {
-    /** HTTP 状态码 */
+    /**
+     * HTTP 状态码
+     */
     private final int statusCode;
-    /** 响应体内容 */
+    /**
+     * 响应体内容
+     */
     private final String body;
-    /** 是否成功 */
+    /**
+     * 是否成功
+     */
     private final boolean success;
 
     /**

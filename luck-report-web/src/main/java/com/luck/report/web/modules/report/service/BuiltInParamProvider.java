@@ -6,9 +6,6 @@ import java.util.Map;
 
 /**
  * 内置参数提供者 SPI。
- * <p>第三方实现此接口并注册为 Spring Bean，即可向报表 SQL 注入自定义内置参数。
- * <p>多个 Provider 按 @Order / @Priority 排序，同参数名后者覆盖前者。
- * 框架默认实现 UserBuiltInParamProvider 使用 @Order(Ordered.HIGHEST_PRECEDENCE)。
  *
  * @author luck-report
  * @since 2.2.0

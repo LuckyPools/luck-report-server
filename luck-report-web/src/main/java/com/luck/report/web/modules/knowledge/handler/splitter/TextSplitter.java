@@ -4,7 +4,6 @@ import java.util.List;
 
 /**
  * 文本分块器接口
- * 参照 Spring AI 的 TextSplitter，适配本项目无 Spring AI 依赖的简化实现
  *
  * @author luck
  */

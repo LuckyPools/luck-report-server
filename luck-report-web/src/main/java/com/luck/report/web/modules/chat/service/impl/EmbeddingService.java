@@ -24,11 +24,6 @@ import com.luck.report.web.i18n.ReportI18n;
 
 /**
  * Embedding 服务
- * 通过 OkHttp 调用兼容 OpenAI /embeddings 格式的嵌入接口，将文本转为向量
- *
- * 调用方式：POST {baseUrl}{apiPath}
- * 请求体：{"model": "...", "input": ["文本1", "文本2"]}
- * 响应体：{"data": [{"embedding": [0.1, 0.2, ...]}, ...]}
  *
  * @author luck
  */
@@ -37,10 +32,14 @@ public class EmbeddingService {
 
     private static final Logger log = LoggerFactory.getLogger(EmbeddingService.class);
 
-    /** 单次 Embedding 请求的最大文本条数（超出则自动分批） */
+    /**
+     * 单次 Embedding 请求的最大文本条数（超出则自动分批）
+     */
     private static final int MAX_EMBED_BATCH = 20;
 
-    /** 单批失败最大重试次数（不含首次） */
+    /**
+     * 单批失败最大重试次数（不含首次）
+     */
     private static final int MAX_RETRY = 2;
 
     private final ModelConfigDataService modelConfigDataService;
@@ -49,7 +48,6 @@ public class EmbeddingService {
 
     /**
      * 初始化 Embedding 服务
-     * 注入 ModelConfigDataService 获取嵌入模型配置，构建基础 OkHttp 客户端（无代理）
      *
      * @param modelConfigDataService 模型配置数据服务
      */
@@ -64,7 +62,6 @@ public class EmbeddingService {
 
     /**
      * 根据嵌入模型配置获取 OkHttpClient
-     * 如果模型配置启用了代理，则基于基础客户端派生带代理的客户端；否则直接使用基础客户端
      *
      * @param embeddingConfig 嵌入模型配置
      * @return OkHttpClient 实例
@@ -86,7 +83,6 @@ public class EmbeddingService {
         OkHttpClient.Builder builder = baseHttpClient.newBuilder()
                 .proxy(proxy);
 
-        // 配置代理认证
         String proxyUsername = embeddingConfig.getProxyUsername();
         String proxyPassword = embeddingConfig.getProxyPassword();
         if (proxyUsername != null && !proxyUsername.isEmpty()) {
@@ -125,7 +121,6 @@ public class EmbeddingService {
 
     /**
      * 批量将文本转为向量（使用默认嵌入模型）
-     * 超过单次上限时自动分批
      *
      * @param texts 输入文本列表，不能为空
      * @return List&lt;float[]&gt; 向量列表，顺序与输入一致
@@ -136,8 +131,6 @@ public class EmbeddingService {
 
     /**
      * 批量将文本转为向量（指定嵌入模型）
-     * 按 {@link #MAX_EMBED_BATCH} 分批请求，结果按序拼接。
-     * 任一批失败（重试耗尽）则整次失败，避免半截向量入库。
      *
      * @param texts   输入文本列表，不能为空
      * @param modelId 嵌入模型配置ID，为null时使用默认激活的第一个嵌入模型
@@ -241,14 +234,12 @@ public class EmbeddingService {
 
     /**
      * 获取嵌入模型配置
-     * 指定 modelId 时按ID查找，未指定时使用默认激活的第一个嵌入模型
      *
      * @param modelId 嵌入模型配置ID，为null时使用默认激活的第一个
      * @return Index 嵌入模型配置
      * @throws RuntimeException 当找不到指定的嵌入模型或无可用嵌入模型时抛出
      */
     private ModelConfig getEmbeddingConfig(String modelId) {
-        // 指定了modelId，按ID查找
         if (modelId != null) {
             ModelConfig config = modelConfigDataService.findById(modelId);
             if (config == null) {
@@ -261,7 +252,6 @@ public class EmbeddingService {
             return config;
         }
 
-        // 未指定modelId，使用默认激活的第一个嵌入模型
         List<ModelConfigDTO> enabledConfigs = modelConfigDataService.listEnabledConfigsByType(ModelType.EMBEDDING);
         if (enabledConfigs == null || enabledConfigs.isEmpty()) {
             throw new ReportBizException("error.embedding.noAvailableModel");
@@ -274,7 +264,6 @@ public class EmbeddingService {
 
     /**
      * 解析 Embedding API 响应
-     * 响应格式：{"data": [{"embedding": [0.1, 0.2, ...], "index": 0}, ...]}
      *
      * @param responseBody API 响应 JSON 字符串
      * @return List&lt;float[]&gt; 按 index 排序的向量列表
@@ -290,7 +279,6 @@ public class EmbeddingService {
                 return Collections.emptyList();
             }
 
-            // 按 index 排序，确保顺序与输入一致
             dataList.sort(Comparator.comparingInt(d -> ((Number) d.get("index")).intValue()));
 
             List<float[]> result = new ArrayList<>();

@@ -61,7 +61,6 @@ public class TooltipOption implements Option, Serializable {
      * @param type 类型（忽略）
      */
     public void setType(String type) {
-        // 空实现，忽略type字段
     }
 
     public boolean isEnabled() {

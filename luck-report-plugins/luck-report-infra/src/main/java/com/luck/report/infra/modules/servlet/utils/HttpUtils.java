@@ -47,12 +47,16 @@ public class HttpUtils {
         return request != null ? request.getSession(false) : null;
     }
 
-    /** 适配器内部使用；业务侧优先 {@link #getRequest()} */
+    /**
+     * 适配器内部使用；业务侧优先 {@link #getRequest()}
+     */
     public static ApiRequest wrapRequest(Object nativeRequest) {
         return ADAPTER.wrapRequest(nativeRequest);
     }
 
-    /** 适配器内部使用；业务侧优先 {@link #getResponse()} */
+    /**
+     * 适配器内部使用；业务侧优先 {@link #getResponse()}
+     */
     public static ApiResponse wrapResponse(Object nativeResponse) {
         return ADAPTER.wrapResponse(nativeResponse);
     }

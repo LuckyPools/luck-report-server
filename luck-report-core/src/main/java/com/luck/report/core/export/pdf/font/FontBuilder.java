@@ -144,10 +144,8 @@ public class FontBuilder implements ApplicationContextAware {
         InputStream inputStream = null;
         try {
             fontPathMap.put(fontFamily, fontPath);
-            // 尝试使用ClassLoader加载资源，这样可以处理Spring Boot Fat JAR中的资源
             inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(fontPath.substring(ApplicationContext.CLASSPATH_URL_PREFIX.length()));
             if (inputStream == null) {
-                // 如果使用ClassLoader无法加载，则回退到原来的方式
                 inputStream = applicationContext.getResource(fontPath).getInputStream();
             }
             byte[] bytes = IOUtils.toByteArray(inputStream);

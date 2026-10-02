@@ -22,8 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.dom4j.Element;
 
 /**
- * 悬浮图片解析器，镜像 {@link com.luck.report.core.parser.impl.value.ImageValueParser}：
- * 按 {@code source} 把 {@code <text>} 子元素内容分流到 {@code path} 或 {@code expr}。
+ * 悬浮图片解析器，镜像 {@link com.luck.report.core.parser.impl.value.ImageValueParser}：按 {@code source} 把 {@code <text>} 子元素内容分流到 {@code path} 或 {@code expr}。
  *
  * @author luck-report
  * @since 1.0.0

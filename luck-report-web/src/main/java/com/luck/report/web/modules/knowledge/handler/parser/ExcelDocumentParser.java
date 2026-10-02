@@ -82,7 +82,6 @@ public class ExcelDocumentParser implements DocumentParser {
                             throw new ReportBizException("error.knowledge.agentExcelTooLarge", maxCells);
                         }
                     }
-                    // 跳过全空行
                     boolean allBlank = true;
                     for (String cell : cells) {
                         if (!cell.isEmpty()) {
@@ -125,7 +124,6 @@ public class ExcelDocumentParser implements DocumentParser {
             return "";
         }
 
-        // 对齐列数
         for (List<String> row : rows) {
             while (row.size() < colCount) {
                 row.add("");

@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 
 /**
  * 模型配置Controller
- * 提供模型配置的管理接口,包括增删改查、启用切换、连通性测试等
  *
  * @author luck
  */
@@ -146,7 +145,6 @@ public class ModelConfigController {
 
     /**
      * 启用/禁用模型配置
-     * 禁用时：若该类型只有一个启用的模型，则不允许禁用（重排序除外）
      *
      * @param id      配置ID
      * @param enabled 是否启用
@@ -171,7 +169,6 @@ public class ModelConfigController {
 
     /**
      * 根据模型类型获取所有启用的模型配置列表
-     * 用于前端对话框模型选择
      *
      * @param modelType 模型类型(CHAT/EMBEDDING/RERANK)
      * @return ResultVO包含启用的模型配置列表
@@ -180,9 +177,6 @@ public class ModelConfigController {
     public ResultVO<List<ModelConfigDTO>> getEnabledList(@PathVariable String modelType) {
         try {
             ModelType type = ModelType.fromCode(modelType);
-            if (type == null) {
-                return ResultVOUtils.error("error.model.invalidType", modelType);
-            }
             List<ModelConfigDTO> enabledConfigs = modelConfigDataService.listEnabledConfigsByType(type);
             return ResultVOUtils.success("success.model.enabledListLoaded", sanitizeList(enabledConfigs));
         } catch (Exception e) {
@@ -192,15 +186,12 @@ public class ModelConfigController {
 
     /**
      * 检查模型配置是否就绪
-     * 检查聊天模型和嵌入模型是否都已配置且启用
      *
      * @return ResultVO包含模型检查结果
      */
     @GetMapping("/check_ready")
     public ResultVO<ModelCheckVo> checkReady() {
-        // 检查聊天模型是否已配置且启用
         ModelConfigDTO chatModel = modelConfigDataService.getEnabledConfigByType(ModelType.CHAT);
-        // 检查嵌入模型是否已配置且启用
         ModelConfigDTO embeddingModel = modelConfigDataService.getEnabledConfigByType(ModelType.EMBEDDING);
 
         boolean chatModelReady = chatModel != null;
@@ -216,7 +207,7 @@ public class ModelConfigController {
     }
 
     /**
-     * 批量脱敏：复制 DTO 列表并置空 apiKey，避免污染缓存对象和泄露敏感信息
+     * 批量脱敏
      *
      * @param configs 原始 DTO 列表
      * @return 脱敏后的 DTO 列表（新对象，apiKey 为 null）
@@ -229,8 +220,7 @@ public class ModelConfigController {
     }
 
     /**
-     * 单个脱敏：用 BeanUtils 复制 DTO 后置空 apiKey
-     * 使用复制而非原对象操作，确保缓存中的对象不受影响
+     * 单个脱敏
      *
      * @param config 原始 DTO
      * @return 脱敏后的 DTO（新对象，apiKey 为 null）

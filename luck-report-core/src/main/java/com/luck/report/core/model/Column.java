@@ -17,7 +17,6 @@ package com.luck.report.core.model;
 
 import java.util.List;
 
-
 /**
  * @author Jacky.gao
  * @since 2016年11月1日
@@ -25,9 +24,13 @@ import java.util.List;
 public class Column extends Line {
     private int width;
     private boolean hide;
-    /** 展开插列前的排序键，仅 complete() 排序用 */
+    /**
+     * 展开插列前的排序键，仅 complete() 排序用
+     */
     private int tempColumnNumber;
-    /** 正式列号（1-based），insert/chain 后由 Report 写入 */
+    /**
+     * 正式列号（1-based），insert/chain 后由 Report 写入
+     */
     private int columnNumber;
     private Column prev;
     private Column next;

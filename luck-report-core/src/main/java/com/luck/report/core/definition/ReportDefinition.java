@@ -45,11 +45,17 @@ public class ReportDefinition implements Serializable {
 	private List<RowDefinition> rows;
 	private List<ColumnDefinition> columns;
 	private List<DatasourceDefinition> datasources;
-	/** 悬浮图片元素列表（不绑定单元格，绝对定位） */
+	/**
+	 * 悬浮图片元素列表（不绑定单元格，绝对定位）
+	 */
 	private List<FloatImage> floatImages;
-	/** 悬浮文本元素列表（不绑定单元格，绝对定位） */
+	/**
+	 * 悬浮文本元素列表（不绑定单元格，绝对定位）
+	 */
 	private List<FloatText> floatTexts;
-	/** 预览工具栏配置 */
+	/**
+	 * 预览工具栏配置
+	 */
 	private Tool tool;
 	@JsonIgnore // 内部重构
 	private String style;
@@ -66,7 +72,6 @@ public class ReportDefinition implements Serializable {
 		report.setPaper(paper);
 		report.setHeader(header);
 		report.setFooter(footer);
-		// 悬浮元素透传（与 paper/header 等同处装配）
 		report.setFloatImages(floatImages);
 		report.setFloatTexts(floatTexts);
 		List<Row> reportRows = new ArrayList<Row>();
@@ -139,12 +144,10 @@ public class ReportDefinition implements Serializable {
 				targetCell.setTopParentCell(null);
 			}
 		}
-		// 预计算每个 Cell 的 行列子单元格
 		for (CellDefinition cellDef : cells) {
 			Set<String> dependencyCellNames = ExpressionUtils.getDependencyCellNames(cellDef, cellDefinitionMap);
 			if (!dependencyCellNames.isEmpty()) {
 				for (String cellName : dependencyCellNames) {
-					// 处理冒号分隔的多级依赖单元格坐标 [A1:B1:C1]
 					if (cellName.contains(":")) {
 						setChildCellNames(cellName.split(":"), cellDefinitionMap, cellMap);
 						continue;
@@ -203,7 +206,6 @@ public class ReportDefinition implements Serializable {
 				topParentCell.addColumnChild(targetCell);
 			}
 		}
-		// 建表结束：按 ArrayList 顺序串链并写入缓存行号/列号
 		report.chainRowsByListOrder();
 		report.chainColumnsByListOrder();
 		return report;
@@ -371,7 +373,9 @@ public class ReportDefinition implements Serializable {
 		return width;
 	}
 
-	/** 逐列 pointToPixel 累加，与设计器 sum(getColWidth) 一致 */
+	/**
+	 * 逐列 pointToPixel 累加，与设计器 sum(getColWidth) 一致
+	 */
 	private int getColumnWidthPx(int columnNumber, int colSpan) {
 		int width = 0;
 		if (colSpan > 0) {

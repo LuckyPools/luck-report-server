@@ -17,13 +17,6 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * Milvus 向量存储配置
- * 仅当 luck-report.vector.type=milvus 时生效
- * 通过 @AutoConfigureBefore 确保在 EmptyVectorStoreConfiguration 之前加载，
- * 使具体实现优先于兜底实现注册 Bean
- *
- * 采用 V2 API（MilvusClientV2 + ConnectConfig），统一使用 URI 模式连接：
- * - 云端 endpoint（host 带 https://）：SDK 自动启用 TLS
- * - 自建 Milvus（host 为纯主机名）：拼接 http://host:port
  *
  * @author luck
  */
@@ -37,7 +30,6 @@ public class MilvusVectorStoreConfiguration {
 
     /**
      * 创建 Milvus V2 客户端
-     * 统一用 URI 模式连接，host 带协议前缀时直接拼接，否则补 http://
      *
      * @param props Milvus 配置属性
      * @return MilvusClientV2 实例
@@ -48,7 +40,6 @@ public class MilvusVectorStoreConfiguration {
         String uri = buildUri(props.getHost(), props.getPort());
 
         ConnectConfig.ConnectConfigBuilder builder = ConnectConfig.builder().uri(uri);
-        // 启用认证时设置 username/password
         if (props.getUsername() != null && !props.getUsername().isEmpty()) {
             builder.username(props.getUsername()).password(props.getPassword());
         }
@@ -58,8 +49,7 @@ public class MilvusVectorStoreConfiguration {
     }
 
     /**
-     * 注册 Milvus 向量存储实现 Bean
-     * 校验 dimension 必须大于 0，否则启动失败并给出明确提示
+     * 注册 Milvus 向量存储 Bean
      *
      * @param client Milvus V2 客户端
      * @param props  Milvus 配置属性
@@ -83,7 +73,6 @@ public class MilvusVectorStoreConfiguration {
 
     /**
      * 拼接 Milvus 连接 URI
-     * host 带 http:// 或 https:// 前缀时直接拼接端口；否则补 http:// 前缀
      *
      * @param host 主机地址，可为纯主机名或带协议前缀的 URL，不可为空
      * @param port 端口号

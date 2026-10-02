@@ -61,7 +61,6 @@ public class ProcedureUtils {
         }
     }
 
-
     public static List<Map<String, Object>> procedureQuery(String sql, Map<String, Object> pmap, Connection conn) {
         StatementWrapper wrapper = buildProcedureCallableStatement(sql, pmap, conn);
         CallableStatement cs = wrapper.getCallableStatement();

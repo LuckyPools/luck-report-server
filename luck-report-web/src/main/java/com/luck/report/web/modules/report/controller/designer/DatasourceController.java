@@ -23,7 +23,6 @@ import java.util.Map;
 
 /**
  * 数据源控制器
- * <p>仅负责 HTTP 请求 / 响应转换与参数校验，所有业务逻辑委托给 {@link DatasourceService}。
  *
  * @author luck-report
  * @since 1.0.0
@@ -88,7 +87,6 @@ public class DatasourceController {
 
     /**
      * 测试数据库连接
-     * 使用 @RequestParam 接收 multipart/form-data 参数
      */
     @RequestMapping("/test_connection")
     public ResultVO<Map<String, Object>> testConnection(

@@ -62,11 +62,8 @@ public class DefaultImageProvider implements ImageProvider, ApplicationContextAw
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        // 优先通过反射从 WebApplicationContext 获取 ServletContext.getRealPath("/")
-        // 使用反射避免编译时依赖 javax.servlet.ServletContext / jakarta.servlet.ServletContext
         baseWebPath = resolveWebPathFromContext(applicationContext);
         if (baseWebPath == null) {
-            // 降级：从 HttpUtils 获取 ApiRequest.ServletContext
             try {
                 ApiRequest request = HttpUtils.getRequest();
                 if (request != null) {
@@ -76,40 +73,33 @@ public class DefaultImageProvider implements ImageProvider, ApplicationContextAw
                     }
                 }
             } catch (Exception ignored) {
-                // HttpUtils 可能尚未初始化（SPI 未加载），忽略
             }
         }
         this.applicationContext = applicationContext;
     }
 
     /**
-     * 通过反射从 WebApplicationContext 获取 baseWebPath。
-     * <p>兼容 javax.servlet（Spring Boot 2）和 jakarta.servlet（Spring Boot 3），
-     * 避免编译时依赖具体的 Servlet API。
+     * 通过反射从 WebApplicationContext 获取 baseWebPath。兼容 javax.servlet（Spring Boot 2）和 jakarta.servlet（Spring Boot 3），避免编译时依赖具体的 Servlet API。
      *
      * @param ctx ApplicationContext
      * @return web 应用根路径，获取失败返回 null
      */
     private String resolveWebPathFromContext(ApplicationContext ctx) {
         try {
-            // 检查是否为 WebApplicationContext（通过类名判断，避免 import）
             Class<?> wacClass = Class.forName(
                     "org.springframework.web.context.WebApplicationContext");
             if (!wacClass.isInstance(ctx)) {
                 return null;
             }
-            // 调用 getServletContext()
             Method getServletContext = wacClass.getMethod("getServletContext");
             Object servletContext = getServletContext.invoke(ctx);
             if (servletContext == null) {
                 return null;
             }
-            // 调用 ServletContext.getRealPath("/")
             Method getRealPath = servletContext.getClass().getMethod("getRealPath", String.class);
             Object result = getRealPath.invoke(servletContext, "/");
             return result != null ? result.toString() : null;
         } catch (Exception ignored) {
-            // 反射失败（非 Web 环境或类不存在），返回 null
             return null;
         }
     }

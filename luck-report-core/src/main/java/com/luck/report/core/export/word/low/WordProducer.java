@@ -15,7 +15,6 @@
  ******************************************************************************/
 package com.luck.report.core.export.word.low;
 
-
 /**
  * @author Jacky.gao
  * @since 2015年5月20日
@@ -518,7 +517,6 @@ public class WordProducer {/* implements Producer{
 		}
 		return width;
 	}
-
 
 	private String toHex(String rgb[]) {
         StringBuffer sb = new StringBuffer();

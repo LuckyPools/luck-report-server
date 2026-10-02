@@ -2,8 +2,6 @@ package com.luck.report.web.config.properties;
 
 /**
  * 敏感配置落库加密（数据源密码、模型 API Key 等）。
- * <p>前缀：{@code luck.report.security.sensitive-config}（由 {@link com.luck.report.web.config.SensitiveConfiguration} 绑定）。
- * <p>整段可省略：默认开启加密，密钥走内置 luck 派生。
  */
 public class SensitiveConfigProperties {
 

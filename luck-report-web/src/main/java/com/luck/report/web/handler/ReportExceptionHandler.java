@@ -18,16 +18,20 @@ import java.util.Random;
 
 /**
  * 全局异常处理器
- * 仅处理报表相关的异常，不影响业务系统的异常处理规则
+ *
  * @author luck
  */
 @ControllerAdvice(basePackages = "com.luck.report")
 public class ReportExceptionHandler {
 
-    /** 未取到异常信息时使用的文案编码 */
+    /**
+     * 未取到异常信息时使用的文案编码
+     */
     private static final String UNKNOWN_ERROR_CODE = "error.unknown";
 
-    /** 防止异常自引用造成死循环 */
+    /**
+     * 防止异常自引用造成死循环
+     */
     private static final int MAX_CAUSE_DEPTH = 10;
 
     private static final Logger logger = LoggerFactory.getLogger(ReportExceptionHandler.class);
@@ -35,7 +39,6 @@ public class ReportExceptionHandler {
 
     /**
      * 处理 RuntimeException 及其子类异常
-     * 仅处理报表模块抛出的异常，不会影响业务系统的异常处理
      */
     @ExceptionHandler(RuntimeException.class)
     @ResponseBody
@@ -43,7 +46,6 @@ public class ReportExceptionHandler {
         ReportLocale locale = ReportLocaleContext.get();
         String auxCode = generateAuxCode();
 
-        // 取不到编码则退回 message 本身，存量未改造的异常因此保持原样
         ErrorCodeAware aware = findErrorCodeAware(ex);
         String code = aware == null ? null : aware.getErrorCode();
         Object[] args = aware == null ? null : aware.getErrorArgs();
@@ -54,7 +56,6 @@ public class ReportExceptionHandler {
             code = UNKNOWN_ERROR_CODE;
         }
 
-        // 日志统一用默认语言，避免用户语言影响排查
         String errorMessage = ReportI18n.getMessage(locale, code, args);
         logger.error("Report Exception [auxCode={}][lang={}]: {}", auxCode, locale.getCode(),
                 ReportI18n.getMessage(ReportLocale.DEFAULT, code, args), ex);
@@ -80,7 +81,6 @@ public class ReportExceptionHandler {
 
     /**
      * 生成10位辅助编码
-     * 格式：时间戳后6位 + 4位随机数
      *
      * @return 10位辅助编码
      */

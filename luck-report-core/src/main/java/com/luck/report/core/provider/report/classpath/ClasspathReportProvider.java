@@ -39,7 +39,6 @@ public class ClasspathReportProvider implements ReportProvider, ApplicationConte
 
     @Override
     public InputStream loadReport(String reportPath) {
-        // 入参可能已去除 .ureport.xml 后缀，未以该后缀结尾则补齐
         assert reportPath != null;
         if (!reportPath.isEmpty() && !reportPath.endsWith(SUFFIX)) {
             reportPath = reportPath + SUFFIX;

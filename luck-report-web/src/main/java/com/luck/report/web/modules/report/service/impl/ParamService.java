@@ -15,8 +15,6 @@ import java.util.Map;
 
 /**
  * 报表参数服务。
- * <p>从请求构建参数 Map，并收集所有 BuiltInParamProvider 提供的内置参数注入其中。
- * <p>安全策略：内置参数强制覆盖目标 Map 中的同名值，防止前端伪造用户身份。
  *
  * @author luck-report
  * @since 2.2.0
@@ -31,7 +29,6 @@ public class ParamService {
 
     /**
      * 从 HTTP 请求构建完整参数 Map（URL 参数 + 内置参数）。
-     * <p>供预览、导出等需要「请求参数 + 内置参数」的场景统一调用。
      *
      * @param request HTTP 请求上下文，不可为空
      * @return 包含 URL 参数与内置参数的 Map，不可为空
@@ -44,7 +41,6 @@ public class ParamService {
 
     /**
      * 收集所有提供者的内置参数并注入到目标 Map
-     * <p>内置参数强制覆盖目标 Map 中的同名值（安全防伪）。
      *
      * @param targetParams 目标参数 Map，不可为空
      * @param request HTTP 请求上下文，可为空（非 HTTP 场景下跳过注入）
@@ -53,7 +49,6 @@ public class ParamService {
         if (targetParams == null || request == null) {
             return;
         }
-        // 按 @Order 排序，保证框架默认 Provider 先执行
         List<BuiltInParamProvider> sorted = new ArrayList<>(providers);
         OrderComparator.sort(sorted);
         for (BuiltInParamProvider provider : sorted) {
@@ -62,7 +57,6 @@ public class ParamService {
                 if (provided == null || provided.isEmpty()) {
                     continue;
                 }
-                // 强制覆盖：内置参数不可被前端同名参数覆盖
                 targetParams.putAll(provided);
             } catch (Exception e) {
                 log.error("内置参数注入异常, provider={}: {}", provider.getClass().getName(), e.getMessage(), e);

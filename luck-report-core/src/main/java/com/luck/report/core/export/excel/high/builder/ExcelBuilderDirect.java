@@ -67,7 +67,6 @@ public class ExcelBuilderDirect extends ExcelBuilder {
             Sheet sheet = createSheet(wb, paper, null);
             Drawing<?> drawing = sheet.createDrawingPatriarch();
             List<Row> rows = report.getRows();
-            // 解析冻结锚点为展开后物理行列号，再换算为 Excel 有效行列数（跳过隐藏行/列）
             int freezeRowCount = FreezeUtils.computeFreezeRowCount(report, paper.getFreezeRowCellName());
             int freezeColCount = FreezeUtils.computeFreezeColCount(report, paper.getFreezeColCellName());
             int freezeRowSplit = FreezeUtils.computeVisibleRowCount(rows, freezeRowCount);
@@ -205,7 +204,6 @@ public class ExcelBuilderDirect extends ExcelBuilder {
                         } else if (obj instanceof ChartData) {
                             ChartData chartData = (ChartData) obj;
                             String base64Data = chartData.retriveBase64Data();
-                            // 关键决策点：base64 为空则跳过画图，对应图表将缺失
                             if (base64Data != null) {
                                 Image img = new Image(base64Data, chartData.getWidth(), chartData.getHeight());
                                 InputStream inputStream = ImageUtils.base64DataToInputStream(img.getBase64Data());
@@ -240,7 +238,6 @@ public class ExcelBuilderDirect extends ExcelBuilder {
                 row.setHeight((short) UnitUtils.pointToTwip(r.getRealHeight()));
                 rowNumber++;
             }
-            // 渲染悬浮元素（不分页，全部在第 0 页）
             if (hasFloat) {
                 List<Row> visibleRows = new ArrayList<>();
                 for (Row r : rows) {
@@ -258,7 +255,6 @@ public class ExcelBuilderDirect extends ExcelBuilder {
                 }
                 renderFloatElementsForPage(sheet, drawing, report, 0, totalHeight, visibleRows, 0, columns, creationHelper, wb);
             }
-            // 冻结窗格：左 freezeColSplit 列、上 freezeRowSplit 行；均为0时不调用避免多余冻结
             if (freezeRowSplit > 0 || freezeColSplit > 0) {
                 sheet.createFreezePane(freezeColSplit, freezeRowSplit);
             }

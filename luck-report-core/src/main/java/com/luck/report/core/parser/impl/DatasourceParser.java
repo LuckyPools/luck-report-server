@@ -55,7 +55,6 @@ public class DatasourceParser implements Parser<DatasourceDefinition> {
             ds.setDatasets(parseDatasets(element));
             return ds;
         } else if (type.equals("staticDs")) {
-            // 静态数据源：仅 name + datasets，无连接属性
             StaticDatasourceDefinition ds = new StaticDatasourceDefinition();
             ds.setName(element.attributeValue("name"));
             ds.setDatasets(parseDatasets(element));
@@ -87,7 +86,6 @@ public class DatasourceParser implements Parser<DatasourceDefinition> {
                 dataset.setClazz(ele.attributeValue("clazz"));
                 list.add(dataset);
             } else if (type.equals("staticDs")) {
-                // 静态数据集：name + content（JSON 数组字符串）+ fields
                 JsonDatasetDefinition dataset = new JsonDatasetDefinition();
                 dataset.setName(ele.attributeValue("name"));
                 dataset.setContent(parseContent(ele));
@@ -99,10 +97,7 @@ public class DatasourceParser implements Parser<DatasourceDefinition> {
     }
 
     /**
-     * 从 dataset 元素中解析 content 子节点文本
-     * <p>
-     * 静态数据集的 JSON 数据存储在 &lt;content&gt;&lt;![CDATA[...]]&gt;&lt;/content&gt; 中
-     * </p>
+     * 从 dataset 元素中解析 content 子节点文本；静态数据集的 JSON 数据存储在 &lt;content&gt;&lt;![CDATA[...]]&gt;&lt;/content&gt; 中
      *
      * @param element dataset 元素
      * @return content 文本（trim 后）；不存在时返回 null

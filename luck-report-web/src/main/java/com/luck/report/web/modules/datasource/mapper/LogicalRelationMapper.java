@@ -7,7 +7,6 @@ import java.util.List;
 
 /**
  * 逻辑外键Mapper
- * 操作MySQL的luck_logical_relation表
  *
  * @author luck
  */

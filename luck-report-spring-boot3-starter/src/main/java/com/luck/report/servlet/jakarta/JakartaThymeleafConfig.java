@@ -10,8 +10,7 @@ import org.thymeleaf.spring6.templateresolver.SpringResourceTemplateResolver;
 import org.thymeleaf.templatemode.TemplateMode;
 
 /**
- * jakarta.servlet（Spring Boot 3.x）Thymeleaf 配置。
- * <p>使用 thymeleaf-spring6 创建独立的模板引擎，不与第三方项目的模板引擎冲突。
+ * jakarta.servlet（Spring Boot 3.x）Thymeleaf 配置，使用独立模板引擎避免与宿主冲突。
  */
 @Configuration
 public class JakartaThymeleafConfig {

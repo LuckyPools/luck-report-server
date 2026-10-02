@@ -7,8 +7,6 @@ import lombok.NoArgsConstructor;
 
 /**
  * 外键关系
- * 描述两张表之间的字段关联，用于 Schema 检索结果中表达物理外键和逻辑外键
- * 序列化后由 LLM 直接消费，结合 SchemaDTO.table 推断 JOIN 条件
  *
  * @author luck
  */
@@ -18,15 +16,23 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ForeignKeyDTO {
 
-    /** 源表名（如 t_order） */
+    /**
+     * 源表名（如 t_order）
+     */
     private String sourceTable;
 
-    /** 源字段名（如 buyer_uid） */
+    /**
+     * 源字段名（如 buyer_uid）
+     */
     private String sourceColumn;
 
-    /** 目标表名（如 t_user） */
+    /**
+     * 目标表名（如 t_user）
+     */
     private String targetTable;
 
-    /** 目标字段名（如 id） */
+    /**
+     * 目标字段名（如 id）
+     */
     private String targetColumn;
 }

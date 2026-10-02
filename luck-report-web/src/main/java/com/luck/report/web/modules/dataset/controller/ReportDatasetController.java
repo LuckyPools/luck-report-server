@@ -27,7 +27,6 @@ import java.util.List;
 
 /**
  * 公共数据集管理Controller
- * 提供公共数据集的增删改查、分页查询和状态管理接口
  *
  * @author luck
  */

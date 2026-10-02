@@ -4,7 +4,6 @@ import com.luck.report.infra.modules.cache.utils.CacheUtils;
 
 /**
  * 临时报表对象缓存工具类，用于缓存报表预览等临时数据。
- * 默认采用会话 id 隔离用户数据
  *
  * @author luckyPools
  * @since 2026年06月16日
@@ -21,15 +20,12 @@ public class ReportScopedCache {
      */
     private static final long EXPIRE_SECONDS = 5 * 60L;
 
-
     public static String getCacheKey(String key){
         return CACHE_PREFIX + CacheUtils.getCacheScopePrefix() + ":" + key;
     }
 
-
     /**
      * 从缓存获取临时对象。
-     * 默认根据当前请求的 Session ID 构建缓存键，实现 Session 级别的数据隔离。
      *
      * @param key 缓存键，不能为空
      * @return 缓存对象，不存在或 Session 无效返回 null
@@ -41,7 +37,6 @@ public class ReportScopedCache {
 
     /**
      * 存入临时对象到缓存。
-     * 默认根据当前请求的 Session ID 构建缓存键，实现 Session 级别的数据隔离。
      *
      * @param key 缓存键，不能为空
      * @param obj 缓存对象，不能为空
@@ -60,6 +55,5 @@ public class ReportScopedCache {
         String cacheKey = getCacheKey(key);
         CacheUtils.remove(cacheKey);
     }
-
 
 }

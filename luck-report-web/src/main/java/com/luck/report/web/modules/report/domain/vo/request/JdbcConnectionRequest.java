@@ -2,9 +2,6 @@ package com.luck.report.web.modules.report.domain.vo.request;
 
 /**
  * JDBC 数据库连接参数请求 VO。
- * <p>
- * 用于数据源相关接口（{@code buildDatabaseTables}、{@code buildFields}、{@code previewData}），
- * 包含连接数据库所需的基本信息（type + 连接信息）。
  *
  * @author luck-report
  * @since 1.0.0
@@ -12,11 +9,7 @@ package com.luck.report.web.modules.report.domain.vo.request;
 public class JdbcConnectionRequest {
 
     /**
-     * 数据源类型：
-     * <ul>
-     *     <li>{@code jdbc}：JDBC 直连，需要 username/password/driver/url</li>
-     *     <li>其他：内置数据源名称，通过 {@link #name} 指定</li>
-     * </ul>
+     * 数据源类型
      */
     private String type;
 

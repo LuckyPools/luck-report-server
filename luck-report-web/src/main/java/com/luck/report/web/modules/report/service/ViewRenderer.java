@@ -6,7 +6,6 @@ import java.io.IOException;
 
 /**
  * 视图渲染器接口，屏蔽 javax.servlet / jakarta.servlet 差异。
- * <p>由适配器模块提供具体实现，使用 Thymeleaf 模板引擎渲染页面。
  *
  * @author luck-report
  * @since 2.0.0

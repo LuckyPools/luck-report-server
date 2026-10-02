@@ -26,8 +26,9 @@ public class DatasetUndefinitionException extends ReportException {
         super("Dataset [" + datasetName + "] not definition.");
     }
 
-
-    /** errorArgs 依次对应 {0}、{1} */
+    /**
+     * errorArgs 依次对应 {0}、{1}
+     */
     public DatasetUndefinitionException(String errorCode, Object... errorArgs) {
         super(errorCode, errorArgs);
     }

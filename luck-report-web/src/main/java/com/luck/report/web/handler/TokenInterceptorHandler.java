@@ -30,35 +30,28 @@ public class TokenInterceptorHandler {
     }
 
     public boolean preHandle(ApiRequest apiReq, Object handler) throws Exception {
-        // 0. 注解豁免：@Anonymous 直接放行
         if (isAnnotatedAnonymous(handler)) {
             return true;
         }
-        // 1. OPTIONS 预检直接放行（CORS）
         if ("OPTIONS".equalsIgnoreCase(apiReq.getMethod())) {
             return true;
         }
-        // 2. 总开关：关闭则直接放行（本地 ui3 调试走这里）
         if (!props.isEnabled()) {
             log.debug("[Token] enabled=false, skip verify, requestUri={}", apiReq.getRequestURI());
             return true;
         }
-        // 3. 预览路径下检查报表是否绑定了 ANONYMOUS 角色（允许无 token 访问）
         if (ReportUrls.isPreviewPath(apiReq.getRequestURI()) && checkAndMarkAnonymousReport(apiReq)) {
             log.debug("[Token] 匿名报表放行: uri={}", apiReq.getRequestURI());
             return true;
         }
-        // 4. 解析 token（从 header 或 query 参数）
         String token = resolveToken(apiReq);
         if (token == null || token.isEmpty()) {
             throw new TokenException("error.token.missing");
         }
-        // 5. 校验 token
         if (!tokenService.verifyToken(token)) {
             throw new TokenException("error.token.invalid");
         }
 
-        // token 校验完成，权限校验由 ManageInterceptorHandler/PreviewInterceptorHandler 处理
         return true;
     }
 
@@ -97,7 +90,6 @@ public class TokenInterceptorHandler {
     }
 
     private String resolveToken(ApiRequest apiReq) {
-        // 1. query 参数（仅在 allowQueryToken=true 时）
         if (props.isAllowQueryToken()) {
             String t = apiReq.getParameter("token");
             if (t == null || t.isEmpty()) {
@@ -107,7 +99,6 @@ public class TokenInterceptorHandler {
                 return t;
             }
         }
-        // 2. header
         String header = props.getHeaderName();
         String t = apiReq.getHeader(header);
         return (t == null || t.isEmpty()) ? null : t;

@@ -141,7 +141,6 @@ public class FormParserUtils implements ApplicationContextAware {
             }
             return datasetOption;
         }
-        // 兼容旧格式：回退到 JSON 字符串属性
         return parseObjectAttribute(element.attributeValue("datasetOption"), DatasetOption.class);
     }
 

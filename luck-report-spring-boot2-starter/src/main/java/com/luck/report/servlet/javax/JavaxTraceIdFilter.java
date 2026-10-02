@@ -13,11 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
- * javax 版链路追踪过滤器：读取 X-Trace-Id 并委托 {@link TraceIdHandler} 写入 MDC，
- * 同时把生效的 traceId 回写到响应头
- *
- * <p>回写的作用：traceId 经服务端消毒后可能被替换成兜底值，前端/运维从响应头就能看到
- * 本请求实际用的链路标识，排查时无需进日志反查。
+ * 链路追踪过滤器：读取 X-Trace-Id 写入 MDC，并将生效的 traceId 回写响应头
  *
  * @author luck-report
  */

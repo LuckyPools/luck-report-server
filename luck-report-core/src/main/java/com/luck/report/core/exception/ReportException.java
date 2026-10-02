@@ -40,8 +40,7 @@ public class ReportException extends RuntimeException implements ErrorCodeAware 
     }
 
     /**
-     * 携带文案编码的构造，errorCode 同时作为 message，由出口按请求语言翻译。
-     * <p>无参调用会命中 {@link #ReportException(String)}，此时出口退化为把 message 当编码翻译。
+     * 携带文案编码的构造，errorCode 同时作为 message，由出口按请求语言翻译。无参调用会命中 {@link #ReportException(String)}，此时出口退化为把 message 当编码翻译。
      */
     public ReportException(String errorCode, Object... errorArgs) {
         super(errorCode);

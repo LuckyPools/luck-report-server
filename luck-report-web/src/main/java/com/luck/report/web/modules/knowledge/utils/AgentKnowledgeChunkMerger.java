@@ -12,10 +12,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * 智能体知识检索结果裁剪：同知识保留得分最高的 Top-N 个 chunk，
- * 各 chunk <strong>分条返回</strong>（各自保留 score），不再拼接正文。
- * <p>
- * 跨知识：按该知识最高分排序，最多保留 {@code finalTopK} 个知识，再展开其选中 chunk。
+ * 智能体知识检索结果裁剪
  *
  * @author luck
  */
@@ -52,7 +49,6 @@ public final class AgentKnowledgeChunkMerger {
         int perKnowledgeLimit = Math.max(1, mergeTopN);
         int knowledgeLimit = Math.max(1, finalTopK);
 
-        // 每个知识：取 Top-N chunk（按 score）
         List<KnowledgeChunkGroup> groups = new ArrayList<>();
         for (Map.Entry<String, List<VectorStoreSearchResult>> entry : byKnowledgeId.entrySet()) {
             List<VectorStoreSearchResult> selected = entry.getValue().stream()
@@ -66,7 +62,6 @@ public final class AgentKnowledgeChunkMerger {
             groups.add(new KnowledgeChunkGroup(bestScore, selected));
         }
 
-        // 跨知识：保留最高分的 finalTopK 个知识，展开为分条结果
         List<VectorStoreSearchResult> selectedChunks = groups.stream()
                 .sorted(Comparator.comparingDouble(KnowledgeChunkGroup::getBestScore).reversed())
                 .limit(knowledgeLimit)

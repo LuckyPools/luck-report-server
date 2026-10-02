@@ -15,7 +15,6 @@
  ******************************************************************************/
 package com.luck.report.core.chart.dataset.impl.category;
 
-
 /**
  * @author Jacky.gao
  * @since 2017年6月9日
