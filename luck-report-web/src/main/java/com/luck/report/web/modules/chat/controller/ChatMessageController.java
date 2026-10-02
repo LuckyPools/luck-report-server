@@ -6,7 +6,6 @@ import com.luck.report.web.modules.chat.domain.entity.ChatMessage;
 import com.luck.report.web.common.domain.vo.ResultVO;
 import com.luck.report.web.modules.chat.service.ChatMessageService;
 import com.luck.report.web.modules.chat.service.ChatSessionService;
-import com.luck.report.web.utils.DownloadUtils;
 import com.luck.report.web.utils.ResultVOUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +39,7 @@ public class ChatMessageController {
      */
     @GetMapping("/{sessionId}/messages/list")
     public ResultVO<List<ChatMessage>> getMessages(@PathVariable String sessionId) {
-        List<ChatMessage> messages = chatMessageService.findBySessionId(sessionId);
+        List<ChatMessage> messages = chatMessageService.listBySessionId(sessionId);
         return ResultVOUtils.success("success.chat.messagesLoaded", messages);
     }
 
@@ -52,7 +51,7 @@ public class ChatMessageController {
      * @return 保存后的消息实体
      */
     @PostMapping("/{sessionId}/messages/create")
-    public ResultVO<ChatMessage> saveMessage(
+    public ResultVO<ChatMessage> save(
             @PathVariable String sessionId,
             @RequestBody ChatMessageDTO dto) {
         if (dto == null || dto.getRole() == null) {
@@ -66,10 +65,8 @@ public class ChatMessageController {
         message.setMessageType(dto.getMessageType() != null ? dto.getMessageType() : "text");
         message.setMetadata(dto.getMetadata());
 
-        ChatMessage saved = chatMessageService.saveMessage(message);
-
+        ChatMessage saved = chatMessageService.save(message);
         chatSessionService.refreshSessionTime(sessionId);
-
         return ResultVOUtils.success("success.chat.messageSaved", saved);
     }
 
@@ -80,8 +77,8 @@ public class ChatMessageController {
      * @param batchDTO  批量消息请求体
      * @return 保存成功的消息数量
      */
-    @PostMapping("/{sessionId}/messages/save_batch")
-    public ResultVO<Integer> batchSaveMessages(
+    @PostMapping("/{sessionId}/messages/batch/save")
+    public ResultVO<Integer> saveBatch(
             @PathVariable String sessionId,
             @RequestBody ChatMessageBatchDTO batchDTO) {
         if (batchDTO == null || batchDTO.getMessages() == null || batchDTO.getMessages().isEmpty()) {
@@ -99,10 +96,8 @@ public class ChatMessageController {
             messages.add(message);
         }
 
-        int count = chatMessageService.batchSaveMessages(messages);
-
+        int count = chatMessageService.saveBatch(messages);
         chatSessionService.refreshSessionTime(sessionId);
-
         return ResultVOUtils.success("success.chat.messagesSaved", count);
     }
 
@@ -113,9 +108,9 @@ public class ChatMessageController {
      * @return 操作结果
      */
     @DeleteMapping("/{sessionId}/messages/delete/{id}")
-    public ResultVO<Void> deleteMessage(@PathVariable String sessionId,
+    public ResultVO<Void> removeById(@PathVariable String sessionId,
                                         @PathVariable String id) {
-        chatMessageService.deleteMessage(id);
+        chatMessageService.removeById(id);
         return ResultVOUtils.<Void>success("success.chat.messageDeleted", null);
     }
 }

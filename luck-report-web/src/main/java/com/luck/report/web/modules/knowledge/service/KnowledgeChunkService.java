@@ -5,7 +5,7 @@ import com.luck.report.web.modules.knowledge.domain.vo.KnowledgeChunkVO;
 import java.util.List;
 
 /**
- * 知识库向量片段 list / update / delete
+ * 知识库向量片段 list / update / remove
  */
 public interface KnowledgeChunkService {
 
@@ -14,5 +14,5 @@ public interface KnowledgeChunkService {
     KnowledgeChunkVO updateChunk(String vectorType, String idMetaKey, String knowledgeId,
                                  String vectorId, String content, String modelId);
 
-    void deleteChunk(String vectorType, String idMetaKey, String knowledgeId, String vectorId);
+    void removeChunk(String vectorType, String idMetaKey, String knowledgeId, String vectorId);
 }

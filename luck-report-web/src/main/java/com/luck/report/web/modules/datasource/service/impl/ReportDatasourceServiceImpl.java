@@ -55,9 +55,6 @@ public class ReportDatasourceServiceImpl implements ReportDatasourceService {
     private final ReportDatasourceMapper reportDatasourceMapper;
     @Qualifier("bean.logicalRelationMapper")
     private final LogicalRelationMapper logicalRelationMapper;
-    /**
-     * 公共数据集Mapper，用于删除数据源前的引用检查
-     */
     @Qualifier("bean.reportDatasetMapper")
     private final ReportDatasetMapper reportDatasetMapper;
     @Qualifier("bean.dynamicDatasourceManager")
@@ -73,33 +70,22 @@ public class ReportDatasourceServiceImpl implements ReportDatasourceService {
     private final BuildinDatasourceLoader buildinDatasourceLoader;
 
     @Override
-    public List<ReportDatasourceVO> getAllDatasource() {
-        List<ReportDatasource> list = reportDatasourceMapper.selectList(new ReportDatasourceQueryDTO());
+    public List<ReportDatasourceVO> list(ReportDatasourceQueryDTO queryDTO) {
+        if (queryDTO == null) {
+            queryDTO = new ReportDatasourceQueryDTO();
+        }
+        List<ReportDatasource> list = reportDatasourceMapper.selectList(queryDTO);
         return list.stream().map(this::toVO).collect(Collectors.toList());
     }
 
     @Override
-    public List<ReportDatasourceVO> getDatasourceByEnabled(Boolean enabled) {
-        List<ReportDatasource> list = reportDatasourceMapper.selectList(
-                ReportDatasourceQueryDTO.builder().enabled(enabled).build());
-        return list.stream().map(this::toVO).collect(Collectors.toList());
-    }
-
-    @Override
-    public List<ReportDatasourceVO> getDatasourceByType(String type) {
-        List<ReportDatasource> list = reportDatasourceMapper.selectList(
-                ReportDatasourceQueryDTO.builder().type(type).build());
-        return list.stream().map(this::toVO).collect(Collectors.toList());
-    }
-
-    @Override
-    public ReportDatasourceVO getDatasourceById(String id) {
+    public ReportDatasourceVO getById(String id) {
         ReportDatasource reportDatasource = reportDatasourceMapper.selectById(id);
         return reportDatasource != null ? toVO(reportDatasource) : null;
     }
 
     @Override
-    public ReportDatasourceVO createDatasource(ReportDatasource reportDatasource) {
+    public ReportDatasourceVO create(ReportDatasource reportDatasource) {
         DatasourceTypeHandler handler = handlerRegistry.getRequired(reportDatasource.getType());
         String connectionUrl = handler.resolveConnectionUrl(reportDatasource);
         if (StringUtils.isNotBlank(connectionUrl)) {
@@ -136,7 +122,7 @@ public class ReportDatasourceServiceImpl implements ReportDatasourceService {
     }
 
     @Override
-    public ReportDatasourceVO updateDatasource(String id, ReportDatasource reportDatasource) {
+    public ReportDatasourceVO update(String id, ReportDatasource reportDatasource) {
         DatasourceTypeHandler handler = handlerRegistry.getRequired(reportDatasource.getType());
         String connectionUrl = handler.resolveConnectionUrl(reportDatasource);
         if (StringUtils.isNotBlank(connectionUrl)) {
@@ -168,7 +154,7 @@ public class ReportDatasourceServiceImpl implements ReportDatasourceService {
 
     @Override
     @Transactional
-    public void deleteDatasource(String id) {
+    public void removeById(String id) {
         ReportDatasource reportDatasource = reportDatasourceMapper.selectById(id);
         String datasourceName = reportDatasource != null ? reportDatasource.getName() : null;
 
@@ -190,13 +176,13 @@ public class ReportDatasourceServiceImpl implements ReportDatasourceService {
     }
 
     @Override
-    public void deleteDatasourceBatch(List<String> ids) {
+    public void removeByIds(List<String> ids) {
         if (ids == null || ids.isEmpty()) {
             return;
         }
         for (String id : ids) {
             if (id != null && !id.isEmpty()) {
-                deleteDatasource(id);
+                removeById(id);
             }
         }
     }
@@ -417,7 +403,7 @@ public class ReportDatasourceServiceImpl implements ReportDatasourceService {
     }
 
     @Override
-    public void deleteLogicalRelation(String datasourceId, String relationId) {
+    public void removeLogicalRelation(String datasourceId, String relationId) {
         LogicalRelation existing = logicalRelationMapper.selectById(relationId);
         if (existing == null) {
             throw new ReportBizException("error.datasource.relationNotExist", relationId);
@@ -620,7 +606,7 @@ public class ReportDatasourceServiceImpl implements ReportDatasourceService {
     }
 
     @Override
-    public ReportDatasourceVO getDatasourceByName(String name) {
+    public ReportDatasourceVO getByName(String name) {
         List<ReportDatasource> list = reportDatasourceMapper.selectList(
                 ReportDatasourceQueryDTO.builder().name(name).build());
         return list.isEmpty() ? null : toVO(list.get(0));
@@ -677,7 +663,7 @@ public class ReportDatasourceServiceImpl implements ReportDatasourceService {
      * @return 分页结果
      */
     @Override
-    public PageResultVO<ReportDatasourceVO> queryByPage(ReportDatasourceQueryDTO queryDTO) {
+    public PageResultVO<ReportDatasourceVO> listPage(ReportDatasourceQueryDTO queryDTO) {
         int offset = (queryDTO.getPageNum() - 1) * queryDTO.getPageSize();
 
         Long total = reportDatasourceMapper.selectCount(queryDTO);

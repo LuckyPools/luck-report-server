@@ -65,7 +65,7 @@ public class KnowledgeChunkServiceImpl implements KnowledgeChunkService {
     }
 
     @Override
-    public void deleteChunk(String vectorType, String idMetaKey, String knowledgeId, String vectorId) {
+    public void removeChunk(String vectorType, String idMetaKey, String knowledgeId, String vectorId) {
         requireOwnedChunk(vectorType, idMetaKey, knowledgeId, vectorId);
         vectorStore.deleteByVectorTypeAndIds(vectorType, Collections.singletonList(vectorId));
     }

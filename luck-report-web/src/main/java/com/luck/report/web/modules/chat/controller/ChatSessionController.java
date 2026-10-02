@@ -39,7 +39,7 @@ public class ChatSessionController {
      */
     @GetMapping("/list")
     public ResultVO<List<ChatSession>> listSessions() {
-        List<ChatSession> sessions = chatSessionService.findAll();
+        List<ChatSession> sessions = chatSessionService.listAll();
         return ResultVOUtils.success("success.chat.sessionsLoaded", sessions);
     }
 
@@ -51,7 +51,7 @@ public class ChatSessionController {
     @GetMapping("/me/list")
     public ResultVO<List<ChatSession>> getSessionsOfMe() {
         String userId = resolveCurrentUserId();
-        List<ChatSession> sessions = chatSessionService.findByUserId(userId);
+        List<ChatSession> sessions = chatSessionService.listByUserId(userId);
         return ResultVOUtils.success("success.chat.sessionsLoaded", sessions);
     }
 
@@ -68,7 +68,7 @@ public class ChatSessionController {
             @RequestParam(defaultValue = "10") int pageSize) {
         pageSize = Math.min(pageSize, 50);
         String userId = resolveCurrentUserId();
-        PageResultVO<ChatSession> result = chatSessionService.findByUserIdWithPage(userId, pageNum, pageSize);
+        PageResultVO<ChatSession> result = chatSessionService.listPage(userId, pageNum, pageSize);
         return ResultVOUtils.success("success.chat.sessionsLoaded", result);
     }
 
@@ -80,7 +80,7 @@ public class ChatSessionController {
      */
     @GetMapping("/detail/{sessionId}")
     public ResultVO<ChatSession> getSession(@PathVariable String sessionId) {
-        ChatSession session = chatSessionService.findBySessionId(sessionId);
+        ChatSession session = chatSessionService.getById(sessionId);
         if (session == null) {
             return ResultVOUtils.error("error.chat.sessionNotFound");
         }
@@ -94,9 +94,9 @@ public class ChatSessionController {
      * @return 新建的会话实体
      */
     @PostMapping("/create")
-    public ResultVO<ChatSession> createSession(@RequestParam(value = "title", required = false) String title) {
+    public ResultVO<ChatSession> create(@RequestParam(value = "title", required = false) String title) {
         String userId = resolveCurrentUserId();
-        ChatSession session = chatSessionService.createSession(title, userId);
+        ChatSession session = chatSessionService.create(title, userId);
         return ResultVOUtils.success("success.chat.sessionCreated", session);
     }
 
@@ -144,8 +144,8 @@ public class ChatSessionController {
      * @return 操作结果
      */
     @DeleteMapping("/delete/{sessionId}")
-    public ResultVO<Void> deleteSession(@PathVariable String sessionId) {
-        chatSessionService.deleteSession(sessionId);
+    public ResultVO<Void> removeById(@PathVariable String sessionId) {
+        chatSessionService.removeById(sessionId);
         return ResultVOUtils.<Void>success("success.chat.sessionDeleted", null);
     }
 
@@ -155,9 +155,9 @@ public class ChatSessionController {
      * @return 操作结果
      */
     @DeleteMapping("/me/delete")
-    public ResultVO<Void> deleteSessionsOfMe() {
+    public ResultVO<Void> removeSessionsOfMe() {
         String userId = resolveCurrentUserId();
-        chatSessionService.deleteSessionsByUserId(userId);
+        chatSessionService.removeByUserId(userId);
         return ResultVOUtils.<Void>success("success.chat.allCleared", null);
     }
 

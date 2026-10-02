@@ -17,7 +17,7 @@ public interface ChatMessageService {
      * @param sessionId 会话ID，不可为空
      * @return 消息列表
      */
-    List<ChatMessage> findBySessionId(String sessionId);
+    List<ChatMessage> listBySessionId(String sessionId);
 
     /**
      * 保存单条消息
@@ -25,7 +25,7 @@ public interface ChatMessageService {
      * @param message 消息实体，不可为空
      * @return 保存后的消息实体（含自增ID）
      */
-    ChatMessage saveMessage(ChatMessage message);
+    ChatMessage save(ChatMessage message);
 
     /**
      * 批量保存消息
@@ -33,12 +33,12 @@ public interface ChatMessageService {
      * @param messages 消息列表，不可为空
      * @return 保存成功的消息数量
      */
-    int batchSaveMessages(List<ChatMessage> messages);
+    int saveBatch(List<ChatMessage> messages);
 
     /**
      * 删除单条消息
      *
      * @param id 消息ID，不可为空
      */
-    void deleteMessage(String id);
+    void removeById(String id);
 }

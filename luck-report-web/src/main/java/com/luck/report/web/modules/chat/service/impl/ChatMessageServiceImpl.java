@@ -26,12 +26,12 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     private final ChatMessageMapper chatMessageMapper;
 
     @Override
-    public List<ChatMessage> findBySessionId(String sessionId) {
+    public List<ChatMessage> listBySessionId(String sessionId) {
         return chatMessageMapper.selectBySessionId(sessionId);
     }
 
     @Override
-    public ChatMessage saveMessage(ChatMessage message) {
+    public ChatMessage save(ChatMessage message) {
         if (message.getId() == null || message.getId().isEmpty()) {
             message.setId(SnowflakeIdGenerator.generateId());
         }
@@ -49,31 +49,31 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     }
 
     @Override
-    public int batchSaveMessages(List<ChatMessage> messages) {
+    public int saveBatch(List<ChatMessage> messages) {
         if (messages == null || messages.isEmpty()) {
             return 0;
         }
         java.time.LocalDateTime now = java.time.LocalDateTime.now();
-        for (ChatMessage m : messages) {
-            if (m.getId() == null || m.getId().isEmpty()) {
-                m.setId(SnowflakeIdGenerator.generateId());
+        for (ChatMessage message : messages) {
+            if (message.getId() == null || message.getId().isEmpty()) {
+                message.setId(SnowflakeIdGenerator.generateId());
             }
-            m.setCreateTime(now);
-            m.setCreateBy(SecurityUtils.getCurrentUserId());
-            m.setUpdateBy(SecurityUtils.getCurrentUserId());
-            m.setUpdateTime(now);
-            m.setDelFlag(0);
-            if (m.getMessageType() == null || m.getMessageType().isEmpty()) {
-                m.setMessageType("text");
+            message.setCreateTime(now);
+            message.setCreateBy(SecurityUtils.getCurrentUserId());
+            message.setUpdateBy(SecurityUtils.getCurrentUserId());
+            message.setUpdateTime(now);
+            message.setDelFlag(0);
+            if (message.getMessageType() == null || message.getMessageType().isEmpty()) {
+                message.setMessageType("text");
             }
         }
-        int count = chatMessageMapper.batchInsert(messages);
+        int count = chatMessageMapper.insertBatch(messages);
         log.info("批量保存消息: count={}, sessionId={}", count, messages.get(0).getSessionId());
         return count;
     }
 
     @Override
-    public void deleteMessage(String id) {
+    public void removeById(String id) {
         chatMessageMapper.deleteById(id);
         log.info("删除消息: id={}", id);
     }

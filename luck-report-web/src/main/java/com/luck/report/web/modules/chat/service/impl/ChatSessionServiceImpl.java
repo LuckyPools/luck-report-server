@@ -28,17 +28,17 @@ public class ChatSessionServiceImpl implements ChatSessionService {
     private final ChatSessionMapper chatSessionMapper;
 
     @Override
-    public List<ChatSession> findAll() {
+    public List<ChatSession> listAll() {
         return chatSessionMapper.selectList(new ChatSessionQueryDTO());
     }
 
     @Override
-    public List<ChatSession> findByUserId(String userId) {
+    public List<ChatSession> listByUserId(String userId) {
         return chatSessionMapper.selectList(ChatSessionQueryDTO.builder().userId(userId).build());
     }
 
     @Override
-    public PageResultVO<ChatSession> findByUserIdWithPage(String userId, int pageNum, int pageSize) {
+    public PageResultVO<ChatSession> listPage(String userId, int pageNum, int pageSize) {
         ChatSessionQueryDTO queryDTO = ChatSessionQueryDTO.builder().userId(userId).build();
         long total = chatSessionMapper.selectCount(queryDTO);
         int offset = (pageNum - 1) * pageSize;
@@ -47,12 +47,12 @@ public class ChatSessionServiceImpl implements ChatSessionService {
     }
 
     @Override
-    public ChatSession findBySessionId(String sessionId) {
+    public ChatSession getById(String sessionId) {
         return chatSessionMapper.selectById(sessionId);
     }
 
     @Override
-    public ChatSession createSession(String title, String userId) {
+    public ChatSession create(String title, String userId) {
         LocalDateTime now = LocalDateTime.now();
         ChatSession session = new ChatSession();
         session.setId(UUID.randomUUID().toString());
@@ -88,13 +88,13 @@ public class ChatSessionServiceImpl implements ChatSessionService {
     }
 
     @Override
-    public void deleteSession(String sessionId) {
+    public void removeById(String sessionId) {
         chatSessionMapper.deleteById(sessionId, LocalDateTime.now());
         log.info("删除会话: sessionId={}", sessionId);
     }
 
     @Override
-    public void deleteSessionsByUserId(String userId) {
+    public void removeByUserId(String userId) {
         int count = chatSessionMapper.deleteByUserId(userId, LocalDateTime.now());
         log.info("删除用户下所有会话: userId={}, count={}", userId, count);
     }

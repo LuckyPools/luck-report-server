@@ -43,8 +43,8 @@ public class AgentKnowledgeController {
      * @return 智能体知识详情
      */
     @GetMapping("/detail/{id}")
-    public ResultVO<AgentKnowledgeVO> getKnowledgeById(@PathVariable("id") String id) {
-        AgentKnowledgeVO knowledge = agentKnowledgeService.getKnowledgeById(id);
+    public ResultVO<AgentKnowledgeVO> getById(@PathVariable("id") String id) {
+        AgentKnowledgeVO knowledge = agentKnowledgeService.getById(id);
         if (knowledge == null) {
             return ResultVOUtils.error("error.knowledge.agentNotFound");
         }
@@ -63,7 +63,7 @@ public class AgentKnowledgeController {
      * @return 创建的智能体知识
      */
     @PostMapping(value = "/create")
-    public ResultVO<AgentKnowledgeVO> createKnowledge(
+    public ResultVO<AgentKnowledgeVO> create(
             @RequestParam("title") String title,
             @RequestParam("type") String type,
             @RequestParam(value = "question", required = false) String question,
@@ -81,7 +81,7 @@ public class AgentKnowledgeController {
         dto.setSplitterType(splitterType);
         dto.setModelId(modelId);
 
-        AgentKnowledgeVO knowledge = agentKnowledgeService.createKnowledge(dto);
+        AgentKnowledgeVO knowledge = agentKnowledgeService.create(dto);
         return ResultVOUtils.success("success.knowledge.agentCreated", knowledge);
     }
 
@@ -89,13 +89,13 @@ public class AgentKnowledgeController {
      * 更新智能体知识
      *
      * @param id 智能体知识ID
-     * @param updateKnowledgeDTO 更新智能体知识DTO
+     * @param updateDTO 更新智能体知识DTO
      * @return 更新的智能体知识
      */
     @PutMapping("/update/{id}")
-    public ResultVO<AgentKnowledgeVO> updateKnowledge(@PathVariable("id") String id,
-                                                          @RequestBody UpdateAgentKnowledgeDTO updateKnowledgeDTO) {
-        AgentKnowledgeVO knowledge = agentKnowledgeService.updateKnowledge(id, updateKnowledgeDTO);
+    public ResultVO<AgentKnowledgeVO> update(@PathVariable("id") String id,
+                                                          @RequestBody UpdateAgentKnowledgeDTO updateDTO) {
+        AgentKnowledgeVO knowledge = agentKnowledgeService.update(id, updateDTO);
         return ResultVOUtils.success("success.knowledge.agentUpdated", knowledge);
     }
 
@@ -120,15 +120,15 @@ public class AgentKnowledgeController {
      * @return 删除结果
      */
     @DeleteMapping("/delete/{id}")
-    public ResultVO<Boolean> deleteKnowledge(@PathVariable("id") String id) {
-        boolean result = agentKnowledgeService.deleteKnowledge(id);
+    public ResultVO<Boolean> removeById(@PathVariable("id") String id) {
+        boolean result = agentKnowledgeService.removeById(id);
         return result ? ResultVOUtils.success("success.knowledge.agentDeleted", true)
                 : ResultVOUtils.<Boolean>error("error.knowledge.agentDeleteFailed");
     }
 
     @DeleteMapping("/batch/delete")
-    public ResultVO<Boolean> deleteKnowledgeBatch(@RequestBody List<String> ids) {
-        agentKnowledgeService.deleteKnowledgeBatch(ids);
+    public ResultVO<Boolean> removeByIds(@RequestBody List<String> ids) {
+        agentKnowledgeService.removeByIds(ids);
         return ResultVOUtils.success("success.knowledge.agentDeleted", true);
     }
 
@@ -139,9 +139,9 @@ public class AgentKnowledgeController {
      * @return 分页结果
      */
     @PostMapping("/page")
-    public PageResultVO<AgentKnowledgeVO> queryByPage(@Valid @RequestBody AgentKnowledgeQueryDTO queryDTO) {
+    public PageResultVO<AgentKnowledgeVO> listPage(@Valid @RequestBody AgentKnowledgeQueryDTO queryDTO) {
         try {
-            return agentKnowledgeService.queryByPage(queryDTO);
+            return agentKnowledgeService.listPage(queryDTO);
         } catch (Exception e) {
             log.error("分页查询知识列表失败：{}", e.getMessage());
             return PageResultVO.error(ReportI18n.getMessage("error.knowledge.pageFailed", ReportI18n.messageOf(e)));
@@ -175,9 +175,9 @@ public class AgentKnowledgeController {
     }
 
     @DeleteMapping("/{id}/chunks/delete/{vectorId}")
-    public ResultVO<Void> deleteChunk(@PathVariable("id") String id,
+    public ResultVO<Void> removeChunk(@PathVariable("id") String id,
                                       @PathVariable("vectorId") String vectorId) {
-        agentKnowledgeService.deleteChunk(id, vectorId);
+        agentKnowledgeService.removeChunk(id, vectorId);
         return ResultVOUtils.success("success.knowledge.agentDeleted", null);
     }
 }

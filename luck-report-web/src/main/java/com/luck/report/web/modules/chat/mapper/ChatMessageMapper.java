@@ -50,7 +50,7 @@ public interface ChatMessageMapper {
      * @param messages 消息列表
      * @return 影响行数
      */
-    int batchInsert(@Param("list") List<ChatMessage> messages);
+    int insertBatch(@Param("list") List<ChatMessage> messages);
 
     /**
      * 根据ID删除单条消息

@@ -63,9 +63,9 @@ public class ReportDatasetController {
      * @return 分页结果
      */
     @PostMapping("/page")
-    public PageResultVO<ReportDatasetVO> queryByPage(@Valid @RequestBody ReportDatasetQueryDTO queryDTO) {
+    public PageResultVO<ReportDatasetVO> listPage(@Valid @RequestBody ReportDatasetQueryDTO queryDTO) {
         try {
-            return reportDatasetService.queryByPage(queryDTO);
+            return reportDatasetService.listPage(queryDTO);
         } catch (Exception e) {
             log.error("分页查询公共数据集失败", e);
             return PageResultVO.error(ReportI18n.getMessage("error.dataset.pageFailed", ReportI18n.messageOf(e)));

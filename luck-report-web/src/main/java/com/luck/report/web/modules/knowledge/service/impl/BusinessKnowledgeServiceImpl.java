@@ -78,7 +78,7 @@ public class BusinessKnowledgeServiceImpl implements BusinessKnowledgeService {
     private final KnowledgeChunkService knowledgeChunkService;
 
     @Override
-    public BusinessKnowledgeVO getKnowledgeById(String id) {
+    public BusinessKnowledgeVO getById(String id) {
         BusinessKnowledge knowledge = businessKnowledgeMapper.selectById(id);
         return knowledge == null ? null : businessKnowledgeConverter.toVo(knowledge);
     }
@@ -87,20 +87,20 @@ public class BusinessKnowledgeServiceImpl implements BusinessKnowledgeService {
      * 事务内写库，提交后再向量化，避免半截数据
      */
     @Override
-    public BusinessKnowledgeVO createKnowledge(CreateBusinessKnowledgeDTO createKnowledgeDTO) {
-        validateCreateKnowledgeDTO(createKnowledgeDTO);
+    public BusinessKnowledgeVO create(CreateBusinessKnowledgeDTO createDTO) {
+        validateKnowledge(createDTO);
 
-        BusinessKnowledge entity = businessKnowledgeConverter.toEntityForCreate(createKnowledgeDTO);
+        BusinessKnowledge entity = businessKnowledgeConverter.toEntityForCreate(createDTO);
         entity.setId(SnowflakeIdGenerator.generateId());
         entity.setCreateBy(SecurityUtils.getCurrentUserId());
         entity.setUpdateBy(SecurityUtils.getCurrentUserId());
 
-        if (KnowledgeType.DOCUMENT.getValue().equals(createKnowledgeDTO.getType())
-                && createKnowledgeDTO.getFile() != null) {
-            entity.setContent(KnowledgeContentCleaner.prepareDocumentText(readFileContent(createKnowledgeDTO.getFile())));
+        if (KnowledgeType.DOCUMENT.getValue().equals(createDTO.getType())
+                && createDTO.getFile() != null) {
+            entity.setContent(KnowledgeContentCleaner.prepareDocumentText(readFileContent(createDTO.getFile())));
             if (!StringUtils.hasText(entity.getSourceFilename())
-                    && createKnowledgeDTO.getFile().getOriginalFilename() != null) {
-                entity.setSourceFilename(createKnowledgeDTO.getFile().getOriginalFilename());
+                    && createDTO.getFile().getOriginalFilename() != null) {
+                entity.setSourceFilename(createDTO.getFile().getOriginalFilename());
             }
         }
 
@@ -118,7 +118,7 @@ public class BusinessKnowledgeServiceImpl implements BusinessKnowledgeService {
         return documentParserFactory.parse(file);
     }
 
-    private void validateCreateKnowledgeDTO(CreateBusinessKnowledgeDTO dto) {
+    private void validateKnowledge(CreateBusinessKnowledgeDTO dto) {
         if (KnowledgeType.DOCUMENT.getValue().equals(dto.getType()) && dto.getFile() == null) {
             throw new ReportBizException("error.knowledge.agentFileRequired");
         }
@@ -234,13 +234,13 @@ public class BusinessKnowledgeServiceImpl implements BusinessKnowledgeService {
     }
 
     @Override
-    public BusinessKnowledgeVO updateKnowledge(String id, UpdateBusinessKnowledgeDTO updateKnowledgeDTO) {
+    public BusinessKnowledgeVO update(String id, UpdateBusinessKnowledgeDTO updateDTO) {
         BusinessKnowledge knowledge = businessKnowledgeMapper.selectById(id);
         if (knowledge == null) {
             throw new ReportBizException("error.knowledge.bizNotFoundId", id);
         }
 
-        businessKnowledgeConverter.applyUpdateToEntity(knowledge, updateKnowledgeDTO);
+        businessKnowledgeConverter.applyUpdateToEntity(knowledge, updateDTO);
         knowledge.setUpdateBy(SecurityUtils.getCurrentUserId());
         knowledge.setEmbeddingStatus(EmbeddingStatus.PROCESSING);
 
@@ -267,21 +267,21 @@ public class BusinessKnowledgeServiceImpl implements BusinessKnowledgeService {
     }
 
     private void syncToVectorStore(BusinessKnowledge knowledge) {
-        deleteVectorByKnowledgeId(knowledge.getId());
+        removeVectorByKnowledgeId(knowledge.getId());
         List<VectorDocument> documents = convertToVectorDocuments(knowledge);
         reportAgentVectorStore.addDocuments(documents, knowledge.getModelId());
         log.info("成功更新向量存储, id: {}, 分块数: {}", knowledge.getId(), documents.size());
     }
 
     @Override
-    public boolean deleteKnowledge(String id) {
+    public boolean removeById(String id) {
         BusinessKnowledge knowledge = businessKnowledgeMapper.selectById(id);
         if (knowledge == null) {
             log.warn("业务知识不存在, id: {}", id);
             return true;
         }
 
-        deleteVectorByKnowledgeId(id);
+        removeVectorByKnowledgeId(id);
 
         transactionTemplate.executeWithoutResult(status -> {
             knowledge.setDelFlag(1);
@@ -295,18 +295,18 @@ public class BusinessKnowledgeServiceImpl implements BusinessKnowledgeService {
     }
 
     @Override
-    public void deleteKnowledgeBatch(List<String> ids) {
+    public void removeByIds(List<String> ids) {
         if (ids == null || ids.isEmpty()) {
             return;
         }
         for (String id : ids) {
             if (StringUtils.hasText(id)) {
-                deleteKnowledge(id);
+                removeById(id);
             }
         }
     }
 
-    private void deleteVectorByKnowledgeId(String knowledgeId) {
+    private void removeVectorByKnowledgeId(String knowledgeId) {
         reportAgentVectorStore.deleteByMetadata(
                 BusinessKnowledgeMetadataConstant.BUSINESS_KNOWLEDGE,
                 BusinessKnowledgeMetadataConstant.DB_BUSINESS_KNOWLEDGE_ID,
@@ -315,7 +315,7 @@ public class BusinessKnowledgeServiceImpl implements BusinessKnowledgeService {
     }
 
     @Override
-    public PageResultVO<BusinessKnowledgeVO> queryByPage(BusinessKnowledgeQueryDTO queryDTO) {
+    public PageResultVO<BusinessKnowledgeVO> listPage(BusinessKnowledgeQueryDTO queryDTO) {
         int offset = (queryDTO.getPageNum() - 1) * queryDTO.getPageSize();
         Long total = businessKnowledgeMapper.selectCount(queryDTO);
         List<BusinessKnowledge> dataList = businessKnowledgeMapper.selectPage(
@@ -471,7 +471,7 @@ public class BusinessKnowledgeServiceImpl implements BusinessKnowledgeService {
 
     @Override
     public List<KnowledgeChunkVO> listChunks(String knowledgeId) {
-        if (getKnowledgeById(knowledgeId) == null) {
+        if (getById(knowledgeId) == null) {
             throw new ReportBizException("error.knowledge.bizNotFoundId", knowledgeId);
         }
         return knowledgeChunkService.listChunks(
@@ -482,7 +482,7 @@ public class BusinessKnowledgeServiceImpl implements BusinessKnowledgeService {
 
     @Override
     public KnowledgeChunkVO updateChunk(String knowledgeId, String vectorId, UpdateKnowledgeChunkDTO dto) {
-        BusinessKnowledgeVO knowledge = getKnowledgeById(knowledgeId);
+        BusinessKnowledgeVO knowledge = getById(knowledgeId);
         if (knowledge == null) {
             throw new ReportBizException("error.knowledge.bizNotFoundId", knowledgeId);
         }
@@ -497,11 +497,11 @@ public class BusinessKnowledgeServiceImpl implements BusinessKnowledgeService {
     }
 
     @Override
-    public void deleteChunk(String knowledgeId, String vectorId) {
-        if (getKnowledgeById(knowledgeId) == null) {
+    public void removeChunk(String knowledgeId, String vectorId) {
+        if (getById(knowledgeId) == null) {
             throw new ReportBizException("error.knowledge.bizNotFoundId", knowledgeId);
         }
-        knowledgeChunkService.deleteChunk(
+        knowledgeChunkService.removeChunk(
                 BusinessKnowledgeMetadataConstant.BUSINESS_KNOWLEDGE,
                 BusinessKnowledgeMetadataConstant.DB_BUSINESS_KNOWLEDGE_ID,
                 knowledgeId, vectorId);

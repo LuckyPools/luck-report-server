@@ -17,7 +17,7 @@ public interface ReportDatasetService {
     /**
      * 按启用状态查询公共数据集列表
      *
-     * @param active 是否启用（可为空则查全部）
+     * @param enabled 是否启用（可为空则查全部）
      * @return 公共数据集VO列表（已回填所属数据源名称与状态）
      */
     List<ReportDatasetVO> listByEnabled(Boolean enabled);
@@ -28,7 +28,7 @@ public interface ReportDatasetService {
      * @param queryDTO 查询条件（name模糊/type/datasourceId/enabled/分页参数）
      * @return 分页结果（已回填所属数据源名称与状态）
      */
-    PageResultVO<ReportDatasetVO> queryByPage(ReportDatasetQueryDTO queryDTO);
+    PageResultVO<ReportDatasetVO> listPage(ReportDatasetQueryDTO queryDTO);
 
     /**
      * 根据ID查询公共数据集详情

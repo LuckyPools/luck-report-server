@@ -36,8 +36,8 @@ public class BusinessKnowledgeController {
     private final BusinessKnowledgeService businessKnowledgeService;
 
     @GetMapping("/detail/{id}")
-    public ResultVO<BusinessKnowledgeVO> getKnowledgeById(@PathVariable("id") String id) {
-        BusinessKnowledgeVO knowledge = businessKnowledgeService.getKnowledgeById(id);
+    public ResultVO<BusinessKnowledgeVO> getById(@PathVariable("id") String id) {
+        BusinessKnowledgeVO knowledge = businessKnowledgeService.getById(id);
         if (knowledge == null) {
             return ResultVOUtils.error("error.knowledge.bizNotFound");
         }
@@ -45,7 +45,7 @@ public class BusinessKnowledgeController {
     }
 
     @PostMapping(value = "/create")
-    public ResultVO<BusinessKnowledgeVO> createKnowledge(
+    public ResultVO<BusinessKnowledgeVO> create(
             @RequestParam("title") String title,
             @RequestParam("type") String type,
             @RequestParam(value = "question", required = false) String question,
@@ -63,14 +63,14 @@ public class BusinessKnowledgeController {
         dto.setSplitterType(splitterType);
         dto.setModelId(modelId);
 
-        BusinessKnowledgeVO knowledge = businessKnowledgeService.createKnowledge(dto);
+        BusinessKnowledgeVO knowledge = businessKnowledgeService.create(dto);
         return ResultVOUtils.success("success.knowledge.bizCreated", knowledge);
     }
 
     @PutMapping("/update/{id}")
-    public ResultVO<BusinessKnowledgeVO> updateKnowledge(@PathVariable("id") String id,
-                                                         @RequestBody UpdateBusinessKnowledgeDTO updateKnowledgeDTO) {
-        BusinessKnowledgeVO knowledge = businessKnowledgeService.updateKnowledge(id, updateKnowledgeDTO);
+    public ResultVO<BusinessKnowledgeVO> update(@PathVariable("id") String id,
+                                                         @RequestBody UpdateBusinessKnowledgeDTO updateDTO) {
+        BusinessKnowledgeVO knowledge = businessKnowledgeService.update(id, updateDTO);
         return ResultVOUtils.success("success.knowledge.bizUpdated", knowledge);
     }
 
@@ -82,22 +82,22 @@ public class BusinessKnowledgeController {
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResultVO<Boolean> deleteKnowledge(@PathVariable("id") String id) {
-        boolean result = businessKnowledgeService.deleteKnowledge(id);
+    public ResultVO<Boolean> removeById(@PathVariable("id") String id) {
+        boolean result = businessKnowledgeService.removeById(id);
         return result ? ResultVOUtils.success("success.knowledge.bizDeleted", true)
                 : ResultVOUtils.<Boolean>error("error.knowledge.bizDeleteFailed");
     }
 
     @DeleteMapping("/batch/delete")
-    public ResultVO<Boolean> deleteKnowledgeBatch(@RequestBody List<String> ids) {
-        businessKnowledgeService.deleteKnowledgeBatch(ids);
+    public ResultVO<Boolean> removeByIds(@RequestBody List<String> ids) {
+        businessKnowledgeService.removeByIds(ids);
         return ResultVOUtils.success("success.knowledge.bizDeleted", true);
     }
 
     @PostMapping("/page")
-    public PageResultVO<BusinessKnowledgeVO> queryByPage(@Valid @RequestBody BusinessKnowledgeQueryDTO queryDTO) {
+    public PageResultVO<BusinessKnowledgeVO> listPage(@Valid @RequestBody BusinessKnowledgeQueryDTO queryDTO) {
         try {
-            return businessKnowledgeService.queryByPage(queryDTO);
+            return businessKnowledgeService.listPage(queryDTO);
         } catch (Exception e) {
             log.error("分页查询业务知识列表失败：{}", e.getMessage());
             return PageResultVO.error(ReportI18n.getMessage("error.knowledge.pageFailed", ReportI18n.messageOf(e)));
@@ -125,9 +125,9 @@ public class BusinessKnowledgeController {
     }
 
     @DeleteMapping("/{id}/chunks/delete/{vectorId}")
-    public ResultVO<Void> deleteChunk(@PathVariable("id") String id,
+    public ResultVO<Void> removeChunk(@PathVariable("id") String id,
                                       @PathVariable("vectorId") String vectorId) {
-        businessKnowledgeService.deleteChunk(id, vectorId);
+        businessKnowledgeService.removeChunk(id, vectorId);
         return ResultVOUtils.success("success.knowledge.bizDeleted", null);
     }
 }

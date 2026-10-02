@@ -43,7 +43,7 @@ public class ModelConfigController {
     @GetMapping("/list")
     public ResultVO<List<ModelConfigDTO>> list() {
         try {
-            List<ModelConfigDTO> configs = modelConfigDataService.listConfigs();
+            List<ModelConfigDTO> configs = modelConfigDataService.list();
             return ResultVO.success("获取模型配置列表成功", sanitizeList(configs));
         } catch (Exception e) {
             return ResultVO.error("Failed to get model configuration list: " + e.getMessage());
@@ -57,9 +57,9 @@ public class ModelConfigController {
      * @return 分页结果
      */
     @PostMapping("/page")
-    public PageResultVO<ModelConfigDTO> queryByPage(@Valid @RequestBody ModelConfigQueryDTO queryDTO) {
+    public PageResultVO<ModelConfigDTO> listPage(@Valid @RequestBody ModelConfigQueryDTO queryDTO) {
         try {
-            PageResultVO<ModelConfigDTO> pageResult = modelConfigDataService.queryByPage(queryDTO);
+            PageResultVO<ModelConfigDTO> pageResult = modelConfigDataService.listPage(queryDTO);
             if (pageResult.getRecords() != null) {
                 pageResult.setRecords(sanitizeList(pageResult.getRecords()));
             }
@@ -92,7 +92,7 @@ public class ModelConfigController {
     @PostMapping("/create")
     public ResultVO<String> add(@Valid @RequestBody ModelConfigDTO config) {
         try {
-            modelConfigDataService.addConfig(config);
+            modelConfigDataService.create(config);
             return ResultVOUtils.success("success.model.saved", ReportI18n.getMessage("success.model.saved"));
         } catch (Exception e) {
             return ResultVOUtils.error("error.model.saveFailed", ReportI18n.messageOf(e));
@@ -110,7 +110,7 @@ public class ModelConfigController {
                                    @Valid @RequestBody ModelConfigDTO config) {
         try {
             config.setId(id);
-            modelConfigDataService.updateConfigInDb(config);
+            modelConfigDataService.update(config);
             return ResultVOUtils.success("success.model.updated", ReportI18n.getMessage("success.model.updated"));
         } catch (Exception e) {
             return ResultVOUtils.error("error.model.updateFailed", ReportI18n.messageOf(e));
@@ -126,7 +126,7 @@ public class ModelConfigController {
     @DeleteMapping("/delete/{id}")
     public ResultVO<String> delete(@PathVariable String id) {
         try {
-            modelConfigDataService.deleteConfig(id);
+            modelConfigDataService.removeById(id);
             return ResultVOUtils.success("success.model.deleted", ReportI18n.getMessage("success.model.deleted"));
         } catch (Exception e) {
             return ResultVOUtils.error("error.model.deleteFailed", ReportI18n.messageOf(e));
@@ -136,7 +136,7 @@ public class ModelConfigController {
     @DeleteMapping("/batch/delete")
     public ResultVO<String> deleteBatch(@RequestBody List<String> ids) {
         try {
-            modelConfigDataService.deleteConfigBatch(ids);
+            modelConfigDataService.removeByIds(ids);
             return ResultVOUtils.success("success.model.deleted", ReportI18n.getMessage("success.model.deleted"));
         } catch (Exception e) {
             return ResultVOUtils.error("error.model.deleteFailed", ReportI18n.messageOf(e));
@@ -155,10 +155,10 @@ public class ModelConfigController {
                                                 @RequestParam(value = "enabled") Boolean enabled) {
         try {
             if (Boolean.TRUE.equals(enabled)) {
-                modelConfigDataService.enableConfig(id);
+                modelConfigDataService.enable(id);
                 return ResultVOUtils.success("success.model.enabled", ReportI18n.getMessage("success.model.enabled"));
             }
-            modelConfigDataService.disableConfig(id);
+            modelConfigDataService.disable(id);
             return ResultVOUtils.success("success.model.disabled", ReportI18n.getMessage("success.model.disabled"));
         } catch (Exception e) {
             return ResultVOUtils.error(
@@ -177,7 +177,7 @@ public class ModelConfigController {
     public ResultVO<List<ModelConfigDTO>> getEnabledList(@PathVariable String modelType) {
         try {
             ModelType type = ModelType.fromCode(modelType);
-            List<ModelConfigDTO> enabledConfigs = modelConfigDataService.listEnabledConfigsByType(type);
+            List<ModelConfigDTO> enabledConfigs = modelConfigDataService.listEnabledByType(type);
             return ResultVOUtils.success("success.model.enabledListLoaded", sanitizeList(enabledConfigs));
         } catch (Exception e) {
             return ResultVOUtils.error("error.model.enabledListFailed", ReportI18n.messageOf(e));
@@ -191,8 +191,8 @@ public class ModelConfigController {
      */
     @GetMapping("/check_ready")
     public ResultVO<ModelCheckVo> checkReady() {
-        ModelConfigDTO chatModel = modelConfigDataService.getEnabledConfigByType(ModelType.CHAT);
-        ModelConfigDTO embeddingModel = modelConfigDataService.getEnabledConfigByType(ModelType.EMBEDDING);
+        ModelConfigDTO chatModel = modelConfigDataService.getEnabledByType(ModelType.CHAT);
+        ModelConfigDTO embeddingModel = modelConfigDataService.getEnabledByType(ModelType.EMBEDDING);
 
         boolean chatModelReady = chatModel != null;
         boolean embeddingModelReady = embeddingModel != null;

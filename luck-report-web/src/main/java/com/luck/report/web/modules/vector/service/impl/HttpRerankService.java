@@ -99,7 +99,7 @@ public class HttpRerankService implements RerankService {
     }
 
     private ModelConfig resolveEnabledRerankOrNull() {
-        List<ModelConfigDTO> enabled = modelConfigDataService.listEnabledConfigsByType(ModelType.RERANK);
+        List<ModelConfigDTO> enabled = modelConfigDataService.listEnabledByType(ModelType.RERANK);
         if (enabled == null || enabled.isEmpty()) {
             return null;
         }

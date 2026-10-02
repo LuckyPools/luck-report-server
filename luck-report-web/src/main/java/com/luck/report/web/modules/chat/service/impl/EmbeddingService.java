@@ -252,7 +252,7 @@ public class EmbeddingService {
             return config;
         }
 
-        List<ModelConfigDTO> enabledConfigs = modelConfigDataService.listEnabledConfigsByType(ModelType.EMBEDDING);
+        List<ModelConfigDTO> enabledConfigs = modelConfigDataService.listEnabledByType(ModelType.EMBEDDING);
         if (enabledConfigs == null || enabledConfigs.isEmpty()) {
             throw new ReportBizException("error.embedding.noAvailableModel");
         }

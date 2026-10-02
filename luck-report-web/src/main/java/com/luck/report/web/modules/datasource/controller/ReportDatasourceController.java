@@ -78,14 +78,8 @@ public class ReportDatasourceController {
     public ResultVO<List<ReportDatasourceVO>> list(
             @RequestParam(value = "enabled", required = false) Boolean enabled,
             @RequestParam(value = "type", required = false) String type) {
-        List<ReportDatasourceVO> result;
-        if (enabled != null) {
-            result = reportDatasourceService.getDatasourceByEnabled(enabled);
-        } else if (type != null && !type.isEmpty()) {
-            result = reportDatasourceService.getDatasourceByType(type);
-        } else {
-            result = reportDatasourceService.getAllDatasource();
-        }
+        List<ReportDatasourceVO> result = reportDatasourceService.list(
+                ReportDatasourceQueryDTO.builder().enabled(enabled).type(type).build());
         return ResultVOUtils.success("success.datasource.listLoaded", result);
     }
 
@@ -96,9 +90,9 @@ public class ReportDatasourceController {
      * @return 分页结果
      */
     @PostMapping("/page")
-    public PageResultVO<ReportDatasourceVO> queryByPage(@Valid @RequestBody ReportDatasourceQueryDTO queryDTO) {
+    public PageResultVO<ReportDatasourceVO> listPage(@Valid @RequestBody ReportDatasourceQueryDTO queryDTO) {
         try {
-            return reportDatasourceService.queryByPage(queryDTO);
+            return reportDatasourceService.listPage(queryDTO);
         } catch (Exception e) {
             log.error("分页查询数据源列表失败", e);
             return PageResultVO.error(ReportI18n.getMessage("error.datasource.pageFailed", ReportI18n.messageOf(e)));
@@ -113,7 +107,7 @@ public class ReportDatasourceController {
      */
     @GetMapping("/detail/{id}")
     public ResultVO<ReportDatasourceVO> getDetail(@PathVariable String id) {
-        ReportDatasourceVO vo = reportDatasourceService.getDatasourceById(id);
+        ReportDatasourceVO vo = reportDatasourceService.getById(id);
         if (vo == null) {
             return ResultVOUtils.error("error.datasource.notExist");
         }
@@ -130,7 +124,7 @@ public class ReportDatasourceController {
     public ResultVO<ReportDatasourceVO> create(@RequestBody ReportDatasourceVO vo) {
         try {
             ReportDatasource entity = toEntity(vo);
-            ReportDatasourceVO created = reportDatasourceService.createDatasource(entity);
+            ReportDatasourceVO created = reportDatasourceService.create(entity);
             return ResultVOUtils.success("success.datasource.created", created);
         } catch (Exception e) {
             log.error("创建数据源失败", e);
@@ -149,7 +143,7 @@ public class ReportDatasourceController {
     public ResultVO<ReportDatasourceVO> update(@PathVariable String id, @RequestBody ReportDatasourceVO vo) {
         try {
             ReportDatasource entity = toEntity(vo);
-            ReportDatasourceVO updated = reportDatasourceService.updateDatasource(id, entity);
+            ReportDatasourceVO updated = reportDatasourceService.update(id, entity);
             return ResultVOUtils.success("success.datasource.updated", updated);
         } catch (Exception e) {
             log.error("更新数据源失败", e);
@@ -166,7 +160,7 @@ public class ReportDatasourceController {
     @DeleteMapping("/delete/{id}")
     public ResultVO<String> delete(@PathVariable String id) {
         try {
-            reportDatasourceService.deleteDatasource(id);
+            reportDatasourceService.removeById(id);
             return ResultVOUtils.success("success.datasource.deleted", ReportI18n.getMessage("success.datasource.deleted"));
         } catch (Exception e) {
             log.error("删除数据源失败", e);
@@ -177,7 +171,7 @@ public class ReportDatasourceController {
     @DeleteMapping("/batch/delete")
     public ResultVO<String> deleteBatch(@RequestBody List<String> ids) {
         try {
-            reportDatasourceService.deleteDatasourceBatch(ids);
+            reportDatasourceService.removeByIds(ids);
             return ResultVOUtils.success("success.datasource.deleted", ReportI18n.getMessage("success.datasource.deleted"));
         } catch (Exception e) {
             log.error("批量删除数据源失败", e);
@@ -357,10 +351,10 @@ public class ReportDatasourceController {
      * @return 删除结果
      */
     @DeleteMapping("/{id}/logical_relations/delete/{relationId}")
-    public ResultVO<String> deleteLogicalRelation(@PathVariable String id,
+    public ResultVO<String> removeLogicalRelation(@PathVariable String id,
                                                     @PathVariable String relationId) {
         try {
-            reportDatasourceService.deleteLogicalRelation(id, relationId);
+            reportDatasourceService.removeLogicalRelation(id, relationId);
             return ResultVOUtils.success("success.datasource.relationDeleted", ReportI18n.getMessage("success.datasource.relationDeleted"));
         } catch (Exception e) {
             log.error("删除逻辑外键失败", e);
@@ -422,7 +416,7 @@ public class ReportDatasourceController {
         try {
             String datasourceId = id;
             if (datasourceId == null && name != null) {
-                ReportDatasourceVO reportDatasource = reportDatasourceService.getDatasourceByName(name);
+                ReportDatasourceVO reportDatasource = reportDatasourceService.getByName(name);
                 if (reportDatasource == null) {
                     return ResultVOUtils.error("error.datasource.notExistNamed", name);
                 }

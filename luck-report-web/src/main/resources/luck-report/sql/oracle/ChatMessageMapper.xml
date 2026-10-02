@@ -30,7 +30,7 @@
     </insert>
 
     <!-- 批量插入消息（Oracle 12c/19c 用 INSERT ALL，不支持多行 VALUES） -->
-    <insert id="batchInsert">
+    <insert id="insertBatch">
         INSERT ALL
         <foreach collection="list" item="item">
             INTO luck_chat_message (id, session_id, role, content, message_type, metadata, create_time, create_by, update_by, update_time, del_flag)

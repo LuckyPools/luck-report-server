@@ -19,17 +19,17 @@ import java.util.List;
  */
 public interface BusinessKnowledgeService {
 
-    BusinessKnowledgeVO getKnowledgeById(String id);
+    BusinessKnowledgeVO getById(String id);
 
-    BusinessKnowledgeVO createKnowledge(CreateBusinessKnowledgeDTO createKnowledgeDTO);
+    BusinessKnowledgeVO create(CreateBusinessKnowledgeDTO createDTO);
 
-    BusinessKnowledgeVO updateKnowledge(String id, UpdateBusinessKnowledgeDTO updateKnowledgeDTO);
+    BusinessKnowledgeVO update(String id, UpdateBusinessKnowledgeDTO updateDTO);
 
-    boolean deleteKnowledge(String id);
+    boolean removeById(String id);
 
-    void deleteKnowledgeBatch(List<String> ids);
+    void removeByIds(List<String> ids);
 
-    PageResultVO<BusinessKnowledgeVO> queryByPage(BusinessKnowledgeQueryDTO queryDTO);
+    PageResultVO<BusinessKnowledgeVO> listPage(BusinessKnowledgeQueryDTO queryDTO);
 
     BusinessKnowledgeVO updateEnabledStatus(String id, Boolean enabled);
 
@@ -39,7 +39,7 @@ public interface BusinessKnowledgeService {
 
     KnowledgeChunkVO updateChunk(String knowledgeId, String vectorId, UpdateKnowledgeChunkDTO dto);
 
-    void deleteChunk(String knowledgeId, String vectorId);
+    void removeChunk(String knowledgeId, String vectorId);
 
     List<BusinessKnowledge> listByIds(List<String> ids);
 

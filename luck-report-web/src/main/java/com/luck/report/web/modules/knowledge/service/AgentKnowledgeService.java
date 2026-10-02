@@ -25,24 +25,24 @@ public interface AgentKnowledgeService {
      * @param id 智能体知识ID
      * @return 智能体知识VO
      */
-    AgentKnowledgeVO getKnowledgeById(String id);
+    AgentKnowledgeVO getById(String id);
 
     /**
      * 创建智能体知识
      *
-     * @param createKnowledgeDTO 创建智能体知识DTO
+     * @param createDTO 创建智能体知识DTO
      * @return 智能体知识VO
      */
-    AgentKnowledgeVO createKnowledge(CreateAgentKnowledgeDTO createKnowledgeDTO);
+    AgentKnowledgeVO create(CreateAgentKnowledgeDTO createDTO);
 
     /**
      * 更新智能体知识
      *
      * @param id 智能体知识ID
-     * @param updateKnowledgeDTO 更新智能体知识DTO
+     * @param updateDTO 更新智能体知识DTO
      * @return 智能体知识VO
      */
-    AgentKnowledgeVO updateKnowledge(String id, UpdateAgentKnowledgeDTO updateKnowledgeDTO);
+    AgentKnowledgeVO update(String id, UpdateAgentKnowledgeDTO updateDTO);
 
     /**
      * 删除智能体知识
@@ -50,14 +50,14 @@ public interface AgentKnowledgeService {
      * @param id 智能体知识ID
      * @return 是否删除成功
      */
-    boolean deleteKnowledge(String id);
+    boolean removeById(String id);
 
     /**
      * 批量删除智能体知识
      *
      * @param ids 智能体知识ID列表
      */
-    void deleteKnowledgeBatch(List<String> ids);
+    void removeByIds(List<String> ids);
 
     /**
      * 分页条件查询智能体知识
@@ -65,7 +65,7 @@ public interface AgentKnowledgeService {
      * @param queryDTO 查询条件
      * @return 分页结果
      */
-    PageResultVO<AgentKnowledgeVO> queryByPage(AgentKnowledgeQueryDTO queryDTO);
+    PageResultVO<AgentKnowledgeVO> listPage(AgentKnowledgeQueryDTO queryDTO);
 
     /**
      * 更新智能体知识是否生效
@@ -87,7 +87,7 @@ public interface AgentKnowledgeService {
 
     KnowledgeChunkVO updateChunk(String knowledgeId, String vectorId, UpdateKnowledgeChunkDTO dto);
 
-    void deleteChunk(String knowledgeId, String vectorId);
+    void removeChunk(String knowledgeId, String vectorId);
 
     /**
      * 根据ID列表批量查询智能体知识实体

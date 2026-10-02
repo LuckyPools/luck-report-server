@@ -18,27 +18,12 @@ import java.util.List;
 public interface ReportDatasourceService {
 
     /**
-     * 获取所有数据源列表
+     * 条件查询数据源列表
      *
+     * @param queryDTO 查询条件（name/type/enabled，分页字段忽略）
      * @return 数据源VO列表
      */
-    List<ReportDatasourceVO> getAllDatasource();
-
-    /**
-     * 按启用状态查询数据源列表
-     *
-     * @param enabled 是否启用
-     * @return 数据源VO列表
-     */
-    List<ReportDatasourceVO> getDatasourceByEnabled(Boolean enabled);
-
-    /**
-     * 按类型查询数据源列表
-     *
-     * @param type 数据源类型
-     * @return 数据源VO列表
-     */
-    List<ReportDatasourceVO> getDatasourceByType(String type);
+    List<ReportDatasourceVO> list(ReportDatasourceQueryDTO queryDTO);
 
     /**
      * 根据ID获取数据源详情
@@ -46,7 +31,7 @@ public interface ReportDatasourceService {
      * @param id 数据源ID
      * @return 数据源VO
      */
-    ReportDatasourceVO getDatasourceById(String id);
+    ReportDatasourceVO getById(String id);
 
     /**
      * 创建数据源
@@ -54,7 +39,7 @@ public interface ReportDatasourceService {
      * @param reportDatasource 数据源实体
      * @return 创建后的数据源VO
      */
-    ReportDatasourceVO createDatasource(ReportDatasource reportDatasource);
+    ReportDatasourceVO create(ReportDatasource reportDatasource);
 
     /**
      * 更新数据源
@@ -63,21 +48,21 @@ public interface ReportDatasourceService {
      * @param reportDatasource 数据源实体
      * @return 更新后的数据源VO
      */
-    ReportDatasourceVO updateDatasource(String id, ReportDatasource reportDatasource);
+    ReportDatasourceVO update(String id, ReportDatasource reportDatasource);
 
     /**
      * 删除数据源
      *
      * @param id 数据源ID
      */
-    void deleteDatasource(String id);
+    void removeById(String id);
 
     /**
      * 批量删除数据源
      *
      * @param ids 数据源ID列表
      */
-    void deleteDatasourceBatch(List<String> ids);
+    void removeByIds(List<String> ids);
 
     /**
      * 测试数据源连接
@@ -157,7 +142,7 @@ public interface ReportDatasourceService {
      * @param datasourceId   数据源ID
      * @param relationId     逻辑外键ID
      */
-    void deleteLogicalRelation(String datasourceId, String relationId);
+    void removeLogicalRelation(String datasourceId, String relationId);
 
     /**
      * 批量保存逻辑外键（替换现有的所有外键）
@@ -192,7 +177,7 @@ public interface ReportDatasourceService {
      * @param name 数据源名称
      * @return 数据源VO，不存在则返回null
      */
-    ReportDatasourceVO getDatasourceByName(String name);
+    ReportDatasourceVO getByName(String name);
 
     /**
      * 分页条件查询数据源
@@ -200,7 +185,7 @@ public interface ReportDatasourceService {
      * @param queryDTO 查询条件
      * @return 分页结果
      */
-    PageResultVO<ReportDatasourceVO> queryByPage(ReportDatasourceQueryDTO queryDTO);
+    PageResultVO<ReportDatasourceVO> listPage(ReportDatasourceQueryDTO queryDTO);
 
     /**
      * 跨数据源搜索Schema

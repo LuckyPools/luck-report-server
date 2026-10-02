@@ -17,7 +17,7 @@ public interface ChatSessionService {
      *
      * @return 会话列表，按置顶优先、更新时间倒序
      */
-    List<ChatSession> findAll();
+    List<ChatSession> listAll();
 
     /**
      * 根据用户ID查询会话列表
@@ -25,7 +25,7 @@ public interface ChatSessionService {
      * @param userId 用户ID（字符串形式），不可为空
      * @return 该用户下的活跃会话列表，按置顶优先、更新时间倒序
      */
-    List<ChatSession> findByUserId(String userId);
+    List<ChatSession> listByUserId(String userId);
 
     /**
      * 分页查询指定用户的会话列表
@@ -35,7 +35,7 @@ public interface ChatSessionService {
      * @param pageSize 每页数量
      * @return 分页结果，包含会话列表和总数
      */
-    PageResultVO<ChatSession> findByUserIdWithPage(String userId, int pageNum, int pageSize);
+    PageResultVO<ChatSession> listPage(String userId, int pageNum, int pageSize);
 
     /**
      * 根据会话ID查询会话详情
@@ -43,7 +43,7 @@ public interface ChatSessionService {
      * @param sessionId 会话ID，不可为空
      * @return 会话实体，不存在返回 null
      */
-    ChatSession findBySessionId(String sessionId);
+    ChatSession getById(String sessionId);
 
     /**
      * 创建新会话
@@ -52,7 +52,7 @@ public interface ChatSessionService {
      * @param userId 用户ID（字符串形式），可为空
      * @return 新建的会话实体
      */
-    ChatSession createSession(String title, String userId);
+    ChatSession create(String title, String userId);
 
     /**
      * 更新会话最后活动时间
@@ -82,12 +82,12 @@ public interface ChatSessionService {
      *
      * @param sessionId 会话ID，不可为空
      */
-    void deleteSession(String sessionId);
+    void removeById(String sessionId);
 
     /**
      * 删除指定用户下的所有会话（软删除）
      *
      * @param userId 用户ID（字符串形式），不可为空
      */
-    void deleteSessionsByUserId(String userId);
+    void removeByUserId(String userId);
 }

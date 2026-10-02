@@ -28,7 +28,7 @@ public interface ModelConfigDataService {
      *
      * @param id 要启用的配置ID
      */
-    void enableConfig(String id);
+    void enable(String id);
 
     /**
      * 禁用模型配置
@@ -36,7 +36,7 @@ public interface ModelConfigDataService {
      * @param id 要禁用的配置ID
      * @throws RuntimeException 当该类型只有一个启用的模型时抛出
      */
-    void disableConfig(String id);
+    void disable(String id);
 
     /**
      * 根据模型类型获取所有启用的配置列表
@@ -44,7 +44,7 @@ public interface ModelConfigDataService {
      * @param modelType 模型类型
      * @return ModelConfigDTO列表
      */
-    List<ModelConfigDTO> listEnabledConfigsByType(ModelType modelType);
+    List<ModelConfigDTO> listEnabledByType(ModelType modelType);
 
     /**
      * 根据模型类型统计启用的配置数量
@@ -52,21 +52,21 @@ public interface ModelConfigDataService {
      * @param modelType 模型类型
      * @return 启用的配置数量
      */
-    int countEnabledConfigsByType(ModelType modelType);
+    int countEnabledByType(ModelType modelType);
 
     /**
      * 获取所有模型配置列表
      *
      * @return ModelConfigDTO列表
      */
-    List<ModelConfigDTO> listConfigs();
+    List<ModelConfigDTO> list();
 
     /**
      * 新增模型配置
      *
      * @param dto ModelConfigDTO对象
      */
-    void addConfig(ModelConfigDTO dto);
+    void create(ModelConfigDTO dto);
 
     /**
      * 更新模型配置到数据库(不处理热切换)
@@ -74,21 +74,21 @@ public interface ModelConfigDataService {
      * @param dto ModelConfigDTO对象
      * @return 更新后的ModelConfig实体
      */
-    ModelConfig updateConfigInDb(ModelConfigDTO dto);
+    ModelConfig update(ModelConfigDTO dto);
 
     /**
      * 删除模型配置
      *
      * @param id 配置ID
      */
-    void deleteConfig(String id);
+    void removeById(String id);
 
     /**
      * 批量删除模型配置
      *
      * @param ids 配置ID列表
      */
-    void deleteConfigBatch(List<String> ids);
+    void removeByIds(List<String> ids);
 
     /**
      * 根据模型类型获取激活的配置
@@ -96,7 +96,7 @@ public interface ModelConfigDataService {
      * @param modelType 模型类型
      * @return ModelConfigDTO对象,不存在则返回null
      */
-    ModelConfigDTO getEnabledConfigByType(ModelType modelType);
+    ModelConfigDTO getEnabledByType(ModelType modelType);
 
     /**
      * 根据模型ID获取对话模型配置（带缓存）
@@ -113,5 +113,5 @@ public interface ModelConfigDataService {
      * @param queryDTO 查询条件
      * @return 分页结果
      */
-    PageResultVO<ModelConfigDTO> queryByPage(ModelConfigQueryDTO queryDTO);
+    PageResultVO<ModelConfigDTO> listPage(ModelConfigQueryDTO queryDTO);
 }

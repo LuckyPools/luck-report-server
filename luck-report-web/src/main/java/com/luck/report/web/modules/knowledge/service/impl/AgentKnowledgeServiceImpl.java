@@ -84,7 +84,7 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
      * @return 智能体知识VO
      */
     @Override
-    public AgentKnowledgeVO getKnowledgeById(String id) {
+    public AgentKnowledgeVO getById(String id) {
         AgentKnowledge knowledge = agentKnowledgeMapper.selectById(id);
         return knowledge == null ? null : agentKnowledgeConverter.toVo(knowledge);
     }
@@ -92,25 +92,25 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
     /**
      * 创建智能体知识
      *
-     * @param createKnowledgeDTO 创建智能体知识DTO
+     * @param createDTO 创建智能体知识DTO
      * @return 智能体知识VO
      */
     @Override
-    public AgentKnowledgeVO createKnowledge(CreateAgentKnowledgeDTO createKnowledgeDTO) {
-        validateCreateKnowledgeDTO(createKnowledgeDTO);
+    public AgentKnowledgeVO create(CreateAgentKnowledgeDTO createDTO) {
+        validateKnowledge(createDTO);
 
-        AgentKnowledge entity = agentKnowledgeConverter.toEntityForCreate(createKnowledgeDTO);
+        AgentKnowledge entity = agentKnowledgeConverter.toEntityForCreate(createDTO);
         entity.setId(SnowflakeIdGenerator.generateId());
         entity.setCreateBy(SecurityUtils.getCurrentUserId());
         entity.setUpdateBy(SecurityUtils.getCurrentUserId());
 
-        if (KnowledgeType.DOCUMENT.getValue().equals(createKnowledgeDTO.getType())
-                && createKnowledgeDTO.getFile() != null) {
-            String fileContent = readFileContent(createKnowledgeDTO.getFile());
+        if (KnowledgeType.DOCUMENT.getValue().equals(createDTO.getType())
+                && createDTO.getFile() != null) {
+            String fileContent = readFileContent(createDTO.getFile());
             entity.setContent(KnowledgeContentCleaner.prepareDocumentText(fileContent));
             if (!StringUtils.hasText(entity.getSourceFilename())
-                    && createKnowledgeDTO.getFile().getOriginalFilename() != null) {
-                entity.setSourceFilename(createKnowledgeDTO.getFile().getOriginalFilename());
+                    && createDTO.getFile().getOriginalFilename() != null) {
+                entity.setSourceFilename(createDTO.getFile().getOriginalFilename());
             }
         }
 
@@ -140,7 +140,7 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
      *
      * @param dto 创建智能体知识DTO
      */
-    private void validateCreateKnowledgeDTO(CreateAgentKnowledgeDTO dto) {
+    private void validateKnowledge(CreateAgentKnowledgeDTO dto) {
         if (KnowledgeType.DOCUMENT.getValue().equals(dto.getType()) && dto.getFile() == null) {
             throw new ReportBizException("error.knowledge.agentFileRequired");
         }
@@ -274,17 +274,17 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
      * 更新智能体知识
      *
      * @param id 智能体知识ID
-     * @param updateKnowledgeDTO 更新智能体知识DTO
+     * @param updateDTO 更新智能体知识DTO
      * @return 智能体知识VO
      */
     @Override
-    public AgentKnowledgeVO updateKnowledge(String id, UpdateAgentKnowledgeDTO updateKnowledgeDTO) {
+    public AgentKnowledgeVO update(String id, UpdateAgentKnowledgeDTO updateDTO) {
         AgentKnowledge knowledge = agentKnowledgeMapper.selectById(id);
         if (knowledge == null) {
             throw new ReportBizException("error.knowledge.agentNotFoundId", id);
         }
 
-        agentKnowledgeConverter.applyUpdateToEntity(knowledge, updateKnowledgeDTO);
+        agentKnowledgeConverter.applyUpdateToEntity(knowledge, updateDTO);
         knowledge.setUpdateBy(SecurityUtils.getCurrentUserId());
         knowledge.setEmbeddingStatus(EmbeddingStatus.PROCESSING);
 
@@ -316,7 +316,7 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
      * @param knowledge 智能体知识实体
      */
     private void syncToVectorStore(AgentKnowledge knowledge) {
-        deleteVectorByKnowledgeId(knowledge.getId());
+        removeVectorByKnowledgeId(knowledge.getId());
 
         List<VectorDocument> documents = convertToVectorDocuments(knowledge);
         reportAgentVectorStore.addDocuments(documents, knowledge.getModelId());
@@ -330,14 +330,14 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
      * @return 是否删除成功
      */
     @Override
-    public boolean deleteKnowledge(String id) {
+    public boolean removeById(String id) {
         AgentKnowledge knowledge = agentKnowledgeMapper.selectById(id);
         if (knowledge == null) {
             log.warn("智能体知识不存在, id: {}", id);
             return true;
         }
 
-        deleteVectorByKnowledgeId(id);
+        removeVectorByKnowledgeId(id);
 
         transactionTemplate.executeWithoutResult(status -> {
             knowledge.setDelFlag(1);
@@ -351,13 +351,13 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
     }
 
     @Override
-    public void deleteKnowledgeBatch(List<String> ids) {
+    public void removeByIds(List<String> ids) {
         if (ids == null || ids.isEmpty()) {
             return;
         }
         for (String id : ids) {
             if (StringUtils.hasText(id)) {
-                deleteKnowledge(id);
+                removeById(id);
             }
         }
     }
@@ -367,7 +367,7 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
      *
      * @param knowledgeId 智能体知识ID
      */
-    private void deleteVectorByKnowledgeId(String knowledgeId) {
+    private void removeVectorByKnowledgeId(String knowledgeId) {
         reportAgentVectorStore.deleteByMetadata(
             AgentKnowledgeMetadataConstant.AGENT_KNOWLEDGE,
             AgentKnowledgeMetadataConstant.DB_AGENT_KNOWLEDGE_ID,
@@ -382,7 +382,7 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
      * @return 分页结果
      */
     @Override
-    public PageResultVO<AgentKnowledgeVO> queryByPage(AgentKnowledgeQueryDTO queryDTO) {
+    public PageResultVO<AgentKnowledgeVO> listPage(AgentKnowledgeQueryDTO queryDTO) {
         int offset = (queryDTO.getPageNum() - 1) * queryDTO.getPageSize();
 
         Long total = agentKnowledgeMapper.selectCount(queryDTO);
@@ -578,7 +578,7 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
 
     @Override
     public List<KnowledgeChunkVO> listChunks(String knowledgeId) {
-        if (getKnowledgeById(knowledgeId) == null) {
+        if (getById(knowledgeId) == null) {
             throw new ReportBizException("error.knowledge.agentNotFoundId", knowledgeId);
         }
         return knowledgeChunkService.listChunks(
@@ -589,7 +589,7 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
 
     @Override
     public KnowledgeChunkVO updateChunk(String knowledgeId, String vectorId, UpdateKnowledgeChunkDTO dto) {
-        AgentKnowledgeVO knowledge = getKnowledgeById(knowledgeId);
+        AgentKnowledgeVO knowledge = getById(knowledgeId);
         if (knowledge == null) {
             throw new ReportBizException("error.knowledge.agentNotFoundId", knowledgeId);
         }
@@ -604,11 +604,11 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
     }
 
     @Override
-    public void deleteChunk(String knowledgeId, String vectorId) {
-        if (getKnowledgeById(knowledgeId) == null) {
+    public void removeChunk(String knowledgeId, String vectorId) {
+        if (getById(knowledgeId) == null) {
             throw new ReportBizException("error.knowledge.agentNotFoundId", knowledgeId);
         }
-        knowledgeChunkService.deleteChunk(
+        knowledgeChunkService.removeChunk(
                 AgentKnowledgeMetadataConstant.AGENT_KNOWLEDGE,
                 AgentKnowledgeMetadataConstant.DB_AGENT_KNOWLEDGE_ID,
                 knowledgeId, vectorId);

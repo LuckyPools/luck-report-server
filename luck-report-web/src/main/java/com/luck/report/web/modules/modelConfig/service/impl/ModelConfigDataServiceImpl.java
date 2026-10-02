@@ -91,7 +91,7 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
      */
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void enableConfig(String id) {
+    public void enable(String id) {
         ModelConfig entity = modelConfigMapper.selectModelConfigById(id);
         if (entity == null) {
             throw new ReportBizException("error.model.configNotFound");
@@ -114,7 +114,7 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
      */
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void disableConfig(String id) {
+    public void disable(String id) {
         ModelConfig entity = modelConfigMapper.selectModelConfigById(id);
         if (entity == null) {
             throw new ReportBizException("error.model.configNotFound");
@@ -143,7 +143,7 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
      * @return ModelConfigDTO列表
      */
     @Override
-    public List<ModelConfigDTO> listEnabledConfigsByType(ModelType modelType) {
+    public List<ModelConfigDTO> listEnabledByType(ModelType modelType) {
         String cacheKey = cacheKeyForType(modelType);
 
         List<ModelConfigDTO> cachedList = CacheUtils.get(cacheKey);
@@ -171,7 +171,7 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
      * @return 激活的配置数量
      */
     @Override
-    public int countEnabledConfigsByType(ModelType modelType) {
+    public int countEnabledByType(ModelType modelType) {
         return countEnabledByType(modelType.getCode());
     }
 
@@ -181,7 +181,7 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
      * @return ModelConfigDTO列表
      */
     @Override
-    public List<ModelConfigDTO> listConfigs() {
+    public List<ModelConfigDTO> list() {
         return modelConfigMapper.selectList(new ModelConfigQueryDTO()).stream()
                 .map(ModelConfigConverter::toDTO)
                 .collect(Collectors.toList());
@@ -193,7 +193,7 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
      * @param dto ModelConfigDTO对象
      */
     @Override
-    public void addConfig(ModelConfigDTO dto) {
+    public void create(ModelConfigDTO dto) {
         clean(dto);
         ModelConfig entity = ModelConfigConverter.toEntity(dto);
         entity.setId(SnowflakeIdGenerator.generateId());
@@ -232,7 +232,7 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
      */
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public ModelConfig updateConfigInDb(ModelConfigDTO dto) {
+    public ModelConfig update(ModelConfigDTO dto) {
         clean(dto);
         ModelConfig entity = modelConfigMapper.selectModelConfigById(dto.getId());
         if (entity == null) {
@@ -288,7 +288,7 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
      * @param id 配置ID
      */
     @Override
-    public void deleteConfig(String id) {
+    public void removeById(String id) {
         ModelConfig entity = modelConfigMapper.selectModelConfigById(id);
         if (entity == null) {
             throw new ReportBizException("error.model.configNotFound");
@@ -314,13 +314,13 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
     }
 
     @Override
-    public void deleteConfigBatch(List<String> ids) {
+    public void removeByIds(List<String> ids) {
         if (ids == null || ids.isEmpty()) {
             return;
         }
         for (String id : ids) {
             if (id != null && !id.isEmpty()) {
-                deleteConfig(id);
+                removeById(id);
             }
         }
     }
@@ -332,8 +332,8 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
      * @return ModelConfigDTO对象,不存在则返回null
      */
     @Override
-    public ModelConfigDTO getEnabledConfigByType(ModelType modelType) {
-        List<ModelConfigDTO> enabledConfigs = listEnabledConfigsByType(modelType);
+    public ModelConfigDTO getEnabledByType(ModelType modelType) {
+        List<ModelConfigDTO> enabledConfigs = listEnabledByType(modelType);
         if (enabledConfigs == null || enabledConfigs.isEmpty()) {
             log.warn("未找到类型[{}]的激活模型配置", modelType);
             return null;
@@ -372,7 +372,7 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
             return config;
         }
 
-        ModelConfigDTO dto = getEnabledConfigByType(ModelType.CHAT);
+        ModelConfigDTO dto = getEnabledByType(ModelType.CHAT);
         if (dto == null) {
             throw new ReportBizException("error.model.noChatModel");
         }
@@ -388,7 +388,7 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
      * @return 分页结果
      */
     @Override
-    public PageResultVO<ModelConfigDTO> queryByPage(ModelConfigQueryDTO queryDTO) {
+    public PageResultVO<ModelConfigDTO> listPage(ModelConfigQueryDTO queryDTO) {
         int offset = (queryDTO.getPageNum() - 1) * queryDTO.getPageSize();
 
         Long total = modelConfigMapper.selectCount(queryDTO);

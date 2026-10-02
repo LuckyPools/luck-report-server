@@ -69,7 +69,7 @@ public class ReportVectorStoreController {
         return ResultVO.success(true);
     }
 
-    @PostMapping("/create_batch")
+    @PostMapping("/batch/create")
     public ResultVO<Boolean> addDocuments(@RequestBody List<VectorAddRequest> requests) {
         if (requests == null || requests.isEmpty()) {
             return ResultVO.error(400, "Document list cannot be empty");

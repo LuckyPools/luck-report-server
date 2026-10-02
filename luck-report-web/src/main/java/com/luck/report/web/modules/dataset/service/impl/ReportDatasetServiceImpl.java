@@ -62,7 +62,7 @@ public class ReportDatasetServiceImpl implements ReportDatasetService {
     }
 
     @Override
-    public PageResultVO<ReportDatasetVO> queryByPage(ReportDatasetQueryDTO queryDTO) {
+    public PageResultVO<ReportDatasetVO> listPage(ReportDatasetQueryDTO queryDTO) {
         int offset = (queryDTO.getPageNum() - 1) * queryDTO.getPageSize();
         Long total = reportDatasetMapper.selectCount(queryDTO);
         List<ReportDataset> dataList = reportDatasetMapper.selectPage(queryDTO, offset, queryDTO.getPageSize());
@@ -81,7 +81,7 @@ public class ReportDatasetServiceImpl implements ReportDatasetService {
 
     @Override
     public ReportDatasetVO create(ReportDatasetSaveDTO dto) {
-        validateSave(dto);
+        validateDataset(dto);
         checkNameUnique(dto.getName(), null);
         ReportDataset entity = buildEntity(null, dto);
         entity.setId(SnowflakeIdGenerator.generateId());
@@ -103,7 +103,7 @@ public class ReportDatasetServiceImpl implements ReportDatasetService {
         if (existing == null) {
             throw new ReportBizException("error.dataset.notExistId", id);
         }
-        validateSave(dto);
+        validateDataset(dto);
         checkNameUnique(dto.getName(), id);
         ReportDataset entity = buildEntity(id, dto);
         entity.setUpdateBy(SecurityUtils.getCurrentUserId());
@@ -150,7 +150,7 @@ public class ReportDatasetServiceImpl implements ReportDatasetService {
      *
      * @param dto 保存参数
      */
-    private void validateSave(ReportDatasetSaveDTO dto) {
+    private void validateDataset(ReportDatasetSaveDTO dto) {
         if (!TYPE_SQL.equals(dto.getType()) && !TYPE_JSON.equals(dto.getType())) {
             throw new ReportBizException("error.dataset.invalidType", dto.getType());
         }
