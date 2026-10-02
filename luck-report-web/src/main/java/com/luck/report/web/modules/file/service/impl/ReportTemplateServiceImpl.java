@@ -1,6 +1,7 @@
 package com.luck.report.web.modules.file.service.impl;
 
 import com.luck.report.web.utils.SnowflakeIdGenerator;
+import com.luck.report.web.modules.file.domain.dto.ReportTemplateQueryDTO;
 import com.luck.report.web.modules.file.domain.entity.ReportTemplate;
 import com.luck.report.web.modules.file.mapper.ReportTemplateMapper;
 import com.luck.report.web.modules.file.service.ReportTemplateService;
@@ -44,14 +45,6 @@ public class ReportTemplateServiceImpl implements ReportTemplateService {
     }
 
     @Override
-    public ReportTemplate getByTitle(String title) {
-        if (title == null || title.trim().isEmpty()) {
-            return null;
-        }
-        return reportTemplateMapper.selectByTitle(title.trim());
-    }
-
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public ReportTemplate save(ReportTemplate reportTemplate) {
         if (reportTemplate == null) {
@@ -89,7 +82,7 @@ public class ReportTemplateServiceImpl implements ReportTemplateService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean updateMeta(ReportTemplate reportTemplate) {
+    public boolean updateMetadata(ReportTemplate reportTemplate) {
         if (reportTemplate == null || reportTemplate.getId() == null) {
             throw new ReportBizException("error.template.nullId");
         }
@@ -103,7 +96,7 @@ public class ReportTemplateServiceImpl implements ReportTemplateService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean deleteById(String id) {
+    public boolean removeById(String id) {
         if (id == null) {
             return false;
         }
@@ -124,7 +117,7 @@ public class ReportTemplateServiceImpl implements ReportTemplateService {
 
     @Override
     public List<ReportTemplate> listAll() {
-        List<ReportTemplate> list = reportTemplateMapper.selectAll();
+        List<ReportTemplate> list = reportTemplateMapper.selectList(new ReportTemplateQueryDTO());
         return list == null ? Collections.emptyList() : list;
     }
 
@@ -137,13 +130,14 @@ public class ReportTemplateServiceImpl implements ReportTemplateService {
             pageSize = 10;
         }
         String keyword = (name == null || name.trim().isEmpty()) ? null : name.trim();
-        long total = reportTemplateMapper.countByCondition(keyword);
+        ReportTemplateQueryDTO queryDTO = ReportTemplateQueryDTO.builder().name(keyword).build();
+        long total = reportTemplateMapper.selectCount(queryDTO);
         List<ReportTemplate> records;
         if (total == 0) {
             records = Collections.emptyList();
         } else {
             int offset = (pageNum - 1) * pageSize;
-            records = reportTemplateMapper.selectPage(keyword, offset, pageSize);
+            records = reportTemplateMapper.selectPage(queryDTO, offset, pageSize);
             if (records == null) {
                 records = Collections.emptyList();
             }

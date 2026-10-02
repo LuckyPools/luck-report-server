@@ -21,7 +21,7 @@ public interface ModelConfigDataService {
      * @param id 配置ID
      * @return ModelConfig实体对象,不存在则返回null
      */
-    ModelConfig findById(String id);
+    ModelConfig getById(String id);
 
     /**
      * 启用模型配置

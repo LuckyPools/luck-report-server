@@ -3,6 +3,26 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.luck.report.web.modules.knowledge.mapper.BusinessKnowledgeMapper">
 
+    <sql id="baseColumns">
+        id, title, type, question, content, is_enabled AS enabled, embedding_status,
+        error_msg, source_filename, file_size, file_type, splitter_type, model_id,
+        del_flag, create_time, update_time, create_by, update_by
+    </sql>
+
+    <sql id="pageWhere">
+        WHERE del_flag = 0
+        <if test="queryDTO.title != null and queryDTO.title != ''">
+            <bind name="titlePattern" value="'%' + queryDTO.title + '%'" />
+            AND title LIKE #{titlePattern}
+        </if>
+        <if test="queryDTO.type != null and queryDTO.type != ''">
+            AND type = #{queryDTO.type}
+        </if>
+        <if test="queryDTO.embeddingStatus != null and queryDTO.embeddingStatus != ''">
+            AND embedding_status = #{queryDTO.embeddingStatus}
+        </if>
+    </sql>
+
     <!-- 插入业务知识，ID由Snowflake生成 -->
     <insert id="insert">
         INSERT INTO luck_business_knowledge (id, title, type, question, content, is_enabled,
@@ -37,47 +57,23 @@
 
     <!-- 根据ID查询业务知识（排除已删除） -->
     <select id="selectById" resultType="com.luck.report.web.modules.knowledge.domain.entity.BusinessKnowledge">
-        SELECT id, title, type, question, content, is_enabled AS enabled, embedding_status,
-               error_msg, source_filename, file_size, file_type, splitter_type, model_id,
-               del_flag, create_time, update_time, create_by, update_by
+        SELECT <include refid="baseColumns"/>
         FROM luck_business_knowledge WHERE id = #{id} AND del_flag = 0
     </select>
 
     <!-- 分页条件查询业务知识，LIKE用bind拼接 -->
-    <select id="selectByConditionsWithPage" resultType="com.luck.report.web.modules.knowledge.domain.entity.BusinessKnowledge">
-        SELECT id, title, type, question, content, is_enabled AS enabled, embedding_status,
-               error_msg, source_filename, file_size, file_type, splitter_type, model_id,
-               del_flag, create_time, update_time, create_by, update_by
+    <select id="selectPage" resultType="com.luck.report.web.modules.knowledge.domain.entity.BusinessKnowledge">
+        SELECT <include refid="baseColumns"/>
         FROM luck_business_knowledge
-        WHERE del_flag = 0
-        <if test="queryDTO.title != null and queryDTO.title != ''">
-            <bind name="titlePattern" value="'%' + queryDTO.title + '%'" />
-            AND title LIKE #{titlePattern}
-        </if>
-        <if test="queryDTO.type != null and queryDTO.type != ''">
-            AND type = #{queryDTO.type}
-        </if>
-        <if test="queryDTO.embeddingStatus != null and queryDTO.embeddingStatus != ''">
-            AND embedding_status = #{queryDTO.embeddingStatus}
-        </if>
+        <include refid="pageWhere"/>
         ORDER BY create_time DESC
         LIMIT #{pageSize} OFFSET #{offset}
     </select>
 
     <!-- 统计符合条件的业务知识数量 -->
-    <select id="countByConditions" resultType="long">
+    <select id="selectCount" resultType="long">
         SELECT COUNT(*) FROM luck_business_knowledge
-        WHERE del_flag = 0
-        <if test="queryDTO.title != null and queryDTO.title != ''">
-            <bind name="titlePattern" value="'%' + queryDTO.title + '%'" />
-            AND title LIKE #{titlePattern}
-        </if>
-        <if test="queryDTO.type != null and queryDTO.type != ''">
-            AND type = #{queryDTO.type}
-        </if>
-        <if test="queryDTO.embeddingStatus != null and queryDTO.embeddingStatus != ''">
-            AND embedding_status = #{queryDTO.embeddingStatus}
-        </if>
+        <include refid="pageWhere"/>
     </select>
 
     <!-- 查询所有生效的业务知识ID列表 -->
@@ -88,9 +84,7 @@
 
     <!-- 根据ID列表批量查询业务知识 -->
     <select id="selectByIds" resultType="com.luck.report.web.modules.knowledge.domain.entity.BusinessKnowledge">
-        SELECT id, title, type, question, content, is_enabled AS enabled, embedding_status,
-               error_msg, source_filename, file_size, file_type, splitter_type, model_id,
-               del_flag, create_time, update_time, create_by, update_by
+        SELECT <include refid="baseColumns"/>
         FROM luck_business_knowledge
         WHERE id IN
         <foreach collection="ids" item="id" open="(" separator="," close=")">

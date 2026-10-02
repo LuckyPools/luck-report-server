@@ -1,5 +1,6 @@
 package com.luck.report.web.modules.file.mapper;
 
+import com.luck.report.web.modules.file.domain.dto.ReportTemplateQueryDTO;
 import com.luck.report.web.modules.file.domain.entity.ReportTemplate;
 import com.luck.report.jdbc.Param;
 
@@ -37,7 +38,7 @@ public interface ReportTemplateMapper {
     int updateMeta(ReportTemplate reportFile);
 
     /**
-     * 根据ID查询报表文件（排除已删除）
+     * 根据ID查询报表文件（排除已删除，含 template）
      *
      * @param id 报表文件ID
      * @return 报表文件实体
@@ -45,19 +46,12 @@ public interface ReportTemplateMapper {
     ReportTemplate selectById(@Param("id") String id);
 
     /**
-     * 根据标题查询报表文件（排除已删除）
+     * 按条件查询报表文件列表（非分页，不含 template）；name 模糊匹配
      *
-     * @param title 报表标题
-     * @return 报表文件实体
-     */
-    ReportTemplate selectByTitle(@Param("title") String title);
-
-    /**
-     * 查询所有未删除的报表文件列表
-     *
+     * @param queryDTO 查询条件
      * @return 报表文件列表
      */
-    List<ReportTemplate> selectAll();
+    List<ReportTemplate> selectList(@Param("queryDTO") ReportTemplateQueryDTO queryDTO);
 
     /**
      * 根据ID逻辑删除报表文件
@@ -68,22 +62,22 @@ public interface ReportTemplateMapper {
     int deleteById(@Param("id") String id);
 
     /**
-     * 分页查询报表文件
+     * 分页条件查询报表文件（不含 template）
      *
-     * @param name   标题模糊匹配（null/空不过滤）
-     * @param offset 偏移量（从 0 开始）
-     * @param limit  每页大小
+     * @param queryDTO 查询条件
+     * @param offset   偏移量（从 0 开始）
+     * @param pageSize 每页大小
      * @return 报表文件列表
      */
-    List<ReportTemplate> selectPage(@Param("name") String name,
-                                    @Param("offset") int offset,
-                                    @Param("limit") int limit);
+    List<ReportTemplate> selectPage(@Param("queryDTO") ReportTemplateQueryDTO queryDTO,
+                                                  @Param("offset") int offset,
+                                                  @Param("pageSize") int pageSize);
 
     /**
      * 统计符合条件的报表文件数
      *
-     * @param name 标题模糊匹配（null/空不过滤）
+     * @param queryDTO 查询条件
      * @return 总数
      */
-    long countByCondition(@Param("name") String name);
+    long selectCount(@Param("queryDTO") ReportTemplateQueryDTO queryDTO);
 }

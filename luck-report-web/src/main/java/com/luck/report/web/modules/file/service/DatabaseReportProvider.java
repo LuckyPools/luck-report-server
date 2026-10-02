@@ -62,7 +62,7 @@ public class DatabaseReportProvider implements ReportProvider {
     @Override
     public void deleteReport(String reportPath) {
         String id = sliceId(reportPath);
-        boolean ok = luckReportFileService.deleteById(id);
+        boolean ok = luckReportFileService.removeById(id);
         if (!ok) {
             log.warn("Delete report file failed, id={}", id);
         }
@@ -202,7 +202,7 @@ public class DatabaseReportProvider implements ReportProvider {
         ReportTemplate patch = new ReportTemplate();
         patch.setId(id);
         patch.setTitle(title);
-        boolean ok = luckReportFileService.updateMeta(patch);
+        boolean ok = luckReportFileService.updateMetadata(patch);
         if (!ok) {
             throw new ReportException("error.report.notExist", id);
         }

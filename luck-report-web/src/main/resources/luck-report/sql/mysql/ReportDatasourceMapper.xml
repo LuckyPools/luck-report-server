@@ -8,7 +8,33 @@
         is_enabled AS enabled, test_status, description, initialized_tables, create_by, create_time, update_time, update_by, del_flag
     </sql>
 
-    <!-- 插入数据源，ID由Snowflake生成 -->
+    <sql id="listWhere">
+        WHERE del_flag = 0
+        <if test="queryDTO != null and queryDTO.name != null and queryDTO.name != ''">
+            AND name = #{queryDTO.name}
+        </if>
+        <if test="queryDTO != null and queryDTO.type != null and queryDTO.type != ''">
+            AND type = #{queryDTO.type}
+        </if>
+        <if test="queryDTO != null and queryDTO.enabled != null">
+            AND is_enabled = #{queryDTO.enabled}
+        </if>
+    </sql>
+
+    <sql id="pageWhere">
+        WHERE del_flag = 0
+        <if test="queryDTO.name != null and queryDTO.name != ''">
+            <bind name="namePattern" value="'%' + queryDTO.name + '%'" />
+            AND name LIKE #{namePattern}
+        </if>
+        <if test="queryDTO.type != null and queryDTO.type != ''">
+            AND type = #{queryDTO.type}
+        </if>
+        <if test="queryDTO.enabled != null">
+            AND is_enabled = #{queryDTO.enabled}
+        </if>
+    </sql>
+
     <insert id="insert">
         INSERT INTO luck_report_datasource (id, name, type, host, port, database_name, username, password,
                 connection_url, is_enabled, test_status, description, initialized_tables, create_by, create_time, update_by, update_time, del_flag)
@@ -16,7 +42,6 @@
                 #{connectionUrl}, #{enabled}, #{testStatus}, #{description}, #{initializedTables}, #{createBy}, #{createTime}, #{updateBy}, #{updateTime}, #{delFlag})
     </insert>
 
-    <!-- 根据ID更新数据源 -->
     <update id="updateById">
         UPDATE luck_report_datasource SET name = #{name}, type = #{type}, host = #{host}, port = #{port},
                 database_name = #{databaseName}, username = #{username}, password = #{password},
@@ -25,52 +50,30 @@
         WHERE id = #{id}
     </update>
 
-    <!-- 根据ID查询数据源 -->
     <select id="selectById" resultType="com.luck.report.web.modules.datasource.domain.entity.ReportDatasource">
         SELECT <include refid="baseColumns"/>
         FROM luck_report_datasource WHERE id = #{id} AND del_flag = 0
     </select>
 
-    <!-- 查询所有数据源 -->
-    <select id="selectAll" resultType="com.luck.report.web.modules.datasource.domain.entity.ReportDatasource">
+    <select id="selectList" resultType="com.luck.report.web.modules.datasource.domain.entity.ReportDatasource">
         SELECT <include refid="baseColumns"/>
-        FROM luck_report_datasource WHERE del_flag = 0 ORDER BY create_time DESC
+        FROM luck_report_datasource
+        <include refid="listWhere"/>
+        ORDER BY create_time DESC
     </select>
 
-    <!-- 按启用状态查询数据源 -->
-    <select id="selectByEnabled" resultType="com.luck.report.web.modules.datasource.domain.entity.ReportDatasource">
-        SELECT <include refid="baseColumns"/>
-        FROM luck_report_datasource WHERE is_enabled = #{enabled} AND del_flag = 0 ORDER BY create_time DESC
-    </select>
-
-    <!-- 按类型查询数据源 -->
-    <select id="selectByType" resultType="com.luck.report.web.modules.datasource.domain.entity.ReportDatasource">
-        SELECT <include refid="baseColumns"/>
-        FROM luck_report_datasource WHERE type = #{type} AND del_flag = 0 ORDER BY create_time DESC
-    </select>
-
-    <!-- 根据ID删除数据源（逻辑删除） -->
     <update id="deleteById">
         UPDATE luck_report_datasource SET del_flag = 1 WHERE id = #{id}
     </update>
 
-    <!-- 更新连接测试状态 -->
     <update id="updateTestStatusById">
         UPDATE luck_report_datasource SET test_status = #{testStatus}, update_time = #{updateTime} WHERE id = #{id}
     </update>
 
-    <!-- 更新数据源启用状态 -->
     <update id="updateEnabledById">
         UPDATE luck_report_datasource SET is_enabled = #{enabled}, update_time = #{updateTime} WHERE id = #{id}
     </update>
 
-    <!-- 根据名称查询数据源 -->
-    <select id="selectByName" resultType="com.luck.report.web.modules.datasource.domain.entity.ReportDatasource">
-        SELECT <include refid="baseColumns"/>
-        FROM luck_report_datasource WHERE name = #{name} AND del_flag = 0
-    </select>
-
-    <!-- 根据ID列表批量查询数据源 -->
     <select id="selectByIds" resultType="com.luck.report.web.modules.datasource.domain.entity.ReportDatasource">
         SELECT <include refid="baseColumns"/>
         FROM luck_report_datasource WHERE del_flag = 0 AND id IN
@@ -80,44 +83,21 @@
         ORDER BY create_time DESC
     </select>
 
-    <!-- 更新已初始化的表名列表 -->
     <update id="updateInitializedTables">
         UPDATE luck_report_datasource SET initialized_tables = #{initializedTables}, update_time = #{updateTime} WHERE id = #{id}
     </update>
 
-    <!-- 分页条件查询数据源，LIKE用bind拼接 -->
-    <select id="selectByConditionsWithPage" resultType="com.luck.report.web.modules.datasource.domain.entity.ReportDatasource">
+    <select id="selectPage" resultType="com.luck.report.web.modules.datasource.domain.entity.ReportDatasource">
         SELECT <include refid="baseColumns"/>
         FROM luck_report_datasource
-        WHERE del_flag = 0
-        <if test="queryDTO.name != null and queryDTO.name != ''">
-            <bind name="namePattern" value="'%' + queryDTO.name + '%'" />
-            AND name LIKE #{namePattern}
-        </if>
-        <if test="queryDTO.type != null and queryDTO.type != ''">
-            AND type = #{queryDTO.type}
-        </if>
-        <if test="queryDTO.enabled != null">
-            AND is_enabled = #{queryDTO.enabled}
-        </if>
+        <include refid="pageWhere"/>
         ORDER BY create_time DESC
         LIMIT #{offset}, #{pageSize}
     </select>
 
-    <!-- 统计符合条件的数据源数量 -->
-    <select id="countByConditions" resultType="long">
+    <select id="selectCount" resultType="long">
         SELECT COUNT(*) FROM luck_report_datasource
-        WHERE del_flag = 0
-        <if test="queryDTO.name != null and queryDTO.name != ''">
-            <bind name="namePattern" value="'%' + queryDTO.name + '%'" />
-            AND name LIKE #{namePattern}
-        </if>
-        <if test="queryDTO.type != null and queryDTO.type != ''">
-            AND type = #{queryDTO.type}
-        </if>
-        <if test="queryDTO.enabled != null">
-            AND is_enabled = #{queryDTO.enabled}
-        </if>
+        <include refid="pageWhere"/>
     </select>
 
 </mapper>

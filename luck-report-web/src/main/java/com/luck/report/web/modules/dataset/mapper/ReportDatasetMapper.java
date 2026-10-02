@@ -38,27 +38,12 @@ public interface ReportDatasetMapper {
     ReportDataset selectById(@Param("id") String id);
 
     /**
-     * 按启用状态查询公共数据集列表
+     * 按条件查询公共数据集列表（非分页）；name 精确匹配，其余条件可选，queryDTO 为空条件时查全部
      *
-     * @param enabled 是否启用
+     * @param queryDTO 查询条件
      * @return 公共数据集列表
      */
-    List<ReportDataset> selectByEnabled(@Param("enabled") Boolean enabled);
-
-    /**
-     * 查询所有公共数据集（按创建时间倒序）
-     *
-     * @return 公共数据集列表
-     */
-    List<ReportDataset> selectAll();
-
-    /**
-     * 根据名称查询公共数据集
-     *
-     * @param name 数据集名称
-     * @return 公共数据集实体，不存在则返回null
-     */
-    ReportDataset selectByName(@Param("name") String name);
+    List<ReportDataset> selectList(@Param("queryDTO") ReportDatasetQueryDTO queryDTO);
 
     /**
      * 根据ID删除公共数据集
@@ -94,7 +79,7 @@ public interface ReportDatasetMapper {
      * @param pageSize 每页大小
      * @return 公共数据集列表
      */
-    List<ReportDataset> selectByConditionsWithPage(@Param("queryDTO") ReportDatasetQueryDTO queryDTO,
+    List<ReportDataset> selectPage(@Param("queryDTO") ReportDatasetQueryDTO queryDTO,
                                                    @Param("offset") Integer offset,
                                                    @Param("pageSize") Integer pageSize);
 
@@ -104,5 +89,5 @@ public interface ReportDatasetMapper {
      * @param queryDTO 查询条件
      * @return 符合条件的记录数
      */
-    Long countByConditions(@Param("queryDTO") ReportDatasetQueryDTO queryDTO);
+    Long selectCount(@Param("queryDTO") ReportDatasetQueryDTO queryDTO);
 }

@@ -74,19 +74,21 @@ public class ReportDatasourceServiceImpl implements ReportDatasourceService {
 
     @Override
     public List<ReportDatasourceVO> getAllDatasource() {
-        List<ReportDatasource> list = reportDatasourceMapper.selectAll();
+        List<ReportDatasource> list = reportDatasourceMapper.selectList(new ReportDatasourceQueryDTO());
         return list.stream().map(this::toVO).collect(Collectors.toList());
     }
 
     @Override
     public List<ReportDatasourceVO> getDatasourceByEnabled(Boolean enabled) {
-        List<ReportDatasource> list = reportDatasourceMapper.selectByEnabled(enabled);
+        List<ReportDatasource> list = reportDatasourceMapper.selectList(
+                ReportDatasourceQueryDTO.builder().enabled(enabled).build());
         return list.stream().map(this::toVO).collect(Collectors.toList());
     }
 
     @Override
     public List<ReportDatasourceVO> getDatasourceByType(String type) {
-        List<ReportDatasource> list = reportDatasourceMapper.selectByType(type);
+        List<ReportDatasource> list = reportDatasourceMapper.selectList(
+                ReportDatasourceQueryDTO.builder().type(type).build());
         return list.stream().map(this::toVO).collect(Collectors.toList());
     }
 
@@ -619,8 +621,9 @@ public class ReportDatasourceServiceImpl implements ReportDatasourceService {
 
     @Override
     public ReportDatasourceVO getDatasourceByName(String name) {
-        ReportDatasource reportDatasource = reportDatasourceMapper.selectByName(name);
-        return reportDatasource != null ? toVO(reportDatasource) : null;
+        List<ReportDatasource> list = reportDatasourceMapper.selectList(
+                ReportDatasourceQueryDTO.builder().name(name).build());
+        return list.isEmpty() ? null : toVO(list.get(0));
     }
 
     /**
@@ -677,9 +680,9 @@ public class ReportDatasourceServiceImpl implements ReportDatasourceService {
     public PageResultVO<ReportDatasourceVO> queryByPage(ReportDatasourceQueryDTO queryDTO) {
         int offset = (queryDTO.getPageNum() - 1) * queryDTO.getPageSize();
 
-        Long total = reportDatasourceMapper.countByConditions(queryDTO);
+        Long total = reportDatasourceMapper.selectCount(queryDTO);
 
-        List<ReportDatasource> dataList = reportDatasourceMapper.selectByConditionsWithPage(queryDTO, offset, queryDTO.getPageSize());
+        List<ReportDatasource> dataList = reportDatasourceMapper.selectPage(queryDTO, offset, queryDTO.getPageSize());
         List<ReportDatasourceVO> dataListVO = dataList.stream()
                 .map(this::toVO)
                 .collect(Collectors.toList());

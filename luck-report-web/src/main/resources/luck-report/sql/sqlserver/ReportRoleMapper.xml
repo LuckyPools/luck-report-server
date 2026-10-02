@@ -46,14 +46,6 @@
         SELECT COUNT(*) FROM luck_report_role WHERE role_code = #{roleCode}
     </select>
 
-    <!-- 某角色在指定 provider 下的全部绑定 -->
-    <select id="selectBindingsByRoleAndProvider" resultType="com.luck.report.web.modules.role.domain.entity.ReportRole">
-        SELECT role_code AS roleCode, file_path AS reportPath
-        FROM luck_report_role
-        WHERE role_code = #{roleCode}
-          AND file_path LIKE #{providerPrefix} + '%'
-    </select>
-
     <!-- 某 file_path 被哪些 role_code 绑定（预览鉴权用） -->
     <select id="selectRoleCodesByFilePath" resultType="string">
         SELECT role_code FROM luck_report_role WHERE file_path = #{reportPath}

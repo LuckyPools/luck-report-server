@@ -76,7 +76,7 @@ public interface ReportRoleService {
      *
      * @param roleCode 角色编码
      */
-    void deleteByRoleCode(String roleCode);
+    void removeByRoleCode(String roleCode);
 
     /**
      * 预览鉴权核心

@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 public class ReportDatasetQueryDTO {
 
     /**
-     * 数据集名称（模糊查询）
+     * 数据集名称；selectList 精确匹配，分页查询模糊匹配
      */
     private String name;
 

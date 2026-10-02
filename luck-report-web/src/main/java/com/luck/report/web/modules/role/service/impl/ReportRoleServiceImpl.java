@@ -195,7 +195,7 @@ public class ReportRoleServiceImpl implements ReportRoleService, ApplicationCont
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteByRoleCode(String roleCode) {
+    public void removeByRoleCode(String roleCode) {
         if (!StringUtils.hasText(roleCode)) {
             throw new ReportBizException("error.role.roleCodeEmpty");
         }

@@ -1,6 +1,7 @@
 package com.luck.report.web.modules.chat.service.impl;
 
 import com.luck.report.web.common.domain.vo.PageResultVO;
+import com.luck.report.web.modules.chat.domain.dto.ChatSessionQueryDTO;
 import com.luck.report.web.modules.chat.domain.entity.ChatSession;
 import com.luck.report.web.modules.chat.mapper.ChatSessionMapper;
 import com.luck.report.web.modules.chat.service.ChatSessionService;
@@ -28,25 +29,26 @@ public class ChatSessionServiceImpl implements ChatSessionService {
 
     @Override
     public List<ChatSession> findAll() {
-        return chatSessionMapper.selectAll();
+        return chatSessionMapper.selectList(new ChatSessionQueryDTO());
     }
 
     @Override
     public List<ChatSession> findByUserId(String userId) {
-        return chatSessionMapper.selectByUserId(userId);
+        return chatSessionMapper.selectList(ChatSessionQueryDTO.builder().userId(userId).build());
     }
 
     @Override
     public PageResultVO<ChatSession> findByUserIdWithPage(String userId, int pageNum, int pageSize) {
-        long total = chatSessionMapper.countByUserId(userId);
+        ChatSessionQueryDTO queryDTO = ChatSessionQueryDTO.builder().userId(userId).build();
+        long total = chatSessionMapper.selectCount(queryDTO);
         int offset = (pageNum - 1) * pageSize;
-        List<ChatSession> records = chatSessionMapper.selectByUserIdWithPage(userId, offset, pageSize);
+        List<ChatSession> records = chatSessionMapper.selectPage(queryDTO, offset, pageSize);
         return PageResultVO.success(records, total, pageNum, pageSize);
     }
 
     @Override
     public ChatSession findBySessionId(String sessionId) {
-        return chatSessionMapper.selectBySessionId(sessionId);
+        return chatSessionMapper.selectById(sessionId);
     }
 
     @Override
@@ -69,7 +71,7 @@ public class ChatSessionServiceImpl implements ChatSessionService {
     }
 
     @Override
-    public void updateSessionTime(String sessionId) {
+    public void refreshSessionTime(String sessionId) {
         chatSessionMapper.updateSessionTime(sessionId, LocalDateTime.now());
     }
 
@@ -87,13 +89,13 @@ public class ChatSessionServiceImpl implements ChatSessionService {
 
     @Override
     public void deleteSession(String sessionId) {
-        chatSessionMapper.softDeleteById(sessionId, LocalDateTime.now());
+        chatSessionMapper.deleteById(sessionId, LocalDateTime.now());
         log.info("删除会话: sessionId={}", sessionId);
     }
 
     @Override
     public void deleteSessionsByUserId(String userId) {
-        int count = chatSessionMapper.softDeleteByUserId(userId, LocalDateTime.now());
+        int count = chatSessionMapper.deleteByUserId(userId, LocalDateTime.now());
         log.info("删除用户下所有会话: userId={}, count={}", userId, count);
     }
 }

@@ -3,13 +3,27 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.luck.report.web.modules.file.mapper.ReportTemplateMapper">
 
-    <!-- 插入报表文件，createTime/updateTime 由 Java 侧赋值，ID由Snowflake生成 -->
+    <sql id="fullColumns">
+        id, title, template, del_flag, create_time, update_time, create_by, update_by
+    </sql>
+
+    <sql id="listColumns">
+        id, title, del_flag, create_time, update_time, create_by, update_by
+    </sql>
+
+    <sql id="queryWhere">
+        WHERE del_flag = 0
+        <if test="queryDTO != null and queryDTO.name != null and queryDTO.name != ''">
+            <bind name="namePattern" value="'%' + queryDTO.name + '%'" />
+            AND title LIKE #{namePattern}
+        </if>
+    </sql>
+
     <insert id="insert">
         INSERT INTO luck_report_template (id, title, template, del_flag, create_time, update_time, create_by, update_by)
         VALUES (#{id}, #{title}, #{template}, #{delFlag}, #{createTime}, #{updateTime}, #{createBy}, #{updateBy})
     </insert>
 
-    <!-- 根据ID更新报表文件，动态更新非空字段，updateTime 由 Java 侧赋值 -->
     <update id="updateById">
         UPDATE luck_report_template
         <trim prefix="SET" suffixOverrides=",">
@@ -21,7 +35,6 @@
         WHERE id = #{id}
     </update>
 
-    <!-- 根据ID更新报表元数据（名称等），白名单列，物理上不含 template 模板列，防止通过该入口篡改模板内容 -->
     <update id="updateMeta">
         UPDATE luck_report_template
         <trim prefix="SET" suffixOverrides=",">
@@ -31,53 +44,34 @@
         WHERE id = #{id} AND del_flag = 0
     </update>
 
-    <!-- 根据ID查询报表文件（排除已删除） -->
     <select id="selectById" resultType="com.luck.report.web.modules.file.domain.entity.ReportTemplate">
-        SELECT id, title, template, del_flag, create_time, update_time, create_by, update_by
+        SELECT <include refid="fullColumns"/>
         FROM luck_report_template
         WHERE id = #{id} AND del_flag = 0
     </select>
 
-    <!-- 根据标题查询报表文件（排除已删除） -->
-    <select id="selectByTitle" resultType="com.luck.report.web.modules.file.domain.entity.ReportTemplate">
-        SELECT id, title, template, del_flag, create_time, update_time, create_by, update_by
+    <select id="selectList" resultType="com.luck.report.web.modules.file.domain.entity.ReportTemplate">
+        SELECT <include refid="listColumns"/>
         FROM luck_report_template
-        WHERE title = #{title} AND del_flag = 0
-        LIMIT 1
-    </select>
-
-    <!-- 查询所有未删除的报表文件列表，按更新时间倒序（列表场景无需模板大字段，不查 template 以提升查询速度） -->
-    <select id="selectAll" resultType="com.luck.report.web.modules.file.domain.entity.ReportTemplate">
-        SELECT id, title, del_flag, create_time, update_time, create_by, update_by
-        FROM luck_report_template
-        WHERE del_flag = 0
+        <include refid="queryWhere"/>
         ORDER BY update_time DESC
     </select>
 
-    <!-- 根据ID逻辑删除报表文件 -->
     <update id="deleteById">
         UPDATE luck_report_template SET del_flag = 1 WHERE id = #{id}
     </update>
 
-    <!-- 分页查询报表文件（按更新时间倒序），name 为空则不过滤（分页列表无需模板大字段，不查 template 以提升查询速度） -->
     <select id="selectPage" resultType="com.luck.report.web.modules.file.domain.entity.ReportTemplate">
-        SELECT id, title, del_flag, create_time, update_time, create_by, update_by
+        SELECT <include refid="listColumns"/>
         FROM luck_report_template
-        WHERE del_flag = 0
-        <if test="name != null and name != ''">
-            AND title LIKE '%' || #{name} || '%'
-        </if>
+        <include refid="queryWhere"/>
         ORDER BY update_time DESC
-        LIMIT #{limit} OFFSET #{offset}
+        LIMIT #{pageSize} OFFSET #{offset}
     </select>
 
-    <!-- 统计符合条件的报表文件数，name 为空则统计全表 -->
-    <select id="countByCondition" resultType="long">
+    <select id="selectCount" resultType="long">
         SELECT COUNT(*) FROM luck_report_template
-        WHERE del_flag = 0
-        <if test="name != null and name != ''">
-            AND title LIKE '%' || #{name} || '%'
-        </if>
+        <include refid="queryWhere"/>
     </select>
 
 </mapper>

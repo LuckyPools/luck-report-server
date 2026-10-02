@@ -76,16 +76,6 @@ public interface ReportRoleMapper {
     int countBindingsByRole(@Param("roleCode") String roleCode);
 
     /**
-     * 某角色在指定 provider 下的全部绑定（含 '*' 与具体 file_path）。
-     *
-     * @param roleCode       角色编码
-     * @param providerPrefix provider 前缀（含冒号）
-     * @return 绑定列表
-     */
-    List<ReportRole> selectBindingsByRoleAndProvider(@Param("roleCode") String roleCode,
-                                                     @Param("providerPrefix") String providerPrefix);
-
-    /**
      * 某 file_path（包括 '*'）被哪些 role_code 绑定（预览鉴权用）。
      *
      * @param reportPath 报表完整路径

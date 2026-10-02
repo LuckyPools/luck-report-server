@@ -134,7 +134,7 @@ public class ReportDatasetController {
     @DeleteMapping("/delete/{id}")
     public ResultVO<String> delete(@PathVariable String id) {
         try {
-            reportDatasetService.deleteById(id);
+            reportDatasetService.removeById(id);
             return ResultVOUtils.success("success.dataset.deleted", ReportI18n.getMessage("success.dataset.deleted"));
         } catch (Exception e) {
             log.error("删除公共数据集失败", e);
@@ -145,7 +145,7 @@ public class ReportDatasetController {
     @DeleteMapping("/batch/delete")
     public ResultVO<String> deleteBatch(@RequestBody List<String> ids) {
         try {
-            reportDatasetService.deleteByIds(ids);
+            reportDatasetService.removeByIds(ids);
             return ResultVOUtils.success("success.dataset.deleted", ReportI18n.getMessage("success.dataset.deleted"));
         } catch (Exception e) {
             log.error("批量删除公共数据集失败", e);

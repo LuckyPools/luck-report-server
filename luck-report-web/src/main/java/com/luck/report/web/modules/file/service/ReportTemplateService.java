@@ -22,14 +22,6 @@ public interface ReportTemplateService {
     ReportTemplate getById(String id);
 
     /**
-     * 根据标题查询报表文件
-     *
-     * @param title 报表标题
-     * @return 报表文件实体
-     */
-    ReportTemplate getByTitle(String title);
-
-    /**
      * 新增报表文件
      *
      * @param reportFile 报表文件实体
@@ -51,7 +43,7 @@ public interface ReportTemplateService {
      * @param reportFile 报表文件实体（仅取 id、title 等元数据字段，template 字段被忽略）
      * @return 是否更新成功（目标记录不存在时返回 false）
      */
-    boolean updateMeta(ReportTemplate reportFile);
+    boolean updateMetadata(ReportTemplate reportFile);
 
     /**
      * 根据ID逻辑删除报表文件
@@ -59,7 +51,7 @@ public interface ReportTemplateService {
      * @param id 报表文件ID
      * @return 是否删除成功
      */
-    boolean deleteById(String id);
+    boolean removeById(String id);
 
     /**
      * 加载报表内容输入流

@@ -44,7 +44,7 @@ public interface AgentKnowledgeMapper {
      * @param offset   偏移量
      * @return 智能体知识列表
      */
-    List<AgentKnowledge> selectByConditionsWithPage(@Param("queryDTO") AgentKnowledgeQueryDTO queryDTO,
+    List<AgentKnowledge> selectPage(@Param("queryDTO") AgentKnowledgeQueryDTO queryDTO,
                                                      @Param("offset") Integer offset,
                                                      @Param("pageSize") Integer pageSize);
 
@@ -54,7 +54,7 @@ public interface AgentKnowledgeMapper {
      * @param queryDTO 查询条件
      * @return 符合条件的记录数
      */
-    Long countByConditions(@Param("queryDTO") AgentKnowledgeQueryDTO queryDTO);
+    Long selectCount(@Param("queryDTO") AgentKnowledgeQueryDTO queryDTO);
 
     /**
      * 查询所有生效的智能体知识ID列表

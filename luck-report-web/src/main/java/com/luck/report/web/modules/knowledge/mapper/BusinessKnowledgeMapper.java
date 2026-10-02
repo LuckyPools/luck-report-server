@@ -19,11 +19,11 @@ public interface BusinessKnowledgeMapper {
 
     BusinessKnowledge selectById(@Param("id") String id);
 
-    List<BusinessKnowledge> selectByConditionsWithPage(@Param("queryDTO") BusinessKnowledgeQueryDTO queryDTO,
+    List<BusinessKnowledge> selectPage(@Param("queryDTO") BusinessKnowledgeQueryDTO queryDTO,
                                                        @Param("offset") Integer offset,
                                                        @Param("pageSize") Integer pageSize);
 
-    Long countByConditions(@Param("queryDTO") BusinessKnowledgeQueryDTO queryDTO);
+    Long selectCount(@Param("queryDTO") BusinessKnowledgeQueryDTO queryDTO);
 
     List<String> selectEnabledKnowledgeIds();
 

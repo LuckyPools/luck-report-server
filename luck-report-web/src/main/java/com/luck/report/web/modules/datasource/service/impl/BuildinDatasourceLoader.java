@@ -1,6 +1,7 @@
 package com.luck.report.web.modules.datasource.service.impl;
 
 import com.luck.report.web.modules.datasource.domain.bo.DynamicBuildinDatasource;
+import com.luck.report.web.modules.datasource.domain.dto.ReportDatasourceQueryDTO;
 import com.luck.report.web.modules.datasource.domain.entity.ReportDatasource;
 import com.luck.report.web.modules.datasource.mapper.ReportDatasourceMapper;
 import com.luck.report.core.definition.datasource.BuildinDatasource;
@@ -60,7 +61,8 @@ public class BuildinDatasourceLoader implements SmartInitializingSingleton, Buil
         log.info("开始加载内置数据源...");
 
         try {
-            List<ReportDatasource> datasources = datasourceMapper.selectByEnabled(Boolean.TRUE);
+            List<ReportDatasource> datasources = datasourceMapper.selectList(
+                    ReportDatasourceQueryDTO.builder().enabled(Boolean.TRUE).build());
 
             if (datasources == null || datasources.isEmpty()) {
                 log.warn("数据库中没有找到已启用的数据源配置");

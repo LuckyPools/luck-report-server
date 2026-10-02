@@ -84,7 +84,7 @@ public class ReportRoleController {
      */
     @DeleteMapping("/bindings/delete/{roleCode}")
     public ResultVO<Void> delete(@PathVariable String roleCode) {
-        roleDataService.deleteByRoleCode(roleCode);
+        roleDataService.removeByRoleCode(roleCode);
         return ResultVO.success();
     }
 

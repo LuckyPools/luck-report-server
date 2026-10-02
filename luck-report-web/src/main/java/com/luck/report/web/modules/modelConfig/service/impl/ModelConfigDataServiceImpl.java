@@ -80,8 +80,8 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
      * @return ModelConfig实体对象,不存在则返回null
      */
     @Override
-    public ModelConfig findById(String id) {
-        return modelConfigMapper.findById(id);
+    public ModelConfig getById(String id) {
+        return modelConfigMapper.selectModelConfigById(id);
     }
 
     /**
@@ -92,7 +92,7 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void enableConfig(String id) {
-        ModelConfig entity = modelConfigMapper.findById(id);
+        ModelConfig entity = modelConfigMapper.selectModelConfigById(id);
         if (entity == null) {
             throw new ReportBizException("error.model.configNotFound");
         }
@@ -115,13 +115,13 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void disableConfig(String id) {
-        ModelConfig entity = modelConfigMapper.findById(id);
+        ModelConfig entity = modelConfigMapper.selectModelConfigById(id);
         if (entity == null) {
             throw new ReportBizException("error.model.configNotFound");
         }
 
         if (entity.getModelType() != ModelType.RERANK) {
-            int enabledCount = modelConfigMapper.countEnabledByType(entity.getModelType().getCode());
+            int enabledCount = countEnabledByType(entity.getModelType().getCode());
             if (enabledCount <= 1 && Boolean.TRUE.equals(entity.getEnabled())) {
                 throw new ReportBizException("error.model.lastEnabled");
             }
@@ -152,7 +152,8 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
             return cachedList;
         }
 
-        List<ModelConfig> entities = modelConfigMapper.selectEnabledListByType(modelType.getCode());
+        List<ModelConfig> entities = modelConfigMapper.selectList(
+                ModelConfigQueryDTO.builder().modelType(modelType.getCode()).enabled(Boolean.TRUE).build());
         List<ModelConfigDTO> dtoList = entities.stream()
                 .map(ModelConfigConverter::toDTO)
                 .collect(Collectors.toList());
@@ -171,7 +172,7 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
      */
     @Override
     public int countEnabledConfigsByType(ModelType modelType) {
-        return modelConfigMapper.countEnabledByType(modelType.getCode());
+        return countEnabledByType(modelType.getCode());
     }
 
     /**
@@ -181,7 +182,7 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
      */
     @Override
     public List<ModelConfigDTO> listConfigs() {
-        return modelConfigMapper.findAll().stream()
+        return modelConfigMapper.selectList(new ModelConfigQueryDTO()).stream()
                 .map(ModelConfigConverter::toDTO)
                 .collect(Collectors.toList());
     }
@@ -233,7 +234,7 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
     @Override
     public ModelConfig updateConfigInDb(ModelConfigDTO dto) {
         clean(dto);
-        ModelConfig entity = modelConfigMapper.findById(dto.getId());
+        ModelConfig entity = modelConfigMapper.selectModelConfigById(dto.getId());
         if (entity == null) {
             throw new ReportBizException("error.model.configNotFound");
         }
@@ -288,13 +289,13 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
      */
     @Override
     public void deleteConfig(String id) {
-        ModelConfig entity = modelConfigMapper.findById(id);
+        ModelConfig entity = modelConfigMapper.selectModelConfigById(id);
         if (entity == null) {
             throw new ReportBizException("error.model.configNotFound");
         }
 
         if (Boolean.TRUE.equals(entity.getEnabled())) {
-            int enabledCount = modelConfigMapper.countEnabledByType(entity.getModelType().getCode());
+            int enabledCount = countEnabledByType(entity.getModelType().getCode());
             if (enabledCount <= 1) {
                 throw new ReportBizException("error.model.lastEnabledDelete");
             }
@@ -357,7 +358,7 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
                 return cachedConfig;
             }
 
-            ModelConfig config = modelConfigMapper.findById(modelId);
+            ModelConfig config = modelConfigMapper.selectModelConfigById(modelId);
             if (config == null) {
                 throw new ReportBizException("error.model.configNotFoundId", modelId);
             }
@@ -390,9 +391,9 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
     public PageResultVO<ModelConfigDTO> queryByPage(ModelConfigQueryDTO queryDTO) {
         int offset = (queryDTO.getPageNum() - 1) * queryDTO.getPageSize();
 
-        Long total = modelConfigMapper.countByConditions(queryDTO);
+        Long total = modelConfigMapper.selectCount(queryDTO);
 
-        List<ModelConfig> dataList = modelConfigMapper.selectByConditionsWithPage(queryDTO, offset, queryDTO.getPageSize());
+        List<ModelConfig> dataList = modelConfigMapper.selectPage(queryDTO, offset, queryDTO.getPageSize());
         List<ModelConfigDTO> dataListDTO = dataList.stream()
                 .map(ModelConfigConverter::toDTO)
                 .collect(Collectors.toList());
@@ -411,5 +412,17 @@ public class ModelConfigDataServiceImpl implements ModelConfigDataService {
             return ACTIVE_RERANK_MODELS_KEY;
         }
         throw new ReportBizException("error.enum.unknownModelType", modelType);
+    }
+
+    /**
+     * 按模型类型统计启用中的配置数量
+     *
+     * @param modelTypeCode 模型类型编码
+     * @return 启用数量
+     */
+    private int countEnabledByType(String modelTypeCode) {
+        Long count = modelConfigMapper.selectCount(
+                ModelConfigQueryDTO.builder().modelType(modelTypeCode).enabled(Boolean.TRUE).build());
+        return count == null ? 0 : count.intValue();
     }
 }

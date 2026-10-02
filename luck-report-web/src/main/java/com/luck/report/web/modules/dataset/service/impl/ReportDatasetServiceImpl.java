@@ -55,17 +55,17 @@ public class ReportDatasetServiceImpl implements ReportDatasetService {
 
     @Override
     public List<ReportDatasetVO> listByEnabled(Boolean enabled) {
-        List<ReportDataset> list = enabled != null
-                ? reportDatasetMapper.selectByEnabled(enabled)
-                : reportDatasetMapper.selectAll();
-        return toVOList(list);
+        ReportDatasetQueryDTO queryDTO = enabled != null
+                ? ReportDatasetQueryDTO.builder().enabled(enabled).build()
+                : new ReportDatasetQueryDTO();
+        return toVOList(reportDatasetMapper.selectList(queryDTO));
     }
 
     @Override
     public PageResultVO<ReportDatasetVO> queryByPage(ReportDatasetQueryDTO queryDTO) {
         int offset = (queryDTO.getPageNum() - 1) * queryDTO.getPageSize();
-        Long total = reportDatasetMapper.countByConditions(queryDTO);
-        List<ReportDataset> dataList = reportDatasetMapper.selectByConditionsWithPage(queryDTO, offset, queryDTO.getPageSize());
+        Long total = reportDatasetMapper.selectCount(queryDTO);
+        List<ReportDataset> dataList = reportDatasetMapper.selectPage(queryDTO, offset, queryDTO.getPageSize());
         List<ReportDatasetVO> voList = toVOList(dataList);
         return PageResultVO.success(voList, total, queryDTO.getPageNum(), queryDTO.getPageSize());
     }
@@ -114,19 +114,19 @@ public class ReportDatasetServiceImpl implements ReportDatasetService {
     }
 
     @Override
-    public void deleteById(String id) {
+    public void removeById(String id) {
         reportDatasetMapper.deleteById(id);
         log.info("删除公共数据集: id={}", id);
     }
 
     @Override
-    public void deleteByIds(List<String> ids) {
+    public void removeByIds(List<String> ids) {
         if (ids == null || ids.isEmpty()) {
             return;
         }
         for (String id : ids) {
             if (id != null && !id.isEmpty()) {
-                deleteById(id);
+                removeById(id);
             }
         }
     }
@@ -141,7 +141,7 @@ public class ReportDatasetServiceImpl implements ReportDatasetService {
     }
 
     @Override
-    public Long countByDatasourceId(String datasourceId) {
+    public Long countByDatasource(String datasourceId) {
         return reportDatasetMapper.countByDatasourceId(datasourceId);
     }
 
@@ -208,7 +208,9 @@ public class ReportDatasetServiceImpl implements ReportDatasetService {
      * @param excludeId 更新时排除自身ID，创建时传null
      */
     private void checkNameUnique(String name, String excludeId) {
-        ReportDataset existing = reportDatasetMapper.selectByName(name);
+        List<ReportDataset> list = reportDatasetMapper.selectList(
+                ReportDatasetQueryDTO.builder().name(name).build());
+        ReportDataset existing = list.isEmpty() ? null : list.get(0);
         if (existing != null && !existing.getId().equals(excludeId)) {
             throw new ReportBizException("error.dataset.nameExists", name);
         }

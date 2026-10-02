@@ -60,14 +60,14 @@ public interface ReportDatasetService {
      *
      * @param id 公共数据集ID
      */
-    void deleteById(String id);
+    void removeById(String id);
 
     /**
      * 批量删除公共数据集
      *
      * @param ids 公共数据集ID列表
      */
-    void deleteByIds(List<String> ids);
+    void removeByIds(List<String> ids);
 
     /**
      * 更新公共数据集启用状态
@@ -83,5 +83,5 @@ public interface ReportDatasetService {
      * @param datasourceId 公共数据源ID
      * @return 引用数量
      */
-    Long countByDatasourceId(String datasourceId);
+    Long countByDatasource(String datasourceId);
 }

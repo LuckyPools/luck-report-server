@@ -9,24 +9,50 @@
         is_proxy_enabled AS proxyEnabled, proxy_host, proxy_port, proxy_username, proxy_password
     </sql>
 
-    <select id="findAll" resultType="com.luck.report.web.modules.modelConfig.domain.entity.ModelConfig">
-        SELECT <include refid="BaseColumns"/>
-        FROM luck_model_config WHERE del_flag = 0 ORDER BY sort ASC, create_time DESC
-    </select>
+    <sql id="listWhere">
+        WHERE del_flag = 0
+        <if test="queryDTO != null and queryDTO.configName != null and queryDTO.configName != ''">
+            AND config_name = #{queryDTO.configName}
+        </if>
+        <if test="queryDTO != null and queryDTO.modelName != null and queryDTO.modelName != ''">
+            AND model_name = #{queryDTO.modelName}
+        </if>
+        <if test="queryDTO != null and queryDTO.modelType != null and queryDTO.modelType != ''">
+            AND model_type = #{queryDTO.modelType}
+        </if>
+        <if test="queryDTO != null and queryDTO.enabled != null">
+            AND is_enabled = #{queryDTO.enabled}
+        </if>
+    </sql>
 
-    <select id="findById" resultType="com.luck.report.web.modules.modelConfig.domain.entity.ModelConfig">
-        SELECT <include refid="BaseColumns"/>
-        FROM luck_model_config WHERE id = #{id} AND del_flag = 0
-    </select>
+    <sql id="pageWhere">
+        WHERE del_flag = 0
+        <if test="queryDTO.configName != null and queryDTO.configName != ''">
+            <bind name="configNamePattern" value="'%' + queryDTO.configName + '%'" />
+            AND config_name LIKE #{configNamePattern}
+        </if>
+        <if test="queryDTO.modelName != null and queryDTO.modelName != ''">
+            <bind name="modelNamePattern" value="'%' + queryDTO.modelName + '%'" />
+            AND model_name LIKE #{modelNamePattern}
+        </if>
+        <if test="queryDTO.modelType != null and queryDTO.modelType != ''">
+            AND model_type = #{queryDTO.modelType}
+        </if>
+        <if test="queryDTO.enabled != null">
+            AND is_enabled = #{queryDTO.enabled}
+        </if>
+    </sql>
 
-    <select id="selectEnabledListByType" resultType="com.luck.report.web.modules.modelConfig.domain.entity.ModelConfig">
+    <select id="selectList" resultType="com.luck.report.web.modules.modelConfig.domain.entity.ModelConfig">
         SELECT <include refid="BaseColumns"/>
-        FROM luck_model_config WHERE model_type = #{modelType} AND is_enabled = 1 AND del_flag = 0
+        FROM luck_model_config
+        <include refid="listWhere"/>
         ORDER BY sort ASC, create_time DESC
     </select>
 
-    <select id="countEnabledByType" resultType="int">
-        SELECT COUNT(*) FROM luck_model_config WHERE model_type = #{modelType} AND is_enabled = 1 AND del_flag = 0
+    <select id="selectModelConfigById" resultType="com.luck.report.web.modules.modelConfig.domain.entity.ModelConfig">
+        SELECT <include refid="BaseColumns"/>
+        FROM luck_model_config WHERE id = #{id} AND del_flag = 0
     </select>
 
     <insert id="insert">
@@ -67,45 +93,17 @@
         UPDATE luck_model_config SET del_flag = 1 WHERE id = #{id}
     </update>
 
-    <select id="selectByConditionsWithPage" resultType="com.luck.report.web.modules.modelConfig.domain.entity.ModelConfig">
+    <select id="selectPage" resultType="com.luck.report.web.modules.modelConfig.domain.entity.ModelConfig">
         SELECT <include refid="BaseColumns"/>
         FROM luck_model_config
-        WHERE del_flag = 0
-        <if test="queryDTO.configName != null and queryDTO.configName != ''">
-            <bind name="configNamePattern" value="'%' + queryDTO.configName + '%'" />
-            AND config_name LIKE #{configNamePattern}
-        </if>
-        <if test="queryDTO.modelName != null and queryDTO.modelName != ''">
-            <bind name="modelNamePattern" value="'%' + queryDTO.modelName + '%'" />
-            AND model_name LIKE #{modelNamePattern}
-        </if>
-        <if test="queryDTO.modelType != null and queryDTO.modelType != ''">
-            AND model_type = #{queryDTO.modelType}
-        </if>
-        <if test="queryDTO.enabled != null">
-            AND is_enabled = #{queryDTO.enabled}
-        </if>
+        <include refid="pageWhere"/>
         ORDER BY sort ASC, create_time DESC
         LIMIT #{offset}, #{pageSize}
     </select>
 
-    <select id="countByConditions" resultType="long">
+    <select id="selectCount" resultType="long">
         SELECT COUNT(*) FROM luck_model_config
-        WHERE del_flag = 0
-        <if test="queryDTO.configName != null and queryDTO.configName != ''">
-            <bind name="configNamePattern" value="'%' + queryDTO.configName + '%'" />
-            AND config_name LIKE #{configNamePattern}
-        </if>
-        <if test="queryDTO.modelName != null and queryDTO.modelName != ''">
-            <bind name="modelNamePattern" value="'%' + queryDTO.modelName + '%'" />
-            AND model_name LIKE #{modelNamePattern}
-        </if>
-        <if test="queryDTO.modelType != null and queryDTO.modelType != ''">
-            AND model_type = #{queryDTO.modelType}
-        </if>
-        <if test="queryDTO.enabled != null">
-            AND is_enabled = #{queryDTO.enabled}
-        </if>
+        <include refid="pageWhere"/>
     </select>
 
 </mapper>

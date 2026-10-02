@@ -68,7 +68,7 @@ public class ChatMessageController {
 
         ChatMessage saved = chatMessageService.saveMessage(message);
 
-        chatSessionService.updateSessionTime(sessionId);
+        chatSessionService.refreshSessionTime(sessionId);
 
         return ResultVOUtils.success("success.chat.messageSaved", saved);
     }
@@ -101,7 +101,7 @@ public class ChatMessageController {
 
         int count = chatMessageService.batchSaveMessages(messages);
 
-        chatSessionService.updateSessionTime(sessionId);
+        chatSessionService.refreshSessionTime(sessionId);
 
         return ResultVOUtils.success("success.chat.messagesSaved", count);
     }

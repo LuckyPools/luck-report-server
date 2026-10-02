@@ -41,9 +41,9 @@ public interface BusinessKnowledgeService {
 
     void deleteChunk(String knowledgeId, String vectorId);
 
-    List<BusinessKnowledge> selectByIds(List<String> ids);
+    List<BusinessKnowledge> listByIds(List<String> ids);
 
-    List<String> selectEnabledKnowledgeIds();
+    List<String> listEnabledIds();
 
     void fillBusinessKnowledgeContent(List<VectorStoreSearchResult> results);
 }

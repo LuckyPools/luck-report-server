@@ -95,14 +95,14 @@ public interface AgentKnowledgeService {
      * @param ids 智能体知识ID列表
      * @return 智能体知识实体列表
      */
-    List<AgentKnowledge> selectByIds(List<String> ids);
+    List<AgentKnowledge> listByIds(List<String> ids);
 
     /**
      * 查询所有已生效且向量化完成的智能体知识ID列表
      *
      * @return 已生效的智能体知识ID列表
      */
-    List<String> selectEnabledKnowledgeIds();
+    List<String> listEnabledIds();
 
     /**
      * 回填智能体知识原文内容

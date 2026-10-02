@@ -19,12 +19,12 @@ import lombok.NoArgsConstructor;
 public class ModelConfigQueryDTO {
 
     /**
-     * 配置名称（模糊查询）
+     * 配置名称；selectList 精确匹配，分页查询模糊匹配
      */
     private String configName;
 
     /**
-     * 模型名称（模糊查询，例如 gpt-4、deepseek-chat）
+     * 模型名称；selectList 精确匹配，分页查询模糊匹配
      */
     private String modelName;
 

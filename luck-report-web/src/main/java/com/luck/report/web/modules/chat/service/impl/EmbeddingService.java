@@ -241,7 +241,7 @@ public class EmbeddingService {
      */
     private ModelConfig getEmbeddingConfig(String modelId) {
         if (modelId != null) {
-            ModelConfig config = modelConfigDataService.findById(modelId);
+            ModelConfig config = modelConfigDataService.getById(modelId);
             if (config == null) {
                 throw new ReportBizException("error.embedding.modelNotFound", modelId);
             }

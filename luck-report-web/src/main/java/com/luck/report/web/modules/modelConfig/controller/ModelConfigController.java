@@ -72,7 +72,7 @@ public class ModelConfigController {
     @GetMapping("/detail/{id}")
     public ResultVO<ModelConfigDTO> getDetail(@PathVariable String id) {
         try {
-            ModelConfig entity = modelConfigDataService.findById(id);
+            ModelConfig entity = modelConfigDataService.getById(id);
             if (entity == null) {
                 return ResultVOUtils.error("error.model.configNotFound");
             }

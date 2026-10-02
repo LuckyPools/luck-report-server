@@ -14,11 +14,12 @@ import java.util.List;
 public interface ModelConfigMapper {
 
     /**
-     * 查询所有未删除的模型配置
+     * 按条件查询模型配置列表（非分页）；configName/modelName 精确匹配，其余条件可选
      *
+     * @param queryDTO 查询条件
      * @return 模型配置列表,按排序字段升序排列
      */
-    List<ModelConfig> findAll();
+    List<ModelConfig> selectList(@Param("queryDTO") ModelConfigQueryDTO queryDTO);
 
     /**
      * 根据ID查询模型配置
@@ -26,23 +27,7 @@ public interface ModelConfigMapper {
      * @param id 配置ID
      * @return ModelConfig对象,不存在则返回null
      */
-    ModelConfig findById(@Param("id") String id);
-
-    /**
-     * 根据模型类型查询所有激活的配置列表
-     *
-     * @param modelType 模型类型(CHAT/EMBEDDING)
-     * @return 激活的模型配置列表,按排序字段升序排列
-     */
-    List<ModelConfig> selectEnabledListByType(@Param("modelType") String modelType);
-
-    /**
-     * 根据模型类型统计激活的配置数量
-     *
-     * @param modelType 模型类型(CHAT/EMBEDDING)
-     * @return 激活的配置数量
-     */
-    int countEnabledByType(@Param("modelType") String modelType);
+    ModelConfig selectModelConfigById(@Param("id") String id);
 
     /**
      * 插入新的模型配置
@@ -75,7 +60,7 @@ public interface ModelConfigMapper {
      * @param offset   偏移量
      * @return 模型配置列表
      */
-    List<ModelConfig> selectByConditionsWithPage(@Param("queryDTO") ModelConfigQueryDTO queryDTO,
+    List<ModelConfig> selectPage(@Param("queryDTO") ModelConfigQueryDTO queryDTO,
                                                      @Param("offset") Integer offset,
                                                      @Param("pageSize") Integer pageSize);
 
@@ -85,5 +70,5 @@ public interface ModelConfigMapper {
      * @param queryDTO 查询条件
      * @return 符合条件的记录数
      */
-    Long countByConditions(@Param("queryDTO") ModelConfigQueryDTO queryDTO);
+    Long selectCount(@Param("queryDTO") ModelConfigQueryDTO queryDTO);
 }

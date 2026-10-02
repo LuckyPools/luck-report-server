@@ -317,8 +317,8 @@ public class BusinessKnowledgeServiceImpl implements BusinessKnowledgeService {
     @Override
     public PageResultVO<BusinessKnowledgeVO> queryByPage(BusinessKnowledgeQueryDTO queryDTO) {
         int offset = (queryDTO.getPageNum() - 1) * queryDTO.getPageSize();
-        Long total = businessKnowledgeMapper.countByConditions(queryDTO);
-        List<BusinessKnowledge> dataList = businessKnowledgeMapper.selectByConditionsWithPage(
+        Long total = businessKnowledgeMapper.selectCount(queryDTO);
+        List<BusinessKnowledge> dataList = businessKnowledgeMapper.selectPage(
                 queryDTO, offset, queryDTO.getPageSize());
         List<BusinessKnowledgeVO> dataListVO = dataList.stream()
                 .map(businessKnowledgeConverter::toVo)
@@ -377,7 +377,7 @@ public class BusinessKnowledgeServiceImpl implements BusinessKnowledgeService {
     }
 
     @Override
-    public List<BusinessKnowledge> selectByIds(List<String> ids) {
+    public List<BusinessKnowledge> listByIds(List<String> ids) {
         if (ids == null || ids.isEmpty()) {
             return Collections.emptyList();
         }
@@ -385,7 +385,7 @@ public class BusinessKnowledgeServiceImpl implements BusinessKnowledgeService {
     }
 
     @Override
-    public List<String> selectEnabledKnowledgeIds() {
+    public List<String> listEnabledIds() {
         return businessKnowledgeMapper.selectEnabledKnowledgeIds();
     }
 
@@ -410,7 +410,7 @@ public class BusinessKnowledgeServiceImpl implements BusinessKnowledgeService {
             return;
         }
 
-        List<BusinessKnowledge> knowledgeList = selectByIds(ids);
+        List<BusinessKnowledge> knowledgeList = listByIds(ids);
         if (knowledgeList.isEmpty()) {
             log.warn("根据 businessKnowledgeId 未查询到任何业务知识: ids={}", ids);
             return;

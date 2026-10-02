@@ -59,7 +59,7 @@ public interface ChatSessionService {
      *
      * @param sessionId 会话ID，不可为空
      */
-    void updateSessionTime(String sessionId);
+    void refreshSessionTime(String sessionId);
 
     /**
      * 置顶或取消置顶会话

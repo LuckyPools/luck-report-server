@@ -38,27 +38,12 @@ public interface ReportDatasourceMapper {
     ReportDatasource selectById(@Param("id") String id);
 
     /**
-     * 查询所有数据源
+     * 按条件查询数据源列表（非分页）；name 精确匹配，type/enabled 可选，queryDTO 为空条件时查全部
      *
+     * @param queryDTO 查询条件
      * @return 数据源列表
      */
-    List<ReportDatasource> selectAll();
-
-    /**
-     * 按启用状态查询数据源
-     *
-     * @param enabled 是否启用
-     * @return 数据源列表
-     */
-    List<ReportDatasource> selectByEnabled(@Param("enabled") Boolean enabled);
-
-    /**
-     * 按类型查询数据源
-     *
-     * @param type 数据源类型
-     * @return 数据源列表
-     */
-    List<ReportDatasource> selectByType(@Param("type") String type);
+    List<ReportDatasource> selectList(@Param("queryDTO") ReportDatasourceQueryDTO queryDTO);
 
     /**
      * 根据ID删除数据源
@@ -90,14 +75,6 @@ public interface ReportDatasourceMapper {
                           @Param("updateTime") java.time.LocalDateTime updateTime);
 
     /**
-     * 根据名称查询数据源
-     *
-     * @param name 数据源名称
-     * @return 数据源实体，不存在则返回null
-     */
-    ReportDatasource selectByName(@Param("name") String name);
-
-    /**
      * 更新已初始化的表名列表
      *
      * @param id                数据源ID
@@ -123,7 +100,7 @@ public interface ReportDatasourceMapper {
      * @param offset   偏移量
      * @return 数据源列表
      */
-    List<ReportDatasource> selectByConditionsWithPage(@Param("queryDTO") ReportDatasourceQueryDTO queryDTO,
+    List<ReportDatasource> selectPage(@Param("queryDTO") ReportDatasourceQueryDTO queryDTO,
                                                       @Param("offset") Integer offset,
                                                       @Param("pageSize") Integer pageSize);
 
@@ -133,5 +110,5 @@ public interface ReportDatasourceMapper {
      * @param queryDTO 查询条件
      * @return 符合条件的记录数
      */
-    Long countByConditions(@Param("queryDTO") ReportDatasourceQueryDTO queryDTO);
+    Long selectCount(@Param("queryDTO") ReportDatasourceQueryDTO queryDTO);
 }

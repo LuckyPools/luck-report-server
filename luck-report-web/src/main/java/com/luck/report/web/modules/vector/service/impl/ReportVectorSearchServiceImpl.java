@@ -157,10 +157,10 @@ public class ReportVectorSearchServiceImpl implements ReportVectorSearchService 
 
     private List<String> resolveValidIds(String vectorType) {
         if (BusinessKnowledgeMetadataConstant.BUSINESS_KNOWLEDGE.equals(vectorType)) {
-            return businessKnowledgeService.selectEnabledKnowledgeIds();
+            return businessKnowledgeService.listEnabledIds();
         }
         if (AgentKnowledgeMetadataConstant.AGENT_KNOWLEDGE.equals(vectorType)) {
-            return agentKnowledgeService.selectEnabledKnowledgeIds();
+            return agentKnowledgeService.listEnabledIds();
         }
         return null;
     }

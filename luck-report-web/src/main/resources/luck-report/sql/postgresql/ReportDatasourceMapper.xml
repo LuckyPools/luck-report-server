@@ -8,6 +8,33 @@
         is_enabled AS enabled, test_status, description, initialized_tables, create_by, create_time, update_time, update_by, del_flag
     </sql>
 
+    <sql id="listWhere">
+        WHERE del_flag = 0
+        <if test="queryDTO != null and queryDTO.name != null and queryDTO.name != ''">
+            AND name = #{queryDTO.name}
+        </if>
+        <if test="queryDTO != null and queryDTO.type != null and queryDTO.type != ''">
+            AND type = #{queryDTO.type}
+        </if>
+        <if test="queryDTO != null and queryDTO.enabled != null">
+            AND is_enabled = #{queryDTO.enabled}
+        </if>
+    </sql>
+
+    <sql id="pageWhere">
+        WHERE del_flag = 0
+        <if test="queryDTO.name != null and queryDTO.name != ''">
+            <bind name="namePattern" value="'%' + queryDTO.name + '%'" />
+            AND name LIKE #{namePattern}
+        </if>
+        <if test="queryDTO.type != null and queryDTO.type != ''">
+            AND type = #{queryDTO.type}
+        </if>
+        <if test="queryDTO.enabled != null">
+            AND is_enabled = #{queryDTO.enabled}
+        </if>
+    </sql>
+
     <insert id="insert">
         INSERT INTO luck_report_datasource (id, name, type, host, port, database_name, username, password,
                 connection_url, is_enabled, test_status, description, initialized_tables, create_by, create_time, update_by, update_time, del_flag)
@@ -28,19 +55,11 @@
         FROM luck_report_datasource WHERE id = #{id} AND del_flag = 0
     </select>
 
-    <select id="selectAll" resultType="com.luck.report.web.modules.datasource.domain.entity.ReportDatasource">
+    <select id="selectList" resultType="com.luck.report.web.modules.datasource.domain.entity.ReportDatasource">
         SELECT <include refid="baseColumns"/>
-        FROM luck_report_datasource WHERE del_flag = 0 ORDER BY create_time DESC
-    </select>
-
-    <select id="selectByEnabled" resultType="com.luck.report.web.modules.datasource.domain.entity.ReportDatasource">
-        SELECT <include refid="baseColumns"/>
-        FROM luck_report_datasource WHERE is_enabled = #{enabled} AND del_flag = 0 ORDER BY create_time DESC
-    </select>
-
-    <select id="selectByType" resultType="com.luck.report.web.modules.datasource.domain.entity.ReportDatasource">
-        SELECT <include refid="baseColumns"/>
-        FROM luck_report_datasource WHERE type = #{type} AND del_flag = 0 ORDER BY create_time DESC
+        FROM luck_report_datasource
+        <include refid="listWhere"/>
+        ORDER BY create_time DESC
     </select>
 
     <update id="deleteById">
@@ -55,11 +74,6 @@
         UPDATE luck_report_datasource SET is_enabled = #{enabled}, update_time = #{updateTime} WHERE id = #{id}
     </update>
 
-    <select id="selectByName" resultType="com.luck.report.web.modules.datasource.domain.entity.ReportDatasource">
-        SELECT <include refid="baseColumns"/>
-        FROM luck_report_datasource WHERE name = #{name} AND del_flag = 0
-    </select>
-
     <select id="selectByIds" resultType="com.luck.report.web.modules.datasource.domain.entity.ReportDatasource">
         SELECT <include refid="baseColumns"/>
         FROM luck_report_datasource WHERE del_flag = 0 AND id IN
@@ -73,37 +87,17 @@
         UPDATE luck_report_datasource SET initialized_tables = #{initializedTables}, update_time = #{updateTime} WHERE id = #{id}
     </update>
 
-    <select id="selectByConditionsWithPage" resultType="com.luck.report.web.modules.datasource.domain.entity.ReportDatasource">
+    <select id="selectPage" resultType="com.luck.report.web.modules.datasource.domain.entity.ReportDatasource">
         SELECT <include refid="baseColumns"/>
         FROM luck_report_datasource
-        WHERE del_flag = 0
-        <if test="queryDTO.name != null and queryDTO.name != ''">
-            <bind name="namePattern" value="'%' + queryDTO.name + '%'" />
-            AND name LIKE #{namePattern}
-        </if>
-        <if test="queryDTO.type != null and queryDTO.type != ''">
-            AND type = #{queryDTO.type}
-        </if>
-        <if test="queryDTO.enabled != null">
-            AND is_enabled = #{queryDTO.enabled}
-        </if>
+        <include refid="pageWhere"/>
         ORDER BY create_time DESC
         LIMIT #{pageSize} OFFSET #{offset}
     </select>
 
-    <select id="countByConditions" resultType="long">
+    <select id="selectCount" resultType="long">
         SELECT COUNT(*) FROM luck_report_datasource
-        WHERE del_flag = 0
-        <if test="queryDTO.name != null and queryDTO.name != ''">
-            <bind name="namePattern" value="'%' + queryDTO.name + '%'" />
-            AND name LIKE #{namePattern}
-        </if>
-        <if test="queryDTO.type != null and queryDTO.type != ''">
-            AND type = #{queryDTO.type}
-        </if>
-        <if test="queryDTO.enabled != null">
-            AND is_enabled = #{queryDTO.enabled}
-        </if>
+        <include refid="pageWhere"/>
     </select>
 
 </mapper>

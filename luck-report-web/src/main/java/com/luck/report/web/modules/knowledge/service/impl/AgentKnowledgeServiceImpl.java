@@ -385,9 +385,9 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
     public PageResultVO<AgentKnowledgeVO> queryByPage(AgentKnowledgeQueryDTO queryDTO) {
         int offset = (queryDTO.getPageNum() - 1) * queryDTO.getPageSize();
 
-        Long total = agentKnowledgeMapper.countByConditions(queryDTO);
+        Long total = agentKnowledgeMapper.selectCount(queryDTO);
 
-        List<AgentKnowledge> dataList = agentKnowledgeMapper.selectByConditionsWithPage(queryDTO, offset, queryDTO.getPageSize());
+        List<AgentKnowledge> dataList = agentKnowledgeMapper.selectPage(queryDTO, offset, queryDTO.getPageSize());
         List<AgentKnowledgeVO> dataListVO = dataList.stream()
                 .map(agentKnowledgeConverter::toVo)
                 .collect(Collectors.toList());
@@ -474,7 +474,7 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
      * @return 智能体知识实体列表
      */
     @Override
-    public List<AgentKnowledge> selectByIds(List<String> ids) {
+    public List<AgentKnowledge> listByIds(List<String> ids) {
         if (ids == null || ids.isEmpty()) {
             return Collections.emptyList();
         }
@@ -487,7 +487,7 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
      * @return 已生效的智能体知识ID列表
      */
     @Override
-    public List<String> selectEnabledKnowledgeIds() {
+    public List<String> listEnabledIds() {
         return agentKnowledgeMapper.selectEnabledKnowledgeIds();
     }
 
@@ -517,7 +517,7 @@ public class AgentKnowledgeServiceImpl implements AgentKnowledgeService {
             return;
         }
 
-        List<AgentKnowledge> knowledgeList = selectByIds(ids);
+        List<AgentKnowledge> knowledgeList = listByIds(ids);
         if (knowledgeList.isEmpty()) {
             log.warn("根据 agentKnowledgeId 未查询到任何智能体知识: ids={}", ids);
             return;
