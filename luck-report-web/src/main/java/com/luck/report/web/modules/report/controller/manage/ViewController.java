@@ -53,7 +53,9 @@ public class ViewController {
     @GetMapping({
         "/manage", "/manage/**",
         "/datasource", "/datasource/**",
+        "/dataset", "/dataset/**",
         "/model_config", "/model_config/**",
+        "/role", "/role/**",
         "/business_knowledge", "/business_knowledge/**",
         "/agent_knowledge", "/agent_knowledge/**"
     })
