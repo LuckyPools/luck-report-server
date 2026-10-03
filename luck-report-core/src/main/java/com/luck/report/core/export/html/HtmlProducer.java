@@ -106,7 +106,11 @@ public class HtmlProducer {
         int colSize = columns.size();
         sb.append("<colgroup>");
         for (int j = 0; j < colSize; j++) {
-            sb.append("<col style='width:" + UnitUtils.pointToPixel(columns.get(j).getWidth()) + "px'>");
+            Column colDef = columns.get(j);
+            if (colDef.isHiddenFormLayout()) {
+                continue;
+            }
+            sb.append("<col style='width:" + UnitUtils.pointToPixel(colDef.getWidth()) + "px'>");
         }
         sb.append("</colgroup>");
         int rowSize = rows.size();
@@ -116,13 +120,16 @@ public class HtmlProducer {
                 continue;
             }
             int height = row.getRealHeight();
-            if (height < 1) {
+            if (row.isHiddenFormLayout()) {
                 continue;
             }
             int heightPx = UnitUtils.pointToPixel(height);
             sb.append("<tr style=\"height:" + heightPx + "px\">");
             for (int j = 0; j < colSize; j++) {
                 Column col = columns.get(j);
+                if (col.isHiddenFormLayout()) {
+                    continue;
+                }
                 Cell cell = null;
                 if (cellMap.containsKey(row)) {
                     Map<Column, Cell> colMap = cellMap.get(row);
@@ -133,11 +140,9 @@ public class HtmlProducer {
                 if (cell == null || (!forPage && cell.isForPaging())) {
                     continue;
                 }
-                int colSpan = cell.getColSpan();
-                int rowSpan = cell.getRowSpan();
-                if (forPage) {
-                    rowSpan = cell.getPageRowSpan();
-                }
+                int colSpan = cell.getLayoutColSpan();
+                int rowSpan = forPage ? cell.getLayoutPageRowSpan() : cell.getLayoutRowSpan();
+                int engineRowSpan = forPage ? cell.getPageRowSpan() : cell.getRowSpan();
                 if (rowSpan > 0) {
                     if (colSpan > 0) {
                         sb.append("<td rowspan=\"" + rowSpan + "\" colspan=\"" + colSpan + "\"");
@@ -152,9 +157,8 @@ public class HtmlProducer {
                     }
                 }
                 sb.append(buildCellClass(cell));
-                int cellRowSpan = rowSpan > 0 ? rowSpan : 1;
-                int cellHeightPx = cellRowSpan > 1
-                        ? buildHeightPx(rows, i, cellRowSpan)
+                int cellHeightPx = engineRowSpan > 1
+                        ? buildHeightPx(rows, i, engineRowSpan)
                         : heightPx;
                 String style = buildCustomStyle(cell, columns, j, cellHeightPx);
                 sb.append(" " + style + "");
@@ -228,13 +232,13 @@ public class HtmlProducer {
                     String canvasId = chartData.getId();
                     int widthPx;
                     if (colSpan > 0) {
-                        widthPx = Math.max(1, buildWidthPx(columns, j, colSpan) - UnitUtils.pointToPixel(2));
+                        widthPx = Math.max(1, buildWidthPx(columns, j, cell.getColSpan()) - UnitUtils.pointToPixel(2));
                     } else {
                         widthPx = Math.max(1, UnitUtils.pointToPixel(col.getWidth()) - UnitUtils.pointToPixel(2));
                     }
                     int chartHeightPx;
-                    if (rowSpan > 0) {
-                        chartHeightPx = Math.max(1, buildHeightPx(rows, i, rowSpan) - UnitUtils.pointToPixel(2));
+                    if (engineRowSpan > 1) {
+                        chartHeightPx = Math.max(1, buildHeightPx(rows, i, engineRowSpan) - UnitUtils.pointToPixel(2));
                     } else {
                         chartHeightPx = Math.max(1, heightPx - UnitUtils.pointToPixel(2));
                     }
@@ -270,44 +274,72 @@ public class HtmlProducer {
 
     private int buildWidth(List<Column> columns, int colIndex, int colSpan) {
         int width = 0;
-        int start = colIndex, end = colIndex + colSpan;
-        for (int i = start; i < end; i++) {
+        int count = colSpan < 1 ? 1 : colSpan;
+        int end = Math.min(colIndex + count, columns.size());
+        for (int i = colIndex; i < end; i++) {
             Column col = columns.get(i);
+            if (col.isHiddenFormLayout()) {
+                continue;
+            }
             width += col.getWidth();
         }
         return width;
     }
 
     /**
-     * 合并列宽：逐列 pointToPixel 再累加，与设计器 sum(getColWidth) 一致（避免 pointToPixel(sum) 舍入差）
+     * 按原始跨度累加可见列像素宽
+     *
+     * @param columns 列列表
+     * @param colIndex 起始列下标
+     * @param colSpan 引擎列跨度（不足 1 视为 1）
+     * @return 像素宽之和
      */
     private int buildWidthPx(List<Column> columns, int colIndex, int colSpan) {
         int width = 0;
-        int start = colIndex, end = colIndex + colSpan;
-        for (int i = start; i < end; i++) {
-            width += UnitUtils.pointToPixel(columns.get(i).getWidth());
+        int count = colSpan < 1 ? 1 : colSpan;
+        int end = Math.min(colIndex + count, columns.size());
+        for (int i = colIndex; i < end; i++) {
+            Column col = columns.get(i);
+            if (col.isHiddenFormLayout()) {
+                continue;
+            }
+            width += UnitUtils.pointToPixel(col.getWidth());
         }
         return width;
     }
 
     private int buildHeight(List<Row> rows, int rowIndex, int rowSpan) {
         int height = 0;
-        int start = rowIndex, end = rowIndex + rowSpan;
-        for (int i = start; i < end; i++) {
+        int count = rowSpan < 1 ? 1 : rowSpan;
+        int end = Math.min(rowIndex + count, rows.size());
+        for (int i = rowIndex; i < end; i++) {
             Row row = rows.get(i);
+            if (row.isHiddenFormLayout()) {
+                continue;
+            }
             height += row.getRealHeight();
         }
         return height;
     }
 
     /**
-     * 合并行高：逐行 pointToPixel 再累加，与设计器 sum(getRowHeight) 一致
+     * 按原始跨度累加可见行像素高
+     *
+     * @param rows 行列表
+     * @param rowIndex 起始行下标
+     * @param rowSpan 引擎行跨度（不足 1 视为 1）
+     * @return 像素高之和
      */
     private int buildHeightPx(List<Row> rows, int rowIndex, int rowSpan) {
         int height = 0;
-        int start = rowIndex, end = rowIndex + rowSpan;
-        for (int i = start; i < end; i++) {
-            height += UnitUtils.pointToPixel(rows.get(i).getRealHeight());
+        int count = rowSpan < 1 ? 1 : rowSpan;
+        int end = Math.min(rowIndex + count, rows.size());
+        for (int i = rowIndex; i < end; i++) {
+            Row row = rows.get(i);
+            if (row.isHiddenFormLayout()) {
+                continue;
+            }
+            height += UnitUtils.pointToPixel(row.getRealHeight());
         }
         return height;
     }
@@ -475,9 +507,9 @@ public class HtmlProducer {
         if (bottomBorder != null) {
             sb.append("border-bottom:" + bottomBorder.getStyle().name() + " " + bottomBorder.getWidth() + "px rgb(" + bottomBorder.getColor() + ");");
         }
-        int colSpan = cell.getColSpan();
-        int widthPx = (colSpan > 1)
-                ? buildWidthPx(columns, colIndex, colSpan)
+        int engineColSpan = cell.getColSpan();
+        int widthPx = (engineColSpan > 1)
+                ? buildWidthPx(columns, colIndex, engineColSpan)
                 : UnitUtils.pointToPixel(cell.getColumn().getWidth());
         int effectiveFontSize = fontSize;
         if (effectiveFontSize <= 0 && cell.getCellStyle() != null) {
@@ -501,7 +533,10 @@ public class HtmlProducer {
     }
 
     /**
-     * 构建 td 的 class 属性，仅含单元格名，供 CSS class 选择器匹配样式
+     * 构建 td 的 class（单元格名）
+     *
+     * @param cell 单元格
+     * @return class 属性片段
      */
     private String buildCellClass(Cell cell) {
         return " class='_" + cell.getName() + "' ";
@@ -510,6 +545,9 @@ public class HtmlProducer {
     private int buildTableWidth(List<Column> columns) {
         int width = 0;
         for (Column col : columns) {
+            if (col.isHiddenFormLayout()) {
+                continue;
+            }
             width += col.getWidth();
         }
         return width;
@@ -518,6 +556,9 @@ public class HtmlProducer {
     private int buildTableWidthPx(List<Column> columns) {
         int width = 0;
         for (Column col : columns) {
+            if (col.isHiddenFormLayout()) {
+                continue;
+            }
             width += UnitUtils.pointToPixel(col.getWidth());
         }
         return width;

@@ -157,4 +157,13 @@ public class Row extends Line {
     public void setHide(boolean hide) {
         this.hide = hide;
     }
+
+    /**
+     * 是否不参与布局（隐藏或高为 0）
+     *
+     * @return true 则导出/预览跳过
+     */
+    public boolean isHiddenFormLayout() {
+        return hide || getRealHeight() < 1;
+    }
 }

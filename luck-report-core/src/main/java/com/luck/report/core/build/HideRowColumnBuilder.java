@@ -25,220 +25,147 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * 处理布局隐藏的行/列：标记 hide，并将落在隐藏起点的合并格挪到首个可见行列
+ *
  * @author Jacky.gao
  * @since 2017年7月4日
  */
 public class HideRowColumnBuilder {
+
+    /**
+     * 对报表中所有布局隐藏的行列做合并起点重定位（定义 hide / 条件宽高为 0 后统一收口）
+     *
+     * @param report 报表
+     */
+    public void relocateAllHiddenMergeStarts(Report report) {
+        for (Column col : report.getColumns()) {
+            if (col.isHiddenFormLayout()) {
+                doHideProcessColumn(report, col);
+            }
+        }
+        for (Row row : report.getRows()) {
+            if (row.isHiddenFormLayout()) {
+                doHideProcessRow(report, row);
+            }
+        }
+    }
+
+    /**
+     * 隐藏列宽为 0 的列；合并起点在该列时挪到第一个可见列，并缩短至原合并终点的物理跨度
+     *
+     * @param report 报表
+     * @param col 待隐藏列
+     */
     public void doHideProcessColumn(Report report, Column col) {
-        int colWidth = col.getWidth();
-        if (colWidth > 0 || col.isHide()) {
+        if (col.getWidth() < 1) {
+            col.setHide(true);
+        }
+        if (!col.isHiddenFormLayout()) {
             return;
         }
-        col.setHide(true);
-        List<Column> columns = report.getColumns();
-        int colNumber = col.getColumnNumber();
         Map<Row, Map<Column, Cell>> cellMap = report.getRowColCellMap();
         List<Row> rows = report.getRows();
         for (Row row : rows) {
-            if (row.getRealHeight() == 0) {
+            if (row.isHiddenFormLayout()) {
                 continue;
             }
             Map<Column, Cell> rowMap = cellMap.get(row);
             if (rowMap == null) {
-                return;
+                continue;
             }
             Cell cell = rowMap.get(col);
-            if (cell != null) {
-                int colSpan = cell.getColSpan();
-                if (colSpan > 0) {
-                    colSpan--;
-                    if (colSpan == 1) {
-                        colSpan = 0;
-                    }
-                    cell.setColSpan(colSpan);
-                    Column nextCol = columns.get(colNumber);
-                    cell.setColumn(nextCol);
-                    rowMap.put(nextCol, cell);
-                }
-            } else {
-                cell = fetchPrevColumnCell(report, colNumber - 2, row);
-                if(cell != null){
-                    int colSpan = cell.getColSpan();
-                    if (colSpan > 0) {
-                        colSpan--;
-                        if (colSpan == 1) {
-                            colSpan = 0;
-                        }
-                        cell.setColSpan(colSpan);
-                    }
-                }
+            if (cell == null) {
+                continue;
             }
+            int colSpan = cell.getColSpan();
+            if (colSpan < 2) {
+                continue;
+            }
+            Column firstVisible = null;
+            int offset = 0;
+            Column cursor = col;
+            for (int i = 0; i < colSpan && cursor != null; i++) {
+                if (!cursor.isHiddenFormLayout()) {
+                    firstVisible = cursor;
+                    offset = i;
+                    break;
+                }
+                cursor = cursor.getNext();
+            }
+            if (firstVisible == null || firstVisible == col) {
+                continue;
+            }
+            Cell occupied = rowMap.get(firstVisible);
+            if (occupied != null && occupied != cell) {
+                continue;
+            }
+            int newSpan = colSpan - offset;
+            cell.setColSpan(newSpan < 2 ? 0 : newSpan);
+            cell.setColumn(firstVisible);
+            rowMap.put(firstVisible, cell);
             rowMap.remove(col);
         }
     }
 
+    /**
+     * 隐藏行高为 0 的行；合并起点在该行时挪到第一个可见行，并缩短至原合并终点的物理跨度
+     *
+     * @param report 报表
+     * @param row 待隐藏行
+     */
     public void doHideProcessRow(Report report, Row row) {
-        int rowHeight = row.getRealHeight();
-        if (rowHeight > 0 || row.isHide()) {
+        if (row.getRealHeight() < 1) {
+            row.setHide(true);
+        }
+        if (!row.isHiddenFormLayout()) {
             return;
         }
-        row.setHide(true);
         Map<Row, Map<Column, Cell>> cellMap = report.getRowColCellMap();
         Map<Column, Cell> map = cellMap.get(row);
         if (map == null) {
             return;
         }
-        List<Row> rows = report.getRows();
         List<Column> columns = report.getColumns();
-        int rowNumber = row.getRowNumber();
         for (Column col : columns) {
-            if (col.getWidth() == 0) {
+            if (col.isHiddenFormLayout()) {
                 continue;
             }
             Cell cell = map.get(col);
-            if (cell != null) {
-                int rowSpan = cell.getRowSpan();
-                if (rowSpan > 0) {
-                    rowSpan--;
-                    if (rowSpan == 1) {
-                        rowSpan = 0;
-                    }
-                    cell.setRowSpan(rowSpan);
-                    Row nextRow = rows.get(rowNumber);
-                    cell.setRow(nextRow);
-                    Map<Column, Cell> nextRowMap = cellMap.get(nextRow);
-                    if (nextRowMap == null) {
-                        nextRowMap = new HashMap<Column, Cell>();
-                        cellMap.put(nextRow, nextRowMap);
-                    }
-                    nextRowMap.put(col, cell);
-                }
-            } else {
-                Cell prevCell = fetchPrevRowCell(report, rowNumber - 2, col);
-                int rowSpan = prevCell.getRowSpan();
-                if (rowSpan > 0) {
-                    rowSpan--;
-                    if (rowSpan == 1) {
-                        rowSpan = 0;
-                    }
-                    prevCell.setRowSpan(rowSpan);
-                }
-            }
-        }
-        cellMap.remove(row);
-    }
-
-    private Cell fetchPrevColumnCell(Report report, int startColNumber, Row row) {
-        Map<Row, Map<Column, Cell>> cellMap = report.getRowColCellMap();
-        List<Column> columns = report.getColumns();
-        Cell targetCell = null;
-        Map<Column, Cell> colMap = cellMap.get(row);
-        for (int i = startColNumber; i > -1; i--) {
-            Column prevCol = columns.get(i);
-            if (colMap == null) {
+            if (cell == null) {
                 continue;
             }
-            targetCell = colMap.get(prevCol);
-            if (targetCell != null) {
-                break;
-            }
-        }
-        return targetCell;
-    }
-
-    private Cell fetchPrevRowCell(Report report, int startRowNumber, Column col) {
-        Map<Row, Map<Column, Cell>> cellMap = report.getRowColCellMap();
-        List<Row> rows = report.getRows();
-        Cell targetCell = null;
-        for (int i = startRowNumber; i > -1; i--) {
-            Row prevRow = rows.get(i);
-            Map<Column, Cell> colMap = cellMap.get(prevRow);
-            if (colMap == null) {
+            int rowSpan = cell.getRowSpan();
+            if (rowSpan < 2) {
                 continue;
             }
-            targetCell = colMap.get(col);
-            if (targetCell != null) {
-                break;
+            Row firstVisible = null;
+            int offset = 0;
+            Row cursor = row;
+            for (int i = 0; i < rowSpan && cursor != null; i++) {
+                if (!cursor.isHiddenFormLayout()) {
+                    firstVisible = cursor;
+                    offset = i;
+                    break;
+                }
+                cursor = cursor.getNext();
             }
+            if (firstVisible == null || firstVisible == row) {
+                continue;
+            }
+            Map<Column, Cell> nextRowMap = cellMap.get(firstVisible);
+            if (nextRowMap == null) {
+                nextRowMap = new HashMap<Column, Cell>();
+                cellMap.put(firstVisible, nextRowMap);
+            }
+            Cell occupied = nextRowMap.get(col);
+            if (occupied != null && occupied != cell) {
+                continue;
+            }
+            int newSpan = rowSpan - offset;
+            cell.setRowSpan(newSpan < 2 ? 0 : newSpan);
+            cell.setRow(firstVisible);
+            nextRowMap.put(col, cell);
+            map.remove(col);
         }
-        return targetCell;
     }
-
-	/*
-	public void processRowColumn(Report report, int i, Row row) {
-		Map<Row, Map<Column, Cell>> cellMap=report.getRowColCellMap();
-		Map<Column,Cell> map=cellMap.get(row);
-		if(map==null){
-			return;
-		}
-		List<Row> rows=report.getRows();
-		List<Column> columns=report.getColumns();
-		int colSize=columns.size();
-		for(int j=0;j<colSize;j++){
-			Column col=columns.get(j);
-			if(col==null){
-				continue;
-			}
-			Cell cell=map.get(col);
-			if(cell==null){
-				continue;
-			}
-			int colWidth=col.getWidth();
-			int colSpan=cell.getColSpan();
-			if(colWidth<1){
-				if(colSpan>1){
-					colSpan--;
-					if(colSpan<2)colSpan=0;
-					cell.setColSpan(colSpan);
-					Column nextCol=columns.get(j+1);
-					map.put(nextCol, cell);
-				}
-				map.remove(col);
-			}else{
-				if(colSpan>1){
-					int start=j+1,end=j+colSpan;
-					for(int num=start;num<end;num++){
-						Column nextCol=columns.get(num);
-						if(nextCol.getWidth()<1){
-							colSpan--;
-						}
-					}
-					if(colSpan<2){
-						colSpan=0;
-					}
-					cell.setColSpan(colSpan);
-				}
-			}
-			int rowHeight=row.getRealHeight();
-			int rowSpan=cell.getRowSpan();
-			if(rowHeight<1){
-				if(rowSpan>1){
-					rowSpan--;
-					if(rowSpan<2)rowSpan=0;
-					cell.setRowSpan(rowSpan);
-					Row nextRow=rows.get(i+1);
-					Map<Column,Cell> cmap=cellMap.get(nextRow);
-					cmap.put(col, cell);
-				}
-			}else{
-				if(rowSpan>1){
-					int start=i+1,end=i+rowSpan;
-					for(int num=start;num<end;num++){
-						Row nextRow=rows.get(num);
-						if(nextRow.getRealHeight()<1){
-							rowSpan--;
-						}
-					}
-					if(rowSpan<2){
-						rowSpan=0;
-					}
-					cell.setRowSpan(rowSpan);
-				}
-			}
-		}
-		if(row.getRealHeight()<1){
-			cellMap.remove(row);
-		}
-	}
-	*/
 }

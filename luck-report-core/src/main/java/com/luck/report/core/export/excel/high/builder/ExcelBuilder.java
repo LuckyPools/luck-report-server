@@ -35,10 +35,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.ClientAnchor;
 import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Drawing;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.PageMargin;
 import org.apache.poi.ss.usermodel.PaperSize;
 import org.apache.poi.ss.usermodel.PrintOrientation;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.util.Units;
 import org.apache.poi.xddf.usermodel.text.XDDFTextBody;
@@ -78,27 +80,116 @@ import javax.imageio.ImageIO;
 public abstract class ExcelBuilder {
 
     protected int getWholeWidth(List<Column> columns, int colNumber, int colSpan) {
-        Column col = columns.get(colNumber);
-        int start = colNumber + 1, end = colNumber + colSpan;
-        int w = col.getWidth();
-        for (int i = start; i < end; i++) {
+        int count = colSpan < 1 ? 1 : colSpan;
+        int end = Math.min(colNumber + count, columns.size());
+        int w = 0;
+        for (int i = colNumber; i < end; i++) {
             Column c = columns.get(i);
+            if (c.isHiddenFormLayout()) {
+                continue;
+            }
             w += c.getWidth();
         }
         w = UnitUtils.pointToPixel(w);
         return w;
     }
 
-    protected int getWholeHeight(List<Row> rows, int rowNumber, int rowSpan) {
-        Row row = rows.get(rowNumber);
-        int start = rowNumber + 1, end = rowNumber + rowSpan;
-        int h = row.getRealHeight();
-        for (int i = start; i < end; i++) {
-            Row r = rows.get(i);
-            h += r.getRealHeight();
+    protected int getWholeHeight(Row startRow, int rowSpan) {
+        int count = rowSpan < 1 ? 1 : rowSpan;
+        int h = 0;
+        Row row = startRow;
+        for (int i = 0; i < count && row != null; i++) {
+            if (!row.isHiddenFormLayout()) {
+                h += row.getRealHeight();
+            }
+            row = row.getNext();
         }
-        h = UnitUtils.pointToPixel(h);
-        return h;
+        return UnitUtils.pointToPixel(h);
+    }
+
+    /**
+     * 向单元格写入图片：按声明或位图尺寸绘制，超出合并区时等比缩小，并按对齐方式留边
+     *
+     * @param sheet Excel sheet
+     * @param drawing 绘图对象
+     * @param wb 工作簿
+     * @param img 图片
+     * @param excelCol 可见列下标（起点）
+     * @param excelRow 可见行下标（起点）
+     * @param layoutColSpan 布局列合并数（0/1 表示单列）
+     * @param layoutRowSpan 布局行合并数（0/1 表示单行）
+     * @param wholeWidthPx 合并区宽（px）
+     * @param wholeHeightPx 合并区高（px）
+     * @param align 水平对齐
+     * @param valign 垂直对齐
+     * @param cellName 单元格名（解码失败时告警）
+     */
+    protected void addCellImage(Sheet sheet, Drawing<?> drawing, SXSSFWorkbook wb,
+                                Image img, int excelCol, int excelRow,
+                                int layoutColSpan, int layoutRowSpan,
+                                int wholeWidthPx, int wholeHeightPx,
+                                HorizontalAlignment align, VerticalAlignment valign,
+                                String cellName) throws Exception {
+        InputStream inputStream = ImageUtils.base64DataToInputStream(img.getBase64Data());
+        BufferedImage bufferedImage;
+        try {
+            bufferedImage = ImageIO.read(inputStream);
+        } finally {
+            IOUtils.closeQuietly(inputStream);
+        }
+        if (bufferedImage == null) {
+            log.warning("[excel-cell-image] 无法解码图片 cell=" + cellName);
+            return;
+        }
+        int naturalW = Math.max(1, bufferedImage.getWidth());
+        int naturalH = Math.max(1, bufferedImage.getHeight());
+        // 优先声明尺寸，仅当超出合并区时缩小
+        int drawW = img.getWidth() > 0 ? img.getWidth() : naturalW;
+        int drawH = img.getHeight() > 0 ? img.getHeight() : naturalH;
+        if (wholeWidthPx > 0 && wholeHeightPx > 0) {
+            double scale = Math.min(1.0, Math.min((double) wholeWidthPx / (double) drawW,
+                    (double) wholeHeightPx / (double) drawH));
+            drawW = Math.max(1, (int) Math.round(drawW * scale));
+            drawH = Math.max(1, (int) Math.round(drawH * scale));
+        }
+        int leftMargin = 0;
+        int topMargin = 0;
+        if (align != null && align.equals(HorizontalAlignment.CENTER)) {
+            leftMargin = Math.max(0, (wholeWidthPx - drawW) / 2);
+        } else if (align != null && align.equals(HorizontalAlignment.RIGHT)) {
+            leftMargin = Math.max(0, wholeWidthPx - drawW);
+        }
+        if (valign != null && valign.equals(VerticalAlignment.CENTER)) {
+            topMargin = Math.max(0, (wholeHeightPx - drawH) / 2);
+        } else if (valign != null && valign.equals(VerticalAlignment.BOTTOM)) {
+            topMargin = Math.max(0, wholeHeightPx - drawH);
+        }
+        int rightMargin = Math.max(0, wholeWidthPx - leftMargin - drawW);
+        int bottomMargin = Math.max(0, wholeHeightPx - topMargin - drawH);
+        int spanCols = layoutColSpan > 0 ? layoutColSpan : 1;
+        int spanRows = layoutRowSpan > 0 ? layoutRowSpan : 1;
+        int col2 = excelCol + spanCols;
+        int row2 = excelRow + spanRows;
+
+        inputStream = ImageUtils.base64DataToInputStream(img.getBase64Data());
+        try {
+            byte[] bytes = IOUtils.toByteArray(inputStream);
+            int pictureFormat = buildImageFormat(img);
+            int pictureIndex = wb.addPicture(bytes, pictureFormat);
+            XSSFClientAnchor anchor = new XSSFClientAnchor();
+            anchor.setAnchorType(ClientAnchor.AnchorType.MOVE_DONT_RESIZE);
+            anchor.setCol1(excelCol);
+            anchor.setRow1(excelRow);
+            anchor.setCol2(col2);
+            anchor.setRow2(row2);
+            anchor.setDx1(Units.pixelToEMU(leftMargin));
+            anchor.setDx2(-Units.pixelToEMU(rightMargin));
+            anchor.setDy1(Units.pixelToEMU(topMargin));
+            anchor.setDy2(-Units.pixelToEMU(bottomMargin));
+            drawing.createPicture(anchor, pictureIndex);
+        } finally {
+            IOUtils.closeQuietly(inputStream);
+        }
     }
 
     protected Sheet createSheet(SXSSFWorkbook wb, Paper paper, String name) {
@@ -492,11 +583,13 @@ public abstract class ExcelBuilder {
         int excelCol = 0;
         for (int i = 0; i < columns.size(); i++) {
             Column col = columns.get(i);
-            int w = col.getWidth();
-            if (w < 1) {
+            if (col.isHiddenFormLayout()) {
                 continue;
             }
-            int colWidthPx = UnitUtils.pointToPixel(w);
+            int colWidthPx = UnitUtils.pointToPixel(col.getWidth());
+            if (colWidthPx < 1) {
+                continue;
+            }
             if (cumulative + colWidthPx > pixelOffset) {
                 int remainingPx = pixelOffset - cumulative;
                 return new int[]{excelCol, Units.pixelToEMU(remainingPx)};

@@ -107,23 +107,39 @@ public class WordProducer implements Producer {
                 if (hasFloat) {
                     renderFloatElementsForPage(document, report, pageIndex - 1, paper, imageDataCache);
                 }
-                XWPFTable table = document.createTable(rows.size(), totalColumn);
+                int visibleRowCount = 0;
+                for (Row row : rows) {
+                    if (!row.isHiddenFormLayout()) {
+                        visibleRowCount++;
+                    }
+                }
+                if (visibleRowCount < 1) {
+                    visibleRowCount = 1;
+                }
+                XWPFTable table = document.createTable(visibleRowCount, totalColumn);
                 table.getCTTbl().getTblPr().unsetTblBorders();
                 table.getCTTbl().addNewTblPr().addNewTblW().setW(BigInteger.valueOf(DxaUtils.points2dxa(tableWidth)));
+                int wordRowNumber = 0;
                 for (int rowNumber = 0; rowNumber < rows.size(); rowNumber++) {
                     Row row = rows.get(rowNumber);
+                    if (row.isHiddenFormLayout()) {
+                        continue;
+                    }
                     int height = row.getRealHeight();
-                    XWPFTableRow tableRow = table.getRow(rowNumber);
+                    XWPFTableRow tableRow = table.getRow(wordRowNumber);
                     tableRow.setHeight(DxaUtils.points2dxa(height));
                     Map<Column, Cell> colCell = cellMap.get(row);
-                    if (colCell == null) continue;
+                    if (colCell == null) {
+                        wordRowNumber++;
+                        continue;
+                    }
                     int skipCol = 0;
                     for (Column col : columns) {
-                        int width = col.getWidth();
-                        if (width < 1) {
+                        if (col.isHiddenFormLayout()) {
                             skipCol++;
                             continue;
                         }
+                        int width = col.getWidth();
                         int colNumber = col.getColumnNumber() - 1 - skipCol;
                         Cell cell = colCell.get(col);
                         if (cell == null) {
@@ -134,8 +150,9 @@ public class WordProducer implements Producer {
                             continue;
                         }
                         tableCell.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(DxaUtils.points2dxa(width)));
-                        buildTableCellStyle(table, tableCell, cell, rowNumber, colNumber);
+                        buildTableCellStyle(table, tableCell, cell, wordRowNumber, colNumber);
                     }
+                    wordRowNumber++;
                 }
                 if (pageIndex < totalPages) {
                     XWPFParagraph paragraph = document.createParagraph();
@@ -162,44 +179,51 @@ public class WordProducer implements Producer {
         int count = 0, totalWidth = 0;
         for (int i = 0; i < columns.size(); i++) {
             Column col = columns.get(i);
-            int width = col.getWidth();
-            if (width < 1) {
+            if (col.isHiddenFormLayout()) {
                 continue;
             }
             count++;
-            totalWidth += width;
+            totalWidth += col.getWidth();
         }
         return new int[]{count, totalWidth};
     }
 
     /**
-     * 合并单元格总宽度（pt）
+     * 合并格可见列总宽（pt）
+     *
+     * @param cell 单元格
+     * @return 宽度（pt）
      */
     private int buildWholeWidthPt(Cell cell) {
-        int width = cell.getColumn().getWidth();
+        int width = 0;
         int colSpan = cell.getColSpan();
-        if (colSpan > 1) {
-            Column col = cell.getColumn().getNext();
-            for (int i = 1; i < colSpan && col != null; i++) {
-                width += Math.max(0, col.getWidth());
-                col = col.getNext();
+        int count = colSpan < 1 ? 1 : colSpan;
+        Column col = cell.getColumn();
+        for (int i = 0; i < count && col != null; i++) {
+            if (!col.isHiddenFormLayout()) {
+                width += col.getWidth();
             }
+            col = col.getNext();
         }
         return width;
     }
 
     /**
-     * 合并单元格总高度（pt）
+     * 合并格可见行总高（pt）
+     *
+     * @param cell 单元格
+     * @return 高度（pt）
      */
     private int buildWholeHeightPt(Cell cell) {
-        int height = cell.getRow().getRealHeight();
+        int height = 0;
         int rowSpan = cell.getPageRowSpan();
-        if (rowSpan > 1) {
-            Row row = cell.getRow().getNext();
-            for (int i = 1; i < rowSpan && row != null; i++) {
+        int count = rowSpan < 1 ? 1 : rowSpan;
+        Row row = cell.getRow();
+        for (int i = 0; i < count && row != null; i++) {
+            if (!row.isHiddenFormLayout()) {
                 height += row.getRealHeight();
-                row = row.getNext();
             }
+            row = row.getNext();
         }
         return height;
     }
@@ -228,8 +252,8 @@ public class WordProducer implements Producer {
                 bottomBorder = customStyle.getBottomBorder();
             }
         }
-        int rowSpan = cell.getPageRowSpan();
-        int colSpan = cell.getColSpan();
+        int rowSpan = cell.getLayoutPageRowSpan();
+        int colSpan = cell.getLayoutColSpan();
         if (style.getLeftBorder() != null) {
             if (rowSpan > 0) {
                 int start = rowNumber;

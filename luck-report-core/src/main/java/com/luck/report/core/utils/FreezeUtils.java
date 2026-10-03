@@ -79,7 +79,7 @@ public class FreezeUtils {
     }
 
     /**
-     * 统计前 physicalCount 行中可见行数（realHeight>=1 且非 forPaging），用于 Excel 冻结行换算
+     * 统计前 physicalCount 行中可见行数（非布局隐藏且非 forPaging），用于 Excel 冻结行换算
      * @param rows 行列表，不可空
      * @param physicalCount 物理行数上限（1-based 行号）
      * @return 可见行数；physicalCount<=0 返回0
@@ -95,7 +95,7 @@ public class FreezeUtils {
             if (row.isForPaging()) {
                 break;
             }
-            if (row.getRealHeight() >= 1) {
+            if (!row.isHiddenFormLayout()) {
                 count++;
             }
         }
@@ -103,7 +103,7 @@ public class FreezeUtils {
     }
 
     /**
-     * 统计前 physicalCount 列中可见列数（width>=1），用于 Excel 冻结列换算
+     * 统计前 physicalCount 列中可见列数（非布局隐藏），用于 Excel 冻结列换算
      * @param columns 列列表，不可空
      * @param physicalCount 物理列数上限（1-based 列号）
      * @return 可见列数；physicalCount<=0 返回0
@@ -115,9 +115,10 @@ public class FreezeUtils {
         int count = 0;
         int limit = Math.min(physicalCount, columns.size());
         for (int i = 0; i < limit; i++) {
-            if (columns.get(i).getWidth() >= 1) {
-                count++;
+            if (columns.get(i).isHiddenFormLayout()) {
+                continue;
             }
+            count++;
         }
         return count;
     }

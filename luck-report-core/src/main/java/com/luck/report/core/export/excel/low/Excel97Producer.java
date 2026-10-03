@@ -89,64 +89,62 @@ public class Excel97Producer {
                     Drawing<?> drawing = sheet.createDrawingPatriarch();
                     List<Row> rows = page.getRows();
                     for (Row r : rows) {
+                        if (r.isHiddenFormLayout()) {
+                            continue;
+                        }
                         org.apache.poi.ss.usermodel.Row row = sheet.getRow(rowNumber);
                         if (row == null) {
                             row = sheet.createRow(rowNumber);
                         }
                         Map<Column, com.luck.report.core.model.Cell> colCell = cellMap.get(r);
+                        int skipCol = 0;
                         for (int i = 0; i < columnSize; i++) {
                             Column col = columns.get(i);
-                            int w = col.getWidth();
-                            if (w < 1) {
+                            if (col.isHiddenFormLayout()) {
+                                skipCol++;
                                 continue;
                             }
+                            int w = col.getWidth();
                             double colWidth = UnitUtils.pointToPixel(w) * 37.5;
-                            sheet.setColumnWidth(i, (short) colWidth);
-                            org.apache.poi.ss.usermodel.Cell cell = row.getCell(i);
+                            int colNum = i - skipCol;
+                            sheet.setColumnWidth(colNum, (short) colWidth);
+                            org.apache.poi.ss.usermodel.Cell cell = row.getCell(colNum);
                             if (cell != null) {
                                 continue;
                             }
-                            cell = row.createCell(i);
-                            com.luck.report.core.model.Cell cellInfo = colCell.get(col);
+                            cell = row.createCell(colNum);
+                            com.luck.report.core.model.Cell cellInfo = colCell == null ? null : colCell.get(col);
                             if (cellInfo == null) {
                                 continue;
                             }
                             HSSFCellStyle style = cellStyleContext.produceXSSFCellStyle(wb, cellInfo);
-                            int colSpan = cellInfo.getColSpan();
-                            int rowSpan = cellInfo.getPageRowSpan();
-                            int rowStart = rowNumber;
-                            int rowEnd = rowSpan;
-                            if (rowSpan == 0) {
-                                rowEnd++;
-                            }
-                            rowEnd += rowNumber;
-                            int colStart = i;
-                            int colEnd = colSpan;
-                            if (colSpan == 0) {
-                                colEnd++;
-                            }
-                            colEnd += i;
-                            for (int j = rowStart; j < rowEnd; j++) {
-                                org.apache.poi.ss.usermodel.Row rr = sheet.getRow(j);
+                            int colSpan = cellInfo.getLayoutColSpan();
+                            int rowSpan = cellInfo.getLayoutPageRowSpan();
+                            int spanRows = rowSpan > 0 ? rowSpan : 1;
+                            int spanCols = colSpan > 0 ? colSpan : 1;
+                            for (int j = 0; j < spanRows; j++) {
+                                org.apache.poi.ss.usermodel.Row rr = sheet.getRow(rowNumber + j);
                                 if (rr == null) {
-                                    rr = sheet.createRow(j);
+                                    rr = sheet.createRow(rowNumber + j);
                                 }
-                                for (int c = colStart; c < colEnd; c++) {
-                                    Cell cc = rr.getCell(c);
+                                for (int c = 0; c < spanCols; c++) {
+                                    Cell cc = rr.getCell(colNum + c);
                                     if (cc == null) {
-                                        cc = rr.createCell(c);
+                                        cc = rr.createCell(colNum + c);
                                     }
                                     cc.setCellStyle(style);
                                 }
                             }
-                            if (colSpan > 0 || rowSpan > 0) {
-                                if (rowSpan > 0) {
-                                    rowSpan--;
+                            int mergeColSpan = colSpan;
+                            int mergeRowSpan = rowSpan;
+                            if (mergeColSpan > 0 || mergeRowSpan > 0) {
+                                if (mergeRowSpan > 0) {
+                                    mergeRowSpan--;
                                 }
-                                if (colSpan > 0) {
-                                    colSpan--;
+                                if (mergeColSpan > 0) {
+                                    mergeColSpan--;
                                 }
-                                CellRangeAddress cellRegion = new CellRangeAddress(rowNumber, (rowNumber + rowSpan), i, (i + colSpan));
+                                CellRangeAddress cellRegion = new CellRangeAddress(rowNumber, (rowNumber + mergeRowSpan), colNum, (colNum + mergeColSpan));
                                 sheet.addMergedRegion(cellRegion);
                             }
                             Object obj = cellInfo.isRenderFlag() ? cellInfo.getFormatData() : null;
@@ -171,10 +169,10 @@ public class Excel97Producer {
                                         byte[] bytes = IOUtils.toByteArray(inputStream);
                                         int pictureFormat = buildImageFormat(img);
                                         int pictureIndex = wb.addPicture(bytes, pictureFormat);
-                                        anchor.setCol1(i);
-                                        anchor.setCol2(i + colSpan);
+                                        anchor.setCol1(colNum);
+                                        anchor.setCol2(colNum + mergeColSpan);
                                         anchor.setRow1(rowNumber);
-                                        anchor.setRow2(rowNumber + rowSpan);
+                                        anchor.setRow2(rowNumber + mergeRowSpan);
                                         anchor.setDx1(Units.pixelToEMU(0));
                                         anchor.setDx2(Units.pixelToEMU(width));
                                         anchor.setDy1(Units.pixelToEMU(0));
@@ -189,9 +187,14 @@ public class Excel97Producer {
                                     if (base64Data != null) {
                                         Image img = new Image(base64Data, chartData.getWidth(), chartData.getHeight());
                                         InputStream inputStream = ImageUtils.base64DataToInputStream(img.getBase64Data());
-                                        int chartWidth = col.getWidth();
-                                        for (int k = i + 1; k < i + Math.max(1, colSpan); k++) {
-                                            chartWidth += columns.get(k).getWidth();
+                                        int chartWidth = 0;
+                                        Column widthCol = col;
+                                        int engineSpan = cellInfo.getColSpan() < 1 ? 1 : cellInfo.getColSpan();
+                                        for (int k = 0; k < engineSpan && widthCol != null; k++) {
+                                            if (!widthCol.isHiddenFormLayout()) {
+                                                chartWidth += widthCol.getWidth();
+                                            }
+                                            widthCol = widthCol.getNext();
                                         }
                                         int width = UnitUtils.pointToPixel(chartWidth);
                                         int height = UnitUtils.pointToPixel(r.getRealHeight());
@@ -200,10 +203,10 @@ public class Excel97Producer {
                                             byte[] bytes = IOUtils.toByteArray(inputStream);
                                             int pictureFormat = buildImageFormat(img);
                                             int pictureIndex = wb.addPicture(bytes, pictureFormat);
-                                            anchor.setCol1(i);
-                                            anchor.setCol2(i + colSpan);
+                                            anchor.setCol1(colNum);
+                                            anchor.setCol2(colNum + mergeColSpan);
                                             anchor.setRow1(rowNumber);
-                                            anchor.setRow2(rowNumber + rowSpan);
+                                            anchor.setRow2(rowNumber + mergeRowSpan);
                                             anchor.setDx1(Units.pixelToEMU(0));
                                             anchor.setDx2(Units.pixelToEMU(width));
                                             anchor.setDy1(Units.pixelToEMU(0));
@@ -229,8 +232,7 @@ public class Excel97Producer {
                 List<Row> rows = report.getRows();
                 int rowNumber = 0;
                 for (Row r : rows) {
-                    int realHeight = r.getRealHeight();
-                    if (realHeight < 1) {
+                    if (r.isHiddenFormLayout()) {
                         continue;
                     }
                     if (r.isForPaging()) {
@@ -241,20 +243,23 @@ public class Excel97Producer {
                         row = sheet.createRow(rowNumber);
                     }
                     Map<Column, com.luck.report.core.model.Cell> colCell = cellMap.get(r);
+                    int skipCol = 0;
                     for (int i = 0; i < columnSize; i++) {
                         Column col = columns.get(i);
-                        int w = col.getWidth();
-                        if (w < 1) {
+                        if (col.isHiddenFormLayout()) {
+                            skipCol++;
                             continue;
                         }
+                        int w = col.getWidth();
                         double colWidth = UnitUtils.pointToPixel(w) * 37.5;
-                        sheet.setColumnWidth(i, (short) colWidth);
-                        org.apache.poi.ss.usermodel.Cell cell = row.getCell(i);
+                        int colNum = i - skipCol;
+                        sheet.setColumnWidth(colNum, (short) colWidth);
+                        org.apache.poi.ss.usermodel.Cell cell = row.getCell(colNum);
                         if (cell != null) {
                             continue;
                         }
-                        cell = row.createCell(i);
-                        com.luck.report.core.model.Cell cellInfo = colCell.get(col);
+                        cell = row.createCell(colNum);
+                        com.luck.report.core.model.Cell cellInfo = colCell == null ? null : colCell.get(col);
                         if (cellInfo == null) {
                             continue;
                         }
@@ -262,41 +267,33 @@ public class Excel97Producer {
                             continue;
                         }
                         HSSFCellStyle style = cellStyleContext.produceXSSFCellStyle(wb, cellInfo);
-                        int colSpan = cellInfo.getColSpan();
-                        int rowSpan = cellInfo.getRowSpan();
-                        int rowStart = rowNumber;
-                        int rowEnd = rowSpan;
-                        if (rowSpan == 0) {
-                            rowEnd++;
-                        }
-                        rowEnd += rowNumber;
-                        int colStart = i;
-                        int colEnd = colSpan;
-                        if (colSpan == 0) {
-                            colEnd++;
-                        }
-                        colEnd += i;
-                        for (int j = rowStart; j < rowEnd; j++) {
-                            org.apache.poi.ss.usermodel.Row rr = sheet.getRow(j);
+                        int colSpan = cellInfo.getLayoutColSpan();
+                        int rowSpan = cellInfo.getLayoutRowSpan();
+                        int spanRows = rowSpan > 0 ? rowSpan : 1;
+                        int spanCols = colSpan > 0 ? colSpan : 1;
+                        for (int j = 0; j < spanRows; j++) {
+                            org.apache.poi.ss.usermodel.Row rr = sheet.getRow(rowNumber + j);
                             if (rr == null) {
-                                rr = sheet.createRow(j);
+                                rr = sheet.createRow(rowNumber + j);
                             }
-                            for (int c = colStart; c < colEnd; c++) {
-                                Cell cc = rr.getCell(c);
+                            for (int c = 0; c < spanCols; c++) {
+                                Cell cc = rr.getCell(colNum + c);
                                 if (cc == null) {
-                                    cc = rr.createCell(c);
+                                    cc = rr.createCell(colNum + c);
                                 }
                                 cc.setCellStyle(style);
                             }
                         }
-                        if (colSpan > 0 || rowSpan > 0) {
-                            if (rowSpan > 0) {
-                                rowSpan--;
+                        int mergeColSpan = colSpan;
+                        int mergeRowSpan = rowSpan;
+                        if (mergeColSpan > 0 || mergeRowSpan > 0) {
+                            if (mergeRowSpan > 0) {
+                                mergeRowSpan--;
                             }
-                            if (colSpan > 0) {
-                                colSpan--;
+                            if (mergeColSpan > 0) {
+                                mergeColSpan--;
                             }
-                            CellRangeAddress cellRegion = new CellRangeAddress(rowNumber, (rowNumber + rowSpan), i, (i + colSpan));
+                            CellRangeAddress cellRegion = new CellRangeAddress(rowNumber, (rowNumber + mergeRowSpan), colNum, (colNum + mergeColSpan));
                             sheet.addMergedRegion(cellRegion);
                         }
                         Object obj = cellInfo.isRenderFlag() ? cellInfo.getFormatData() : null;
@@ -321,10 +318,10 @@ public class Excel97Producer {
                                     byte[] bytes = IOUtils.toByteArray(inputStream);
                                     int pictureFormat = buildImageFormat(img);
                                     int pictureIndex = wb.addPicture(bytes, pictureFormat);
-                                    anchor.setCol1(i);
-                                    anchor.setCol2(i + colSpan);
+                                    anchor.setCol1(colNum);
+                                    anchor.setCol2(colNum + mergeColSpan);
                                     anchor.setRow1(rowNumber);
-                                    anchor.setRow2(rowNumber + rowSpan);
+                                    anchor.setRow2(rowNumber + mergeRowSpan);
                                     anchor.setDx1(Units.pixelToEMU(0));
                                     anchor.setDx2(Units.pixelToEMU(width));
                                     anchor.setDy1(Units.pixelToEMU(0));
@@ -339,9 +336,14 @@ public class Excel97Producer {
                                 if (base64Data != null) {
                                     Image img = new Image(base64Data, chartData.getWidth(), chartData.getHeight());
                                     InputStream inputStream = ImageUtils.base64DataToInputStream(img.getBase64Data());
-                                    int chartWidth = col.getWidth();
-                                    for (int k = i + 1; k < i + Math.max(1, colSpan); k++) {
-                                        chartWidth += columns.get(k).getWidth();
+                                    int chartWidth = 0;
+                                    Column widthCol = col;
+                                    int engineSpan = cellInfo.getColSpan() < 1 ? 1 : cellInfo.getColSpan();
+                                    for (int k = 0; k < engineSpan && widthCol != null; k++) {
+                                        if (!widthCol.isHiddenFormLayout()) {
+                                            chartWidth += widthCol.getWidth();
+                                        }
+                                        widthCol = widthCol.getNext();
                                     }
                                     int width = UnitUtils.pointToPixel(chartWidth);
                                     int height = UnitUtils.pointToPixel(r.getRealHeight());
@@ -350,10 +352,10 @@ public class Excel97Producer {
                                         byte[] bytes = IOUtils.toByteArray(inputStream);
                                         int pictureFormat = buildImageFormat(img);
                                         int pictureIndex = wb.addPicture(bytes, pictureFormat);
-                                        anchor.setCol1(i);
-                                        anchor.setCol2(i + colSpan);
+                                        anchor.setCol1(colNum);
+                                        anchor.setCol2(colNum + mergeColSpan);
                                         anchor.setRow1(rowNumber);
-                                        anchor.setRow2(rowNumber + rowSpan);
+                                        anchor.setRow2(rowNumber + mergeRowSpan);
                                         anchor.setDx1(Units.pixelToEMU(0));
                                         anchor.setDx2(Units.pixelToEMU(width));
                                         anchor.setDy1(Units.pixelToEMU(0));

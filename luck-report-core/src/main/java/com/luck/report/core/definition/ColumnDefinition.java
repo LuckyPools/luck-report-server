@@ -38,6 +38,7 @@ public class ColumnDefinition implements Comparable<ColumnDefinition>, Serializa
     protected Column newColumn(List<Column> columns) {
         Column col = new Column(columns);
         col.setWidth(width);
+        col.setHide(hide);
         return col;
     }
 

@@ -384,6 +384,9 @@ public class ReportBuilder implements ApplicationContextAware {
 			cell.doCompute(context);
 		}
 		timing.endLazy();
+		if (hideRowColumnBuilder != null) {
+			hideRowColumnBuilder.relocateAllHiddenMergeStarts(report);
+		}
 		if (!doPaging) {
 			return;
 		}

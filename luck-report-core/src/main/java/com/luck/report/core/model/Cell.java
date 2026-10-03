@@ -732,6 +732,60 @@ public class Cell implements ReportCell {
     public int getColSpan() {
         return colSpan;
     }
+
+    /**
+     * 布局用列合并数：原始 colSpan 内只计可见列，单列时为 0
+     *
+     * @return 可见列合并数
+     */
+    public int getLayoutColSpan() {
+        if (colSpan < 2 || column == null) {
+            return colSpan;
+        }
+        int visible = 0;
+        Column cursor = column;
+        for (int i = 0; i < colSpan && cursor != null; i++) {
+            if (!cursor.isHiddenFormLayout()) {
+                visible++;
+            }
+            cursor = cursor.getNext();
+        }
+        return visible <= 1 ? 0 : visible;
+    }
+
+    /**
+     * 布局用行合并数：原始 rowSpan 内只计可见行，单行时为 0
+     *
+     * @return 可见行合并数
+     */
+    public int getLayoutRowSpan() {
+        return layoutRowSpan(rowSpan);
+    }
+
+    /**
+     * 分页布局用行合并数：pageRowSpan 内只计可见行，单行时为 0
+     *
+     * @return 可见行合并数
+     */
+    public int getLayoutPageRowSpan() {
+        return layoutRowSpan(getPageRowSpan());
+    }
+
+    private int layoutRowSpan(int span) {
+        if (span < 2 || row == null) {
+            return span;
+        }
+        int visible = 0;
+        Row cursor = row;
+        for (int i = 0; i < span && cursor != null; i++) {
+            if (!cursor.isHiddenFormLayout()) {
+                visible++;
+            }
+            cursor = cursor.getNext();
+        }
+        return visible <= 1 ? 0 : visible;
+    }
+
     public void setColSpan(int colSpan) {
         this.colSpan = colSpan;
     }

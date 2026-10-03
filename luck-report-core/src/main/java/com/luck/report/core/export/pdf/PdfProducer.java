@@ -128,12 +128,15 @@ public class PdfProducer implements Producer {
                         childTable.setHorizontalAlignment(Element.ALIGN_LEFT);
                         List<Row> rows = page.getRows();
                         for (Row row : rows) {
+                            if (row.isHiddenFormLayout()) {
+                                continue;
+                            }
                             Map<Column, Cell> colMap = cellMap.get(row);
                             if (colMap == null) {
                                 continue;
                             }
                             for (Column col : columns) {
-                                if (col.getWidth() < 1) {
+                                if (col.isHiddenFormLayout()) {
                                     continue;
                                 }
                                 Cell cell = colMap.get(col);
@@ -147,7 +150,7 @@ public class PdfProducer implements Producer {
                         }
                         float childTableHeight = childTable.calculateHeights();
                         if (tableHeight > childTableHeight) {
-                            for (int j = 0; j < columns.size(); j++) {
+                            for (int j = 0; j < colSize; j++) {
                                 PdfPCell lastCell = new PdfPCell();
                                 lastCell.setBorder(Rectangle.NO_BORDER);
                                 childTable.addCell(lastCell);
@@ -188,12 +191,15 @@ public class PdfProducer implements Producer {
                     table.setHorizontalAlignment(Element.ALIGN_LEFT);
                     List<Row> rows = page.getRows();
                     for (Row row : rows) {
+                        if (row.isHiddenFormLayout()) {
+                            continue;
+                        }
                         Map<Column, Cell> colMap = cellMap.get(row);
                         if (colMap == null) {
                             continue;
                         }
                         for (Column col : columns) {
-                            if (col.getWidth() < 1) {
+                            if (col.isHiddenFormLayout()) {
                                 continue;
                             }
                             Cell cell = colMap.get(col);
@@ -220,30 +226,40 @@ public class PdfProducer implements Producer {
     }
 
     private int buildCellHeight(Cell cell, List<Row> rows) {
-        int height = cell.getRow().getRealHeight();
+        int height = 0;
         int rowSpan = cell.getPageRowSpan();
-        if (rowSpan > 0) {
-            int pos = rows.indexOf(cell.getRow());
-            int start = pos + 1, end = start + rowSpan - 1;
-            for (int i = start; i < end; i++) {
-                height += rows.get(i).getRealHeight();
+        int count = rowSpan < 1 ? 1 : rowSpan;
+        int pos = rows.indexOf(cell.getRow());
+        if (pos < 0) {
+            return cell.getRow().getRealHeight();
+        }
+        int end = Math.min(pos + count, rows.size());
+        for (int i = pos; i < end; i++) {
+            Row row = rows.get(i);
+            if (row.isHiddenFormLayout()) {
+                continue;
             }
+            height += row.getRealHeight();
         }
         return height;
     }
 
     /**
-     * 合并单元格总宽度（pt）
+     * 合并格可见列总宽（pt）
+     *
+     * @param cell 单元格
+     * @return 宽度（pt）
      */
     private int buildCellWidth(Cell cell) {
-        int width = cell.getColumn().getWidth();
+        int width = 0;
         int colSpan = cell.getColSpan();
-        if (colSpan > 1) {
-            Column col = cell.getColumn().getNext();
-            for (int i = 1; i < colSpan && col != null; i++) {
-                width += Math.max(0, col.getWidth());
-                col = col.getNext();
+        int count = colSpan < 1 ? 1 : colSpan;
+        Column col = cell.getColumn();
+        for (int i = 0; i < count && col != null; i++) {
+            if (!col.isHiddenFormLayout()) {
+                width += col.getWidth();
             }
+            col = col.getNext();
         }
         return width;
     }
@@ -257,11 +273,11 @@ public class PdfProducer implements Producer {
         cell.setPadding(0);
         cell.setBorder(PdfPCell.NO_BORDER);
         cell.setCellEvent(new CellBorderEvent(style, customStyle));
-        int rowSpan = cellInfo.getPageRowSpan();
+        int rowSpan = cellInfo.getLayoutPageRowSpan();
         if (rowSpan > 0) {
             cell.setRowspan(rowSpan);
         }
-        int colSpan = cellInfo.getColSpan();
+        int colSpan = cellInfo.getLayoutColSpan();
         if (colSpan > 0) {
             cell.setColspan(colSpan);
         }
@@ -324,10 +340,10 @@ public class PdfProducer implements Producer {
         int count = 0, totalWidth = 0;
         for (int i = 0; i < columns.size(); i++) {
             Column col = columns.get(i);
-            int width = col.getWidth();
-            if (width < 1) {
+            if (col.isHiddenFormLayout()) {
                 continue;
             }
+            int width = col.getWidth();
             count++;
             list.add(width);
             totalWidth += width;

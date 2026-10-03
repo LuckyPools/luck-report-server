@@ -43,6 +43,7 @@ public class Column extends Line {
     public Column newColumn() {
         Column col = new Column(columns);
         col.setWidth(width);
+        col.setHide(hide);
         return col;
     }
 
@@ -84,6 +85,15 @@ public class Column extends Line {
 
     public void setHide(boolean hide) {
         this.hide = hide;
+    }
+
+    /**
+     * 是否不参与布局（隐藏或宽为 0）
+     *
+     * @return true 则导出/预览跳过
+     */
+    public boolean isHiddenFormLayout() {
+        return hide || width < 1;
     }
 
     public int getTempColumnNumber() {
