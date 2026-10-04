@@ -17,6 +17,8 @@ package com.luck.report.core.utils;
 
 import com.luck.report.core.exception.ReportComputeException;
 import com.luck.report.core.image.ChartImageProcessor;
+import com.luck.report.core.image.ImageLoadStats;
+import com.luck.report.core.image.ImageOutputSize;
 import com.luck.report.core.image.ImageProcessor;
 import com.luck.report.core.image.ImageType;
 import com.luck.report.core.image.StaticImageProcessor;

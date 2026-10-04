@@ -28,10 +28,10 @@ import com.luck.report.core.exception.ReportComputeException;
 import com.luck.report.core.model.Cell;
 import com.luck.report.core.model.Column;
 import com.luck.report.core.model.Row;
-import com.luck.report.core.utils.SlashEqualAngleResult;
-import com.luck.report.core.utils.SlashEqualAngleUtils;
-import com.luck.report.core.utils.SlashLabelLayout;
-import com.luck.report.core.utils.SlashLineLayout;
+import com.luck.report.core.slash.SlashEqualAngleResult;
+import com.luck.report.core.slash.SlashEqualAngleUtils;
+import com.luck.report.core.slash.SlashLabelLayout;
+import com.luck.report.core.slash.SlashLineLayout;
 import com.luck.report.core.utils.UnitUtils;
 
 import javax.imageio.ImageIO;

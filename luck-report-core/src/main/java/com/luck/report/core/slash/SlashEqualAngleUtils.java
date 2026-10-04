@@ -1,4 +1,4 @@
-package com.luck.report.core.utils;
+package com.luck.report.core.slash;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -6,7 +6,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * 斜表头几何：从左上角引出分割线（与前端 slash-geometry 对齐）。三标签时一条到「底边中点」、一条到「右边中点」；其它数量在底边/右边均分落点。
+ * 斜表头几何：从左上角引出分割线（与前端 slash-geometry 对齐）；三标签时一条到「底边中点」、一条到「右边中点」，其它数量在底边/右边均分落点
  */
 public final class SlashEqualAngleUtils {
     private SlashEqualAngleUtils() {}

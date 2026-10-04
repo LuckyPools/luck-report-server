@@ -1,7 +1,7 @@
-package com.luck.report.core.utils;
+package com.luck.report.core.image;
 
 /**
- * 图片缩放后的目标宽高。
+ * 图片缩放后的目标宽高
  */
 public class ImageOutputSize {
     private final int width;

@@ -1,7 +1,7 @@
-package com.luck.report.core.utils;
+package com.luck.report.core.slash;
 
 /**
- * 斜表头分割线：从左上角出发的射线终点与倾角。
+ * 斜表头分割线：从左上角出发的射线终点与倾角
  */
 public class SlashLineLayout {
     private final int endX;

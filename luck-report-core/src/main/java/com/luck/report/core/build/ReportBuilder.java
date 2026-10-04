@@ -31,7 +31,7 @@ import com.luck.report.core.model.Cell;
 import com.luck.report.core.model.Column;
 import com.luck.report.core.model.Report;
 import com.luck.report.core.model.Row;
-import com.luck.report.core.utils.ImageLoadStats;
+import com.luck.report.core.image.ImageLoadStats;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -231,7 +231,7 @@ public class ReportBuilder implements ApplicationContextAware {
 				}
 			} else if (dsDef instanceof StaticDatasourceDefinition) {
 				StaticDatasourceDefinition ds = (StaticDatasourceDefinition) dsDef;
-				List<Dataset> ls = ds.buildDatasets(ds.getDatasets(), allowedNames);
+				List<Dataset> ls = ds.buildDatasets(ds.getDatasets(), parameters, allowedNames);
 				if (ls != null) {
 					for (Dataset dataset : ls) {
 						datasetMap.put(dataset.getName(), dataset);

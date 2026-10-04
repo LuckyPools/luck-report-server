@@ -1,10 +1,10 @@
-package com.luck.report.core.utils;
+package com.luck.report.core.slash;
 
 import java.util.Collections;
 import java.util.List;
 
 /**
- * 均分 90° 斜表头布局结果。
+ * 均分 90° 斜表头布局结果
  */
 public class SlashEqualAngleResult {
     private final List<SlashLineLayout> lines;

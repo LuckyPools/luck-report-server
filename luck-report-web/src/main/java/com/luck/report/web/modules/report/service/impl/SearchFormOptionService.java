@@ -2,6 +2,7 @@ package com.luck.report.web.modules.report.service.impl;
 
 import com.luck.report.core.Utils;
 import com.luck.report.core.build.Dataset;
+import com.luck.report.core.utils.StaticDatasetUtils;
 import com.luck.report.core.definition.ReportDefinition;
 import com.luck.report.core.definition.dataset.BeanDatasetDefinition;
 import com.luck.report.core.definition.dataset.DatasetDefinition;
@@ -135,7 +136,8 @@ public class SearchFormOptionService implements ApplicationContextAware {
                                    Map<String, Object> parameters) {
         if (dsDef instanceof StaticDatasourceDefinition) {
             JsonDatasetDefinition jsonDataset = (JsonDatasetDefinition) datasetDef;
-            return JsonUtils.fromJsonList(jsonDataset.getContent());
+            List<Map<String, Object>> dataList = JsonUtils.fromJsonList(jsonDataset.getContent());
+            return StaticDatasetUtils.filter(dataList, parameters);
         }
         if (dsDef instanceof SpringBeanDatasourceDefinition) {
             SpringBeanDatasourceDefinition springDs = (SpringBeanDatasourceDefinition) dsDef;

@@ -1,10 +1,10 @@
-package com.luck.report.core.utils;
+package com.luck.report.core.image;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 单次报表计算线程内的图片 Base64 缓存。
+ * 单次报表计算线程内的图片 Base64 缓存
  */
 public class ImageLoadStats {
     private static final ThreadLocal<ImageLoadStats> HOLDER = new ThreadLocal<ImageLoadStats>();

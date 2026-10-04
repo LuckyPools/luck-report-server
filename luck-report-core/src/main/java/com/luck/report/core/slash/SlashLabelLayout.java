@@ -1,7 +1,7 @@
-package com.luck.report.core.utils;
+package com.luck.report.core.slash;
 
 /**
- * 斜表头文字落点与旋转角。
+ * 斜表头文字落点与旋转角
  */
 public class SlashLabelLayout {
     private final String text;
