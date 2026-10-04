@@ -288,64 +288,52 @@ public class ExpressionVisitor extends ReportParserBaseVisitor<Expression> {
     }
 
     public BaseExpression parseItemContext(ItemContext itemContext) {
-        BaseExpression expression = null;
         if (itemContext instanceof SimpleJoinContext) {
-            SimpleJoinContext simpleJoinContext = (SimpleJoinContext) itemContext;
-            expression = visitSimpleJoin(simpleJoinContext);
-        } else if (itemContext instanceof ParenJoinContext) {
-            ParenJoinContext parenJoinContext = (ParenJoinContext) itemContext;
-            expression = visitParenJoin(parenJoinContext);
-        } else if (itemContext instanceof SingleParenJoinContext) {
-            SingleParenJoinContext singleContext = (SingleParenJoinContext) itemContext;
-            ItemContext childItemContext = singleContext.item();
-            expression = parseItemContext(childItemContext);
-        } else {
-            throw new ReportParseException("Unknow context :" + itemContext);
+            return visitSimpleJoin((SimpleJoinContext) itemContext);
         }
-        return expression;
+        throw new ReportParseException("Unknow context :" + itemContext);
+    }
+
+    /**
+     * 解析原子：普通 unit，或括号包裹的 item（用于赋值等场景中的括号运算）
+     *
+     * @param atomContext 原子上下文，不可为空
+     * @return 对应表达式
+     */
+    private BaseExpression parseAtomContext(AtomContext atomContext) {
+        if (atomContext instanceof UnitAtomContext) {
+            return buildExpression(((UnitAtomContext) atomContext).unit());
+        }
+        if (atomContext instanceof ParenAtomContext) {
+            BaseExpression inner = parseItemContext(((ParenAtomContext) atomContext).item());
+            if (inner instanceof JoinExpression && !(inner instanceof ParenExpression)) {
+                JoinExpression join = (JoinExpression) inner;
+                ParenExpression paren = new ParenExpression(join.getOperators(), join.getExpressions());
+                paren.setExpr(atomContext.getText());
+                return paren;
+            }
+            return inner;
+        }
+        throw new ReportParseException("Unknow context :" + atomContext);
     }
 
     @Override
     public BaseExpression visitSimpleJoin(SimpleJoinContext ctx) {
         List<BaseExpression> expressions = new ArrayList<BaseExpression>();
         List<Operator> operators = new ArrayList<Operator>();
-        List<UnitContext> unitContexts = ctx.unit();
+        List<AtomContext> atomContexts = ctx.atom();
         List<TerminalNode> operatorNodes = ctx.Operator();
-        for (int i = 0; i < unitContexts.size(); i++) {
-            UnitContext unitContext = unitContexts.get(i);
-            BaseExpression expr = buildExpression(unitContext);
-            expressions.add(expr);
+        for (int i = 0; i < atomContexts.size(); i++) {
+            expressions.add(parseAtomContext(atomContexts.get(i)));
             if (i > 0) {
                 TerminalNode operatorNode = operatorNodes.get(i - 1);
-                String op = operatorNode.getText();
-                operators.add(Operator.parse(op));
+                operators.add(Operator.parse(operatorNode.getText()));
             }
         }
         if (operators.size() == 0 && expressions.size() == 1) {
             return expressions.get(0);
         }
         JoinExpression expression = new JoinExpression(operators, expressions);
-        expression.setExpr(ctx.getText());
-        return expression;
-    }
-
-    @Override
-    public BaseExpression visitParenJoin(ParenJoinContext ctx) {
-        List<BaseExpression> expressions = new ArrayList<BaseExpression>();
-        List<Operator> operators = new ArrayList<Operator>();
-        List<ItemContext> itemContexts = ctx.item();
-        List<TerminalNode> operatorNodes = ctx.Operator();
-        for (int i = 0; i < itemContexts.size(); i++) {
-            ItemContext itemContext = itemContexts.get(i);
-            BaseExpression expr = parseItemContext(itemContext);
-            expressions.add(expr);
-            if (i > 0) {
-                TerminalNode operatorNode = operatorNodes.get(i - 1);
-                String op = operatorNode.getText();
-                operators.add(Operator.parse(op));
-            }
-        }
-        ParenExpression expression = new ParenExpression(operators, expressions);
         expression.setExpr(ctx.getText());
         return expression;
     }

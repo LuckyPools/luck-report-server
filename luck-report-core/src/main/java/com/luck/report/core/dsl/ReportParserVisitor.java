@@ -136,19 +136,19 @@ public interface ReportParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitSimpleJoin(ReportParserParser.SimpleJoinContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code singleParenJoin}
-	 * labeled alternative in {@link ReportParserParser#item}.
+	 * Visit a parse tree produced by the {@code unitAtom}
+	 * labeled alternative in {@link ReportParserParser#atom}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitSingleParenJoin(ReportParserParser.SingleParenJoinContext ctx);
+	T visitUnitAtom(ReportParserParser.UnitAtomContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code parenJoin}
-	 * labeled alternative in {@link ReportParserParser#item}.
+	 * Visit a parse tree produced by the {@code parenAtom}
+	 * labeled alternative in {@link ReportParserParser#atom}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitParenJoin(ReportParserParser.ParenJoinContext ctx);
+	T visitParenAtom(ReportParserParser.ParenAtomContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link ReportParserParser#unit}.
 	 * @param ctx the parse tree

@@ -158,14 +158,14 @@ public class ReportParserBaseVisitor<T> extends AbstractParseTreeVisitor<T> impl
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitSingleParenJoin(ReportParserParser.SingleParenJoinContext ctx) { return visitChildren(ctx); }
+	@Override public T visitUnitAtom(ReportParserParser.UnitAtomContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitParenJoin(ReportParserParser.ParenJoinContext ctx) { return visitChildren(ctx); }
+	@Override public T visitParenAtom(ReportParserParser.ParenAtomContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *

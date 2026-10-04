@@ -52,10 +52,12 @@ ifCondition : expr OP expr ;
      
 variableAssign : 'var'? variable '=' item ';'?;
 
-item : unit (Operator unit)*							#simpleJoin
-	 | LeftParen item RightParen						#singleParenJoin
-     | LeftParen item (Operator item)+ RightParen		#parenJoin
-     ;
+item : atom (Operator atom)*							#simpleJoin
+	 ;
+
+atom : unit												#unitAtom
+	 | LeftParen item RightParen						#parenAtom
+	 ;
 
 unit : dataset
 	 | function
