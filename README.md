@@ -34,8 +34,8 @@ Luck-Report 内置 **AI 智能助手**，可结合**大模型配置**与**知识
 
 | 资源 | 地址 |
 |------|------|
-| 在线体验 | [https://www.quzhe.top:8060/login](https://www.quzhe.top:8060/login) |
-| 技术文档 | [https://www.quzhe.top:8099/se/docs](https://www.quzhe.top:8099/se/docs) |
+| 在线体验 | [https://www.tinyluck.cn:8060/login](https://www.tinyluck.cn:8060/login) |
+| 技术文档 | [https://www.tinyluck.cn:8099/se/docs](https://www.tinyluck.cn:8099/se/docs) |
 | 源码仓库 | [https://gitee.com/LuckyPools/luck-report-server](https://gitee.com/LuckyPools/luck-report-server) |
 | 问题反馈 | [Gitee Issues](https://gitee.com/LuckyPools/luck-report-server/issues) |
 

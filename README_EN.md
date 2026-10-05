@@ -34,8 +34,8 @@ This repository is the backend source of the reporting engine, open-sourced unde
 
 | Resource | URL |
 |----------|-----|
-| Live demo | [https://www.quzhe.top:8060/login](https://www.quzhe.top:8060/login) |
-| Docs | [https://www.quzhe.top:8099/se/docs](https://www.quzhe.top:8099/se/docs) |
+| Live demo | [https://www.tinyluck.cn:8060/login](https://www.tinyluck.cn:8060/login) |
+| Docs | [https://www.tinyluck.cn:8099/se/docs](https://www.tinyluck.cn:8099/se/docs) |
 | Source | [https://gitee.com/LuckyPools/luck-report-server](https://gitee.com/LuckyPools/luck-report-server) |
 | Issues | [Gitee Issues](https://gitee.com/LuckyPools/luck-report-server/issues) |
 
