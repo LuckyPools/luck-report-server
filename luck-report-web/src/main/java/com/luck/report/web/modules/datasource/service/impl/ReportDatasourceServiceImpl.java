@@ -130,13 +130,18 @@ public class ReportDatasourceServiceImpl implements ReportDatasourceService {
         }
         reportDatasource.setId(id);
 
-        if (reportDatasource.getPassword() == null || reportDatasource.getPassword().isEmpty()) {
-            ReportDatasource existing = reportDatasourceMapper.selectById(id);
-            if (existing != null) {
-                reportDatasource.setPassword(existing.getPassword());
+        ReportDatasource oldReportDatasource = reportDatasourceMapper.selectById(id);
+        if (StringUtils.isBlank(reportDatasource.getPassword())) {
+            if (oldReportDatasource != null) {
+                reportDatasource.setPassword(oldReportDatasource.getPassword());
             }
         } else {
             reportDatasource.setPassword(SensitiveConfigCipher.encrypt(reportDatasource.getPassword()));
+        }
+        if (reportDatasource.getEnabled() == null) {
+            if (oldReportDatasource != null) {
+                reportDatasource.setEnabled(oldReportDatasource.getEnabled());
+            }
         }
         if (reportDatasource.getUsername() == null) {
             reportDatasource.setUsername("");
