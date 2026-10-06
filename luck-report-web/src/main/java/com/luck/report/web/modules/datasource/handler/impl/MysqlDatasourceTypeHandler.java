@@ -25,7 +25,7 @@ public class MysqlDatasourceTypeHandler implements DatasourceTypeHandler {
         }
         return String.format(
                 "jdbc:mysql://%s:%d/%s?useUnicode=true&characterEncoding=utf-8" +
-                        "&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true" +
+                        "&zeroDateTimeBehavior=convertToNull&tinyInt1isBit=false" +
                         "&allowMultiQueries=true&allowPublicKeyRetrieval=true&useSSL=false" +
                         "&serverTimezone=Asia/Shanghai",
                 datasource.getHost(), datasource.getPort(), datasource.getDatabaseName());
