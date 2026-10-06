@@ -91,9 +91,8 @@ public class ExcelBuilderDirect extends ExcelBuilder {
                         continue;
                     }
                     int w = col.getWidth();
-                    double colWidth = UnitUtils.pointToPixel(w) * 37.5;
                     int colNum = i - skipCol;
-                    sheet.setColumnWidth(colNum, (short) colWidth);
+                    sheet.setColumnWidth(colNum, UnitUtils.pixelToExcelColumnWidth(UnitUtils.pointToPixel(w)));
                     org.apache.poi.ss.usermodel.Cell cell = row.getCell(colNum);
                     if (cell != null) {
                         continue;

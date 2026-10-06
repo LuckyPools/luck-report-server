@@ -405,45 +405,36 @@ public abstract class ExcelBuilder {
     }
 
     /**
-     * 使用 oneCellAnchor（单锚点 + 精确 ext 尺寸）创建悬浮图片。先用 drawing.createPicture() 创建 twoCellAnchor（让 POI 自动处理图片关系），再将 OOXML 中的 twoCellAnchor 替换为 oneCellAnchor，确保宽高精确。
+     * 用双锚点把悬浮图锚在行列网格上，随行列缩放
+     *
+     * @param drawing      绘图对象
+     * @param startCol     左上角列
+     * @param startColEmu  列内水平偏移（EMU）
+     * @param startRow     左上角行
+     * @param startRowEmu  行内垂直偏移（EMU）
+     * @param endCol       右下角列
+     * @param endColEmu    列内水平偏移（EMU）
+     * @param endRow       右下角行
+     * @param endRowEmu    行内垂直偏移（EMU）
+     * @param pictureIndex 工作簿图片下标
      */
-    private void createOneCellAnchorPicture(Sheet sheet, Drawing<?> drawing, SXSSFWorkbook wb,
-                                            int col, int dx, int row, int dy,
-                                            long cx, long cy,
-                                            int pictureIndex, FloatImage fi) throws Exception {
-        XSSFClientAnchor tempAnchor = new XSSFClientAnchor(0, 0, (int) cx, (int) cy, (short) col, row, (short) col, row);
-        tempAnchor.setAnchorType(ClientAnchor.AnchorType.DONT_MOVE_AND_RESIZE);
-        drawing.createPicture(tempAnchor, pictureIndex);
-
-        XSSFSheet xssfSheet = wb.getXSSFWorkbook().getSheet(sheet.getSheetName());
-        XSSFDrawing xssfDrawing = xssfSheet.getDrawingPatriarch();
-        if (xssfDrawing == null) {
-            return;
+    private void attachFloatImageToCells(Drawing<?> drawing,
+                                         int startCol, int startColEmu, int startRow, int startRowEmu,
+                                         int endCol, int endColEmu, int endRow, int endRowEmu,
+                                         int pictureIndex) {
+        if (endCol < startCol || (endCol == startCol && endColEmu <= startColEmu)) {
+            endCol = startCol;
+            endColEmu = startColEmu + 1;
         }
-        org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTDrawing ctDrawing = xssfDrawing.getCTDrawing();
-        int twoCellCount = ctDrawing.sizeOfTwoCellAnchorArray();
-        if (twoCellCount == 0) {
-            return;
+        if (endRow < startRow || (endRow == startRow && endRowEmu <= startRowEmu)) {
+            endRow = startRow;
+            endRowEmu = startRowEmu + 1;
         }
-
-        org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTTwoCellAnchor lastTwoCell = ctDrawing.getTwoCellAnchorArray(twoCellCount - 1);
-        org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTPicture ctPicture = lastTwoCell.getPic();
-
-        org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTOneCellAnchor oneCell = ctDrawing.addNewOneCellAnchor();
-        org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTMarker from = oneCell.addNewFrom();
-        from.setCol(col);
-        from.setColOff(dx);
-        from.setRow(row);
-        from.setRowOff(dy);
-
-        org.openxmlformats.schemas.drawingml.x2006.main.CTPositiveSize2D ext = oneCell.addNewExt();
-        ext.setCx(cx);
-        ext.setCy(cy);
-
-        oneCell.setPic(ctPicture);
-        oneCell.addNewClientData();
-
-        ctDrawing.removeTwoCellAnchor(twoCellCount - 1);
+        XSSFClientAnchor anchor = new XSSFClientAnchor(
+                startColEmu, startRowEmu, endColEmu, endRowEmu,
+                startCol, startRow, endCol, endRow);
+        anchor.setAnchorType(ClientAnchor.AnchorType.DONT_MOVE_AND_RESIZE);
+        drawing.createPicture(anchor, pictureIndex);
     }
 
     /**
@@ -558,29 +549,39 @@ public abstract class ExcelBuilder {
     }
 
     /**
-     * 给定距数据区顶部的像素偏移，在行列表中定位所属行索引及行内 EMU 偏移。行高存的是 pt，需先转成 px 再和悬浮 top（px）比较。
+     * 定位像素偏移所属的行及行内 EMU 偏移
+     *
+     * @param rows         当前页行列表
+     * @param pixelOffset  距数据区顶部的像素
+     * @return [行索引, 行内 EMU 偏移]
      */
     protected int[] findRowPosition(List<Row> rows, int pixelOffset) {
         int cumulative = 0;
+        int lastRowHeightPx = 0;
         for (int i = 0; i < rows.size(); i++) {
             Row r = rows.get(i);
             int rowHeightPx = UnitUtils.pointToPixel(r.getRealHeight());
             if (cumulative + rowHeightPx > pixelOffset) {
-                int remainingPx = pixelOffset - cumulative;
-                return new int[]{i, Units.pixelToEMU(remainingPx)};
+                return new int[]{i, pixelToEmuOffset(pixelOffset, cumulative)};
             }
+            lastRowHeightPx = rowHeightPx;
             cumulative += rowHeightPx;
         }
-        int remainingPx = pixelOffset - cumulative;
-        return new int[]{Math.max(rows.size() - 1, 0), Units.pixelToEMU(remainingPx)};
+        int lastRow = Math.max(rows.size() - 1, 0);
+        return new int[]{lastRow, pixelToEmuOffset(pixelOffset, cumulative - lastRowHeightPx)};
     }
 
     /**
-     * 给定距数据区左侧的像素偏移，在列列表中定位所属 Excel 列索引及列内 EMU 偏移。列宽存的是 pt，需先转成 px 再和悬浮 left（px）比较。
+     * 定位像素偏移所属的 Excel 列及列内 EMU 偏移
+     *
+     * @param columns      列列表
+     * @param pixelOffset  距数据区左侧的像素
+     * @return [Excel 列索引, 列内 EMU 偏移]
      */
     protected int[] findColPosition(List<Column> columns, int pixelOffset) {
         int cumulative = 0;
         int excelCol = 0;
+        int lastVisibleWidthPx = 0;
         for (int i = 0; i < columns.size(); i++) {
             Column col = columns.get(i);
             if (col.isHiddenFormLayout()) {
@@ -591,14 +592,29 @@ public abstract class ExcelBuilder {
                 continue;
             }
             if (cumulative + colWidthPx > pixelOffset) {
-                int remainingPx = pixelOffset - cumulative;
-                return new int[]{excelCol, Units.pixelToEMU(remainingPx)};
+                return new int[]{excelCol, pixelToEmuOffset(pixelOffset, cumulative)};
             }
+            lastVisibleWidthPx = colWidthPx;
             cumulative += colWidthPx;
             excelCol++;
         }
-        int remainingPx = pixelOffset - cumulative;
-        return new int[]{Math.max(excelCol - 1, 0), Units.pixelToEMU(remainingPx)};
+        int lastCol = Math.max(excelCol - 1, 0);
+        return new int[]{lastCol, pixelToEmuOffset(pixelOffset, cumulative - lastVisibleWidthPx)};
+    }
+
+    /**
+     * 像素差转 EMU，负数按 0
+     *
+     * @param pixelOffset 目标像素位置
+     * @param spanStartPx 当前格起点累计像素
+     * @return 格内 EMU 偏移
+     */
+    private int pixelToEmuOffset(int pixelOffset, int spanStartPx) {
+        int remainingPx = pixelOffset - spanStartPx;
+        if (remainingPx < 0) {
+            remainingPx = 0;
+        }
+        return Units.pixelToEMU(remainingPx);
     }
 
     /**
@@ -694,7 +710,6 @@ public abstract class ExcelBuilder {
                     } else {
                         InputStream input = buildFloatImageInputStream(fi);
                         if (input == null) {
-                            log.warning("[FloatExcel] image stream null el=" + elName);
                             continue;
                         }
                         try {
@@ -709,7 +724,12 @@ public abstract class ExcelBuilder {
                         }
                     }
 
-                    createOneCellAnchorPicture(sheet, drawing, wb, fromCol, fromDx, fromRow, fromDy, widthEMU, heightEMU, pictureIndex, fi);
+                    int[] colEndPos = findColPosition(columns, leftPx + widthPx);
+                    int[] rowEndPos = findRowPosition(rows, topPx + heightPx);
+                    attachFloatImageToCells(drawing,
+                            fromCol, fromDx, fromRow, fromDy,
+                            colEndPos[0], colEndPos[1], rowEndPos[0] + rowOffset, rowEndPos[1],
+                            pictureIndex);
                 } else if (el instanceof FloatText) {
                     FloatText ft = (FloatText) el;
 

@@ -43,4 +43,21 @@ public class UnitUtils {
     public static int pointToTwip(int point) {
         return point * 20;
     }
+
+    /**
+     * 像素列宽转 Excel 的 1/256 字符宽
+     *
+     * @param pixels 列宽像素
+     * @return setColumnWidth 参数
+     */
+    public static int pixelToExcelColumnWidth(int pixels) {
+        if (pixels <= 0) {
+            return 0;
+        }
+        int mdw = 7;
+        int[] remainderTo256th = {0, 36, 73, 109, 146, 182, 219};
+        int excelWidth = 256 * (pixels / mdw) + remainderTo256th[pixels % mdw];
+        int maxWidth = 255 * 256;
+        return Math.min(excelWidth, maxWidth);
+    }
 }
