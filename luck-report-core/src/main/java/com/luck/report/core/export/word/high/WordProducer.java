@@ -33,11 +33,20 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.util.Units;
 import org.apache.poi.xwpf.usermodel.*;
+import org.openxmlformats.schemas.drawingml.x2006.main.CTGraphicalObject;
+import org.openxmlformats.schemas.drawingml.x2006.main.CTNonVisualDrawingProps;
+import org.openxmlformats.schemas.drawingml.x2006.main.CTPoint2D;
+import org.openxmlformats.schemas.drawingml.x2006.main.CTPositiveSize2D;
+import org.openxmlformats.schemas.drawingml.x2006.wordprocessingDrawing.CTAnchor;
+import org.openxmlformats.schemas.drawingml.x2006.wordprocessingDrawing.CTEffectExtent;
+import org.openxmlformats.schemas.drawingml.x2006.wordprocessingDrawing.CTPosH;
+import org.openxmlformats.schemas.drawingml.x2006.wordprocessingDrawing.CTPosV;
+import org.openxmlformats.schemas.drawingml.x2006.wordprocessingDrawing.STRelFromH;
+import org.openxmlformats.schemas.drawingml.x2006.wordprocessingDrawing.STRelFromV;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.*;
 import org.apache.xmlbeans.XmlCursor;
 
 import javax.imageio.ImageIO;
-import javax.xml.namespace.QName;
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -53,6 +62,7 @@ import java.util.logging.Logger;
  * @since 2015年5月20日
  */
 public class WordProducer implements Producer {
+    private static final Logger log = Logger.getLogger(WordProducer.class.getName());
     private HeaderFooterBuilder headerFooterBuilder = new HeaderFooterBuilder();
 
     /**
@@ -101,12 +111,10 @@ public class WordProducer implements Producer {
             int totalPages = pages.size();
             boolean hasFloat = hasFloatElements(report);
             Map<String, byte[]> imageDataCache = hasFloat ? new HashMap<String, byte[]>() : null;
+            int[] floatDrawingIdSeq = new int[]{1};
             int pageIndex = 1;
             for (Page page : pages) {
                 List<Row> rows = page.getRows();
-                if (hasFloat) {
-                    renderFloatElementsForPage(document, report, pageIndex - 1, paper, imageDataCache);
-                }
                 int visibleRowCount = 0;
                 for (Row row : rows) {
                     if (!row.isHiddenFormLayout()) {
@@ -117,8 +125,7 @@ public class WordProducer implements Producer {
                     visibleRowCount = 1;
                 }
                 XWPFTable table = document.createTable(visibleRowCount, totalColumn);
-                table.getCTTbl().getTblPr().unsetTblBorders();
-                table.getCTTbl().addNewTblPr().addNewTblW().setW(BigInteger.valueOf(DxaUtils.points2dxa(tableWidth)));
+                lockWordTableGeometry(table, columns, tableWidth);
                 int wordRowNumber = 0;
                 for (int rowNumber = 0; rowNumber < rows.size(); rowNumber++) {
                     Row row = rows.get(rowNumber);
@@ -127,7 +134,7 @@ public class WordProducer implements Producer {
                     }
                     int height = row.getRealHeight();
                     XWPFTableRow tableRow = table.getRow(wordRowNumber);
-                    tableRow.setHeight(DxaUtils.points2dxa(height));
+                    applyExactRowHeight(tableRow, height);
                     Map<Column, Cell> colCell = cellMap.get(row);
                     if (colCell == null) {
                         wordRowNumber++;
@@ -142,17 +149,20 @@ public class WordProducer implements Producer {
                         int width = col.getWidth();
                         int colNumber = col.getColumnNumber() - 1 - skipCol;
                         Cell cell = colCell.get(col);
-                        if (cell == null) {
-                            continue;
-                        }
                         XWPFTableCell tableCell = tableRow.getCell(colNumber);
                         if (tableCell == null) {
                             continue;
                         }
-                        tableCell.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(DxaUtils.points2dxa(width)));
+                        writeCellWidth(ensureSingleTcPr(tableCell), width);
+                        if (cell == null) {
+                            continue;
+                        }
                         buildTableCellStyle(table, tableCell, cell, wordRowNumber, colNumber);
                     }
                     wordRowNumber++;
+                }
+                if (hasFloat) {
+                    renderFloatElementsForPage(document, report, pageIndex - 1, paper, imageDataCache, floatDrawingIdSeq);
                 }
                 if (pageIndex < totalPages) {
                     XWPFParagraph paragraph = document.createParagraph();
@@ -173,6 +183,129 @@ public class WordProducer implements Producer {
                 ex.printStackTrace();
             }
         }
+    }
+
+    /**
+     * 按设计列宽锁定表格几何（固定布局、tblGrid、零边距）
+     *
+     * @param table      当前页表格
+     * @param columns    报表列（隐藏列跳过）
+     * @param tableWidth 可见列宽合计（磅）
+     */
+    private void lockWordTableGeometry(XWPFTable table, List<Column> columns, int tableWidth) {
+        CTTbl ctTbl = table.getCTTbl();
+        CTTblPr tblPr = ctTbl.getTblPr() != null ? ctTbl.getTblPr() : ctTbl.addNewTblPr();
+        writeTableBordersNone(tblPr);
+        int tableDxa = DxaUtils.points2dxa(tableWidth);
+        CTTblWidth tblW = tblPr.isSetTblW() ? tblPr.getTblW() : tblPr.addNewTblW();
+        tblW.setType(STTblWidth.DXA);
+        tblW.setW(BigInteger.valueOf(tableDxa));
+        CTTblLayoutType layout = tblPr.isSetTblLayout() ? tblPr.getTblLayout() : tblPr.addNewTblLayout();
+        layout.setType(STTblLayoutType.FIXED);
+        zeroTableCellMargins(tblPr);
+        CTTblGrid grid = ctTbl.getTblGrid() != null ? ctTbl.getTblGrid() : ctTbl.addNewTblGrid();
+        while (grid.sizeOfGridColArray() > 0) {
+            grid.removeGridCol(0);
+        }
+        for (Column col : columns) {
+            if (col.isHiddenFormLayout()) {
+                continue;
+            }
+            grid.addNewGridCol().setW(BigInteger.valueOf(DxaUtils.points2dxa(col.getWidth())));
+        }
+    }
+
+    /**
+     * 表级四面和内部边框写成 none
+     *
+     * @param tblPr 表格属性
+     */
+    private void writeTableBordersNone(CTTblPr tblPr) {
+        CTTblBorders borders = tblPr.isSetTblBorders() ? tblPr.getTblBorders() : tblPr.addNewTblBorders();
+        writeNoneBorder(borders.isSetTop() ? borders.getTop() : borders.addNewTop());
+        writeNoneBorder(borders.isSetLeft() ? borders.getLeft() : borders.addNewLeft());
+        writeNoneBorder(borders.isSetBottom() ? borders.getBottom() : borders.addNewBottom());
+        writeNoneBorder(borders.isSetRight() ? borders.getRight() : borders.addNewRight());
+        writeNoneBorder(borders.isSetInsideH() ? borders.getInsideH() : borders.addNewInsideH());
+        writeNoneBorder(borders.isSetInsideV() ? borders.getInsideV() : borders.addNewInsideV());
+    }
+
+    /**
+     * 将一条表边框写成 none
+     *
+     * @param ctBorder 边框节点
+     */
+    private void writeNoneBorder(CTBorder ctBorder) {
+        ctBorder.setVal(STBorder.NONE);
+        if (ctBorder.isSetSz()) {
+            ctBorder.unsetSz();
+        }
+        if (ctBorder.isSetColor()) {
+            ctBorder.unsetColor();
+        }
+    }
+
+    /**
+     * 取或创建单元格唯一的 tcPr
+     *
+     * @param tableCell Word 单元格
+     * @return 单元格属性
+     */
+    private CTTcPr ensureSingleTcPr(XWPFTableCell tableCell) {
+        CTTc ctTc = tableCell.getCTTc();
+        return ctTc.isSetTcPr() ? ctTc.getTcPr() : ctTc.addNewTcPr();
+    }
+
+    /**
+     * 把列宽写进已有 tcPr
+     *
+     * @param tcPr  单元格属性
+     * @param width 列宽（磅）
+     */
+    private void writeCellWidth(CTTcPr tcPr, int width) {
+        CTTblWidth tcW = tcPr.isSetTcW() ? tcPr.getTcW() : tcPr.addNewTcW();
+        tcW.setType(STTblWidth.DXA);
+        tcW.setW(BigInteger.valueOf(DxaUtils.points2dxa(width)));
+    }
+
+    /**
+     * 表格单元格边距清零
+     *
+     * @param tblPr 表格属性
+     */
+    private void zeroTableCellMargins(CTTblPr tblPr) {
+        CTTblCellMar cellMar = tblPr.isSetTblCellMar() ? tblPr.getTblCellMar() : tblPr.addNewTblCellMar();
+        setDxaMargin(cellMar.isSetTop() ? cellMar.getTop() : cellMar.addNewTop(), 0);
+        setDxaMargin(cellMar.isSetLeft() ? cellMar.getLeft() : cellMar.addNewLeft(), 0);
+        setDxaMargin(cellMar.isSetBottom() ? cellMar.getBottom() : cellMar.addNewBottom(), 0);
+        setDxaMargin(cellMar.isSetRight() ? cellMar.getRight() : cellMar.addNewRight(), 0);
+    }
+
+    /**
+     * 将表格边距写成 DXA 值
+     *
+     * @param margin 边距节点
+     * @param dxa    缇
+     */
+    private void setDxaMargin(CTTblWidth margin, int dxa) {
+        margin.setType(STTblWidth.DXA);
+        margin.setW(BigInteger.valueOf(dxa));
+    }
+
+    /**
+     * 行高按设计磅写成 EXACT
+     *
+     * @param tableRow  Word 行
+     * @param heightPt  行高（磅）
+     */
+    private void applyExactRowHeight(XWPFTableRow tableRow, int heightPt) {
+        int dxa = DxaUtils.points2dxa(heightPt);
+        tableRow.setHeight(dxa);
+        CTRow ctRow = tableRow.getCtRow();
+        CTTrPr trPr = ctRow.isSetTrPr() ? ctRow.getTrPr() : ctRow.addNewTrPr();
+        CTHeight ctHeight = trPr.sizeOfTrHeightArray() > 0 ? trPr.getTrHeightArray(0) : trPr.addNewTrHeight();
+        ctHeight.setVal(BigInteger.valueOf(dxa));
+        ctHeight.setHRule(STHeightRule.EXACT);
     }
 
     private int[] buildColumnSizeAndTotalWidth(List<Column> columns) {
@@ -233,7 +366,7 @@ public class WordProducer implements Producer {
         CellStyle customStyle = cell.getCustomCellStyle();
         CellStyle rowStyle = cell.getRow().getCustomCellStyle();
         CellStyle colStyle = cell.getColumn().getCustomCellStyle();
-        CTTcPr cellProperties = tableCell.getCTTc().addNewTcPr();
+        CTTcPr cellProperties = ensureSingleTcPr(tableCell);
         Border leftBorder = style.getLeftBorder();
         Border rightBorder = style.getRightBorder();
         Border topBorder = style.getTopBorder();
@@ -254,64 +387,10 @@ public class WordProducer implements Producer {
         }
         int rowSpan = cell.getLayoutPageRowSpan();
         int colSpan = cell.getLayoutColSpan();
-        if (style.getLeftBorder() != null) {
-            if (rowSpan > 0) {
-                int start = rowNumber;
-                int end = start + rowSpan;
-                for (int i = start; i < end; i++) {
-                    XWPFTableCell c = table.getRow(i).getCell(columnNumber);
-                    buildCellBorder(leftBorder, c, 1);
-                }
-            } else {
-                buildCellBorder(leftBorder, tableCell, 1);
-            }
-        }
-        if (rightBorder != null) {
-            int lastCol = columnNumber;
-            if (colSpan > 0) {
-                lastCol += colSpan - 1;
-            }
-            if (rowSpan > 0) {
-                int start = rowNumber;
-                int end = start + rowSpan;
-                for (int i = start; i < end; i++) {
-                    XWPFTableCell c = table.getRow(i).getCell(lastCol);
-                    buildCellBorder(style.getRightBorder(), c, 2);
-                }
-            } else {
-                XWPFTableCell c = table.getRow(rowNumber).getCell(lastCol);
-                buildCellBorder(rightBorder, c, 2);
-            }
-        }
-        if (topBorder != null) {
-            if (colSpan > 0) {
-                int start = columnNumber;
-                int end = start + colSpan;
-                for (int i = start; i < end; i++) {
-                    XWPFTableCell c = table.getRow(rowNumber).getCell(i);
-                    buildCellBorder(topBorder, c, 3);
-                }
-            } else {
-                buildCellBorder(topBorder, tableCell, 3);
-            }
-        }
-        if (bottomBorder != null) {
-            int lastRow = rowNumber;
-            if (rowSpan > 0) {
-                lastRow += rowSpan - 1;
-            }
-            if (colSpan > 0) {
-                int start = columnNumber;
-                int end = start + colSpan;
-                for (int i = start; i < end; i++) {
-                    XWPFTableCell c = table.getRow(lastRow).getCell(i);
-                    buildCellBorder(bottomBorder, c, 4);
-                }
-            } else {
-                XWPFTableCell c = table.getRow(lastRow).getCell(columnNumber);
-                buildCellBorder(bottomBorder, c, 4);
-            }
-        }
+        applyCellBorder(tableCell, leftBorder, 1);
+        applyCellBorder(tableCell, rightBorder, 2);
+        applyCellBorder(tableCell, topBorder, 3);
+        applyCellBorder(tableCell, bottomBorder, 4);
         List<XWPFParagraph> paras = tableCell.getParagraphs();
         XWPFParagraph para = null;
         if (paras != null && paras.size() > 0) {
@@ -566,47 +645,49 @@ public class WordProducer implements Producer {
     private void mergeCellsHorizontal(XWPFTable table, int row, int startCol, int endCol) {
         for (int cellIndex = startCol; cellIndex <= endCol; cellIndex++) {
             XWPFTableCell cell = table.getRow(row).getCell(cellIndex);
-            if (cellIndex == startCol) {
-                cell.getCTTc().addNewTcPr().addNewHMerge().setVal(STMerge.RESTART);
-            } else {
-                cell.getCTTc().addNewTcPr().addNewHMerge().setVal(STMerge.CONTINUE);
-            }
+            CTTcPr tcPr = ensureSingleTcPr(cell);
+            CTHMerge hMerge = tcPr.isSetHMerge() ? tcPr.getHMerge() : tcPr.addNewHMerge();
+            hMerge.setVal(cellIndex == startCol ? STMerge.RESTART : STMerge.CONTINUE);
         }
     }
 
     private void mergeCellsVertically(XWPFTable table, int col, int fromRow, int toRow) {
         for (int rowIndex = fromRow; rowIndex <= toRow; rowIndex++) {
             XWPFTableCell cell = table.getRow(rowIndex).getCell(col);
-            if (rowIndex == fromRow) {
-                cell.getCTTc().addNewTcPr().addNewVMerge()
-                        .setVal(STMerge.RESTART);
-            } else {
-                cell.getCTTc().addNewTcPr().addNewVMerge().setVal(STMerge.CONTINUE);
-            }
+            CTTcPr tcPr = ensureSingleTcPr(cell);
+            CTVMerge vMerge = tcPr.isSetVMerge() ? tcPr.getVMerge() : tcPr.addNewVMerge();
+            vMerge.setVal(rowIndex == fromRow ? STMerge.RESTART : STMerge.CONTINUE);
         }
     }
 
-    private void buildCellBorder(Border border, XWPFTableCell tableCell, int type) {
-        CTTcPr cellPropertie = tableCell.getCTTc().getTcPr();
-        if (cellPropertie == null) {
-            cellPropertie = tableCell.getCTTc().addNewTcPr();
+    /**
+     * 判断边框是否可见
+     *
+     * @param border 单元格边框，null 表示无线
+     * @return 需要画线时为 true
+     */
+    private boolean isDrawnBorder(Border border) {
+        return border != null && border.getStyle() != null;
+    }
+
+    /**
+     * 有设计边框才写节点，无线不写，避免相邻格 nil 冲掉有框格子的线
+     *
+     * @param tableCell 目标格，null 则忽略
+     * @param border    设计边框，null 表示关闭
+     * @param type      1 左 / 2 右 / 3 上 / 4 下
+     */
+    private void applyCellBorder(XWPFTableCell tableCell, Border border, int type) {
+        if (tableCell == null) {
+            return;
         }
-        CTTcBorders borders = cellPropertie.getTcBorders();
-        if (borders == null) {
-            borders = cellPropertie.addNewTcBorders();
-            ;
+        CTTcPr cellProperties = ensureSingleTcPr(tableCell);
+        if (!isDrawnBorder(border)) {
+            return;
         }
+        CTTcBorders borders = cellProperties.isSetTcBorders() ? cellProperties.getTcBorders() : cellProperties.addNewTcBorders();
+        CTBorder ctborder = borderSide(borders, type);
         BorderStyle borderStyle = border.getStyle();
-        CTBorder ctborder = null;
-        if (type == 1) {
-            ctborder = borders.addNewLeft();
-        } else if (type == 2) {
-            ctborder = borders.addNewRight();
-        } else if (type == 3) {
-            ctborder = borders.addNewTop();
-        } else if (type == 4) {
-            ctborder = borders.addNewBottom();
-        }
         if (borderStyle.equals(BorderStyle.dashed)) {
             ctborder.setVal(STBorder.DASHED);
         } else if (borderStyle.equals(BorderStyle.doublesolid)) {
@@ -614,14 +695,32 @@ public class WordProducer implements Producer {
         } else {
             ctborder.setVal(STBorder.SINGLE);
         }
-        int borderWidth = border.getWidth();
-        if (borderWidth > 1) {
-            ctborder.setSz(BigInteger.valueOf(DxaUtils.points2dxa(borderWidth)));
-        }
+        int borderWidth = Math.max(border.getWidth(), 1);
+        ctborder.setSz(BigInteger.valueOf(borderWidth * 8L));
         String color = border.getColor();
         if (StringUtils.isNotBlank(color)) {
             ctborder.setColor(toHex(color.split(",")));
         }
+    }
+
+    /**
+     * 取或创建指定方向的边框节点
+     *
+     * @param borders 单元格边框集合
+     * @param type    1 左 / 2 右 / 3 上 / 4 下
+     * @return 对应方向的边框
+     */
+    private CTBorder borderSide(CTTcBorders borders, int type) {
+        if (type == 1) {
+            return borders.isSetLeft() ? borders.getLeft() : borders.addNewLeft();
+        }
+        if (type == 2) {
+            return borders.isSetRight() ? borders.getRight() : borders.addNewRight();
+        }
+        if (type == 3) {
+            return borders.isSetTop() ? borders.getTop() : borders.addNewTop();
+        }
+        return borders.isSetBottom() ? borders.getBottom() : borders.addNewBottom();
     }
 
     /**
@@ -661,8 +760,6 @@ public class WordProducer implements Producer {
         return null;
     }
 
-    private static final Logger log = Logger.getLogger(WordProducer.class.getName());
-
     /**
      * 合并报表中的所有悬浮元素并按 layer 升序排序（值越大越靠上，后渲染覆盖先渲染）。
      */
@@ -693,23 +790,28 @@ public class WordProducer implements Producer {
     }
 
     /**
-     * 在当前 Word 页面上渲染属于该页的悬浮元素。使用 Word 的 framePr（段落框架属性）实现绝对定位：hAnchor/vAnchor 设为 margin（相对页边距定位），wrap 设为 none（浮于文字上方）。x/y/w/h 以 twips（DXA）为单位。top/left 为页面相对坐标（相对于每页内容区左上角）。repeatPrint=true 时每页重复打印；repeatPrint=false 时仅在第1页渲染。
+     * 渲染当前页悬浮元素：图用 wp:anchor，文本用 VML 文本框
      *
-     * @param document  XWPFDocument
-     * @param report    报表对象
-     * @param pageIndex 当前页码（从 0 开始）
-     * @param paper     页面设置（用于计算内容区高度做边界检查）
+     * @param document          XWPFDocument
+     * @param report            报表对象
+     * @param pageIndex         当前页码（从 0 开始）
+     * @param paper             页面设置
+     * @param imageDataCache    悬浮图片字节缓存
+     * @param floatDrawingIdSeq 文档内 docPr id 自增序列（长度为 1）
      */
     private void renderFloatElementsForPage(XWPFDocument document, Report report, int pageIndex,
                                             Paper paper,
-                                            Map<String, byte[]> imageDataCache) throws Exception {
+                                            Map<String, byte[]> imageDataCache,
+                                            int[] floatDrawingIdSeq) throws Exception {
         float paperExtent = paper.getOrientation() != null && paper.getOrientation().equals(Orientation.landscape)
                 ? paper.getWidth() : paper.getHeight();
         float pageContentHeight = paperExtent - paper.getTopMargin() - paper.getBottomMargin();
+        float leftMargin = paper.getLeftMargin();
+        float topMargin = paper.getTopMargin();
         List<FloatElement> elements = collectAndSortFloatElements(report);
-        String ns = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
         for (FloatElement el : elements) {
             Integer top = el.getTop();
+            String elName = el.getName() != null ? el.getName() : el.getClass().getSimpleName();
             if (top == null) {
                 continue;
             }
@@ -733,166 +835,375 @@ public class WordProducer implements Producer {
             float widthPt = elWidth != null ? UnitUtils.pixelToPoint(elWidth.intValue()) : 0;
             float heightPt = elHeight != null ? UnitUtils.pixelToPoint(elHeight.intValue()) : 0;
 
-            int dxaX = DxaUtils.points2dxa((int) Math.round(xPt));
-            int dxaY = DxaUtils.points2dxa((int) Math.round(yPt));
-            int dxaW = DxaUtils.points2dxa((int) Math.round(widthPt));
-            int dxaH = DxaUtils.points2dxa((int) Math.round(heightPt));
+            if (el instanceof FloatImage) {
+                renderFloatImageAsAnchor(document, (FloatImage) el, leftMargin, topMargin,
+                        xPt, yPt, widthPt, heightPt, elWidth, elHeight, imageDataCache, floatDrawingIdSeq);
+                continue;
+            }
 
+            if (!(el instanceof FloatText)) {
+                continue;
+            }
             try {
-                XWPFParagraph para = document.createParagraph();
-                CTPPr pPr = para.getCTP().addNewPPr();
-                CTFramePr framePr = pPr.addNewFramePr();
-                XmlCursor cursor = framePr.newCursor();
-                cursor.setAttributeText(new QName(ns, "wrap"), "none");
-                cursor.setAttributeText(new QName(ns, "hAnchor"), "margin");
-                cursor.setAttributeText(new QName(ns, "vAnchor"), "margin");
-                cursor.setAttributeText(new QName(ns, "x"), String.valueOf(dxaX));
-                cursor.setAttributeText(new QName(ns, "y"), String.valueOf(dxaY));
-                cursor.setAttributeText(new QName(ns, "w"), String.valueOf(dxaW));
-                cursor.setAttributeText(new QName(ns, "h"), String.valueOf(dxaH));
-                cursor.dispose();
-
-                if (el instanceof FloatImage) {
-                    FloatImage fi = (FloatImage) el;
-                    XWPFRun run = para.createRun();
-                    String cacheKey = fi.getName() != null ? fi.getName() : String.valueOf(System.identityHashCode(fi));
-                    byte[] imageBytes = imageDataCache != null ? imageDataCache.get(cacheKey) : null;
-                    if (imageBytes == null) {
-                        InputStream input = buildFloatImageInputStream(fi);
-                        if (input == null) {
-                            continue;
-                        }
-                        try {
-                            imageBytes = IOUtils.toByteArray(input);
-                        } finally {
-                            IOUtils.closeQuietly(input);
-                        }
-                        if (imageDataCache != null) {
-                            imageDataCache.put(cacheKey, imageBytes);
-                        }
-                    }
-                    try {
-                        int widthPx = elWidth != null ? elWidth.intValue() : 100;
-                        int heightPx = elHeight != null ? elHeight.intValue() : 75;
-                        String path = fi.getPath();
-                        int pictureType = XWPFDocument.PICTURE_TYPE_PNG;
-                        String ext = ".png";
-                        if (StringUtils.isNotBlank(path)) {
-                            String lowerPath = path.toLowerCase();
-                            if (lowerPath.endsWith(".jpg") || lowerPath.endsWith(".jpeg")) {
-                                pictureType = XWPFDocument.PICTURE_TYPE_JPEG;
-                                ext = ".jpg";
-                            } else if (lowerPath.endsWith(".gif")) {
-                                pictureType = XWPFDocument.PICTURE_TYPE_GIF;
-                                ext = ".gif";
-                            }
-                        } else {
-                            String expr = fi.getExpr();
-                            if (expr != null && expr.length() >= 4 && expr.startsWith("/9j/")) {
-                                pictureType = XWPFDocument.PICTURE_TYPE_JPEG;
-                                ext = ".jpg";
-                            }
-                        }
-                        String imageName = "float-" + (fi.getName() != null ? fi.getName() : "image");
-                        InputStream cachedInput = new java.io.ByteArrayInputStream(imageBytes);
-                        try {
-                            run.addPicture(cachedInput, pictureType, imageName + ext,
-                                    Units.toEMU(UnitUtils.pixelToPoint(widthPx)),
-                                    Units.toEMU(UnitUtils.pixelToPoint(heightPx)));
-                        } finally {
-                            IOUtils.closeQuietly(cachedInput);
-                        }
-                    } catch (Exception e) {
-                        String elName = fi.getName() != null ? fi.getName() : "image";
-                        log.log(Level.WARNING, "导出 Word 悬浮图片 [" + elName + "] 失败", e);
-                    }
-                } else if (el instanceof FloatText) {
-                    FloatText ft = (FloatText) el;
-                    XWPFRun run = para.createRun();
-                    String value = ft.getValue();
-                    if (value != null) {
-                        run.setText(value);
-                    }
-                    String fontFamily = ft.getFontFamily();
-                    if (StringUtils.isNotBlank(fontFamily)) {
-                        run.setFontFamily(fontFamily);
-                    }
-                    Integer fontSize = ft.getFontSize();
-                    if (fontSize != null && fontSize > 0) {
-                        run.setFontSize(UnitUtils.pixelToPoint(fontSize.intValue()));
-                    }
-                    String forecolor = ft.getForecolor();
-                    if (StringUtils.isNotEmpty(forecolor)) {
-                        String[] colors = forecolor.split(",");
-                        if (colors.length >= 3) {
-                            run.setColor(toHex(colors));
-                        }
-                    }
-                    if (ft.getBold() != null && ft.getBold()) {
-                        run.setBold(true);
-                    }
-                    if (ft.getItalic() != null && ft.getItalic()) {
-                        run.setItalic(true);
-                    }
-                    if (ft.getUnderline() != null && ft.getUnderline()) {
-                        run.setUnderline(UnderlinePatterns.SINGLE);
-                    }
-                    if (ft.getAlign() != null) {
-                        String a = ft.getAlign();
-                        if ("center".equals(a)) {
-                            para.setAlignment(ParagraphAlignment.CENTER);
-                        } else if ("right".equals(a)) {
-                            para.setAlignment(ParagraphAlignment.RIGHT);
-                        }
-                    }
-                    if (ft.getValign() != null && !"top".equals(ft.getValign())) {
-                        int totalHeightDxa = dxaH;
-                        int fontSizeHalfPt = fontSize != null ? UnitUtils.pixelToPoint(fontSize) * 10 : 120;
-                        if ("middle".equals(ft.getValign())) {
-                            int spacing = Math.max(0, (totalHeightDxa - fontSizeHalfPt) / 2);
-                            CTSpacing spacingEl = para.getCTP().getPPr().isSetSpacing() ?
-                                    para.getCTP().getPPr().getSpacing() : para.getCTP().getPPr().addNewSpacing();
-                            spacingEl.setBefore(spacing);
-                        } else if ("bottom".equals(ft.getValign())) {
-                            int spacing = Math.max(0, totalHeightDxa - fontSizeHalfPt);
-                            CTSpacing spacingEl = para.getCTP().getPPr().isSetSpacing() ?
-                                    para.getCTP().getPPr().getSpacing() : para.getCTP().getPPr().addNewSpacing();
-                            spacingEl.setBefore(spacing);
-                        }
-                    }
-                    String bgcolor = ft.getBgcolor();
-                    if (StringUtils.isNotEmpty(bgcolor)) {
-                        String[] bgColors = bgcolor.split(",");
-                        if (bgColors.length >= 3) {
-                            String hexBg = toHex(bgColors);
-                            CTShd shading = para.getCTP().getPPr().isSetShd() ?
-                                    para.getCTP().getPPr().getShd() : para.getCTP().getPPr().addNewShd();
-                            shading.setVal(STShd.CLEAR);
-                            shading.setFill(hexBg);
-                        }
-                    }
-                    if (ft.getTopBorder() != null || ft.getBottomBorder() != null
-                            || ft.getLeftBorder() != null || ft.getRightBorder() != null) {
-                        CTPBdr pBdr = para.getCTP().getPPr().isSetPBdr() ?
-                                para.getCTP().getPPr().getPBdr() : para.getCTP().getPPr().addNewPBdr();
-                        if (ft.getTopBorder() != null) {
-                            pBdr.setTop(buildCTBorder(ft.getTopBorder()));
-                        }
-                        if (ft.getBottomBorder() != null) {
-                            pBdr.setBottom(buildCTBorder(ft.getBottomBorder()));
-                        }
-                        if (ft.getLeftBorder() != null) {
-                            pBdr.setLeft(buildCTBorder(ft.getLeftBorder()));
-                        }
-                        if (ft.getRightBorder() != null) {
-                            pBdr.setRight(buildCTBorder(ft.getRightBorder()));
-                        }
-                    }
-                }
+                renderFloatTextAsOverlay(document, (FloatText) el, xPt, yPt, widthPt, heightPt, floatDrawingIdSeq);
             } catch (Exception e) {
-                String elName = el.getName() != null ? el.getName() : (el instanceof FloatImage ? "image" : "text");
                 log.log(Level.WARNING, "导出 Word 悬浮元素 [" + elName + "] 失败，已跳过", e);
             }
+        }
+    }
+
+    /**
+     * 用 VML 绝对定位文本框写悬浮文字
+     *
+     * @param document          Word 文档
+     * @param ft                悬浮文本
+     * @param xPt               相对页边 X（磅）
+     * @param yPt               相对页边 Y（磅）
+     * @param widthPt           宽（磅）
+     * @param heightPt          高（磅）
+     * @param floatDrawingIdSeq 形状 id 序列
+     */
+    private void renderFloatTextAsOverlay(XWPFDocument document, FloatText ft,
+                                          float xPt, float yPt, float widthPt, float heightPt,
+                                          int[] floatDrawingIdSeq) throws Exception {
+        XWPFParagraph para = document.createParagraph();
+        minimizeFloatParagraph(para);
+        long shapeId = floatDrawingIdSeq[0]++;
+        if (shapeId <= 0) {
+            floatDrawingIdSeq[0] = 1;
+            shapeId = floatDrawingIdSeq[0]++;
+        }
+        String xml = buildFloatTextVml(ft, shapeId, xPt, yPt, widthPt, heightPt);
+        CTR ctr = para.createRun().getCTR();
+        CTPicture pict = ctr.addNewPict();
+        org.apache.xmlbeans.XmlObject parsed = org.apache.xmlbeans.XmlObject.Factory.parse(xml);
+        pict.set(parsed);
+    }
+
+    /**
+     * 构造相对页边、不绕排的 VML 文本框 XML
+     *
+     * @param ft      悬浮文本
+     * @param shapeId 形状 id
+     * @param xPt     X（磅）
+     * @param yPt     Y（磅）
+     * @param widthPt 宽（磅）
+     * @param heightPt 高（磅）
+     * @return pict 内 XML
+     */
+    private String buildFloatTextVml(FloatText ft, long shapeId, float xPt, float yPt, float widthPt, float heightPt) {
+        String fill = rgbToVmlColor(ft.getBgcolor(), null);
+        Border strokeBorder = firstDrawnBorder(ft);
+        String stroke = strokeBorder != null ? rgbToVmlColor(strokeBorder.getColor(), "000000") : "000000";
+        String stroked = strokeBorder != null ? "t" : "f";
+        String strokeWeight = "0.75pt";
+        if (strokeBorder != null && strokeBorder.getWidth() > 0) {
+            strokeWeight = Math.max(0.5, strokeBorder.getWidth() * 0.75) + "pt";
+        }
+        int z = ft.getLayer() == null ? 1 : Math.max(1, ft.getLayer().intValue());
+        String jc = "left";
+        if ("center".equals(ft.getAlign())) {
+            jc = "center";
+        } else if ("right".equals(ft.getAlign())) {
+            jc = "right";
+        }
+        int fontPt = ft.getFontSize() != null && ft.getFontSize() > 0
+                ? Math.max(1, UnitUtils.pixelToPoint(ft.getFontSize().intValue())) : 11;
+        int sz = fontPt * 2;
+        String family = StringUtils.isNotBlank(ft.getFontFamily()) ? ft.getFontFamily() : "宋体";
+        String color = rgbToVmlColor(ft.getForecolor(), "000000");
+        String b = ft.getBold() != null && ft.getBold() ? "<w:b/>" : "";
+        String i = ft.getItalic() != null && ft.getItalic() ? "<w:i/>" : "";
+        String u = ft.getUnderline() != null && ft.getUnderline() ? "<w:u w:val=\"single\"/>" : "";
+        int beforeDxa = 0;
+        if ("middle".equals(ft.getValign())) {
+            beforeDxa = Math.max(0, (int) Math.round((heightPt - fontPt) * 10));
+        } else if ("bottom".equals(ft.getValign())) {
+            beforeDxa = Math.max(0, (int) Math.round((heightPt - fontPt) * 20));
+        }
+        String text = ft.getValue() == null ? "" : escapeXml(ft.getValue());
+        String filled = fill != null ? "t" : "f";
+        String fillColor = fill != null ? fill : "ffffff";
+        StringBuilder xml = new StringBuilder();
+        xml.append("<xml-fragment xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:o=\"urn:schemas-microsoft-com:office:office\">");
+        xml.append("<v:shape id=\"_s").append(shapeId).append("\" type=\"#_x0000_t202\" filled=\"").append(filled).append("\"");
+        xml.append(" fillcolor=\"#").append(fillColor).append("\" stroked=\"").append(stroked).append("\"");
+        xml.append(" strokecolor=\"#").append(stroke).append("\" strokeweight=\"").append(strokeWeight).append("\"");
+        xml.append(" style=\"position:absolute;margin-left:").append(xPt).append("pt;margin-top:").append(yPt).append("pt;");
+        xml.append("width:").append(widthPt).append("pt;height:").append(heightPt).append("pt;");
+        xml.append("z-index:").append(z).append(";mso-wrap-style:none;mso-position-horizontal-relative:margin;");
+        xml.append("mso-position-vertical-relative:margin\">");
+        xml.append("<v:textbox inset=\"0,0,0,0\"><w:txbxContent><w:p>");
+        xml.append("<w:pPr><w:jc w:val=\"").append(jc).append("\"/>");
+        if (beforeDxa > 0) {
+            xml.append("<w:spacing w:before=\"").append(beforeDxa).append("\"/>");
+        }
+        xml.append("</w:pPr><w:r><w:rPr>");
+        xml.append("<w:rFonts w:ascii=\"").append(escapeXml(family)).append("\" w:hAnsi=\"").append(escapeXml(family))
+                .append("\" w:eastAsia=\"").append(escapeXml(family)).append("\"/>");
+        xml.append("<w:sz w:val=\"").append(sz).append("\"/><w:color w:val=\"").append(color).append("\"/>");
+        xml.append(b).append(i).append(u);
+        xml.append("</w:rPr><w:t xml:space=\"preserve\">").append(text).append("</w:t></w:r></w:p></w:txbxContent></v:textbox>");
+        xml.append("</v:shape></xml-fragment>");
+        return xml.toString();
+    }
+
+    /**
+     * 取第一条可见边框，供文本框描边
+     *
+     * @param ft 悬浮文本
+     * @return 边框，没有则 null
+     */
+    private Border firstDrawnBorder(FloatText ft) {
+        if (isDrawnBorder(ft.getTopBorder())) {
+            return ft.getTopBorder();
+        }
+        if (isDrawnBorder(ft.getLeftBorder())) {
+            return ft.getLeftBorder();
+        }
+        if (isDrawnBorder(ft.getRightBorder())) {
+            return ft.getRightBorder();
+        }
+        if (isDrawnBorder(ft.getBottomBorder())) {
+            return ft.getBottomBorder();
+        }
+        return null;
+    }
+
+    /**
+     * RGB 字符串转 VML 六位色
+     *
+     * @param rgb      如 208,2,27
+     * @param fallback 无颜色时的六位色，null 表示不填充
+     * @return 六位色或 null
+     */
+    private String rgbToVmlColor(String rgb, String fallback) {
+        if (StringUtils.isBlank(rgb)) {
+            return fallback;
+        }
+        String[] parts = rgb.split(",");
+        if (parts.length < 3) {
+            return fallback;
+        }
+        return toHex(parts);
+    }
+
+    /**
+     * XML 文本转义
+     *
+     * @param raw 原文
+     * @return 转义结果
+     */
+    private String escapeXml(String raw) {
+        if (raw == null) {
+            return "";
+        }
+        return raw.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
+    /**
+     * 将悬浮图片转为 wp:anchor 写入文档，失败时移除段落
+     *
+     * @param document          Word 文档
+     * @param fi                悬浮图片
+     * @param leftMargin        左边距（磅）
+     * @param topMargin         上边距（磅）
+     * @param xPt               相对内容区 X（磅）
+     * @param yPt               相对内容区 Y（磅）
+     * @param widthPt           宽（磅）
+     * @param heightPt          高（磅）
+     * @param elWidth           宽（像素），可空
+     * @param elHeight          高（像素），可空
+     * @param imageDataCache    图片缓存
+     * @param floatDrawingIdSeq docPr id 序列
+     */
+    private void renderFloatImageAsAnchor(XWPFDocument document, FloatImage fi,
+                                          float leftMargin, float topMargin,
+                                          float xPt, float yPt, float widthPt, float heightPt,
+                                          Integer elWidth, Integer elHeight,
+                                          Map<String, byte[]> imageDataCache,
+                                          int[] floatDrawingIdSeq) {
+        String elName = fi.getName() != null ? fi.getName() : "image";
+        String cacheKey = fi.getName() != null ? fi.getName() : String.valueOf(System.identityHashCode(fi));
+        byte[] imageBytes = imageDataCache != null ? imageDataCache.get(cacheKey) : null;
+        if (imageBytes == null) {
+            InputStream input = buildFloatImageInputStream(fi);
+            if (input == null) {
+                return;
+            }
+            try {
+                imageBytes = IOUtils.toByteArray(input);
+            } catch (Exception e) {
+                return;
+            } finally {
+                IOUtils.closeQuietly(input);
+            }
+            if (imageDataCache != null) {
+                imageDataCache.put(cacheKey, imageBytes);
+            }
+        }
+        if (imageBytes == null || imageBytes.length == 0) {
+            return;
+        }
+
+        int widthPx = elWidth != null ? elWidth.intValue() : 100;
+        int heightPx = elHeight != null ? elHeight.intValue() : 75;
+        int emuW = (int) Units.toEMU(widthPt > 0 ? widthPt : UnitUtils.pixelToPoint(widthPx));
+        int emuH = (int) Units.toEMU(heightPt > 0 ? heightPt : UnitUtils.pixelToPoint(heightPx));
+        int emuX = (int) Units.toEMU(leftMargin + xPt);
+        int emuY = (int) Units.toEMU(topMargin + yPt);
+        long relativeHeight = fi.getLayer() != null ? Math.max(0, fi.getLayer().longValue()) : 0L;
+        long docPrId = floatDrawingIdSeq[0]++;
+        if (docPrId <= 0 || docPrId > Integer.MAX_VALUE) {
+            floatDrawingIdSeq[0] = 1;
+            docPrId = floatDrawingIdSeq[0]++;
+        }
+
+        XWPFParagraph para = document.createParagraph();
+        minimizeFloatParagraph(para);
+        XWPFRun run = para.createRun();
+        try {
+            String path = fi.getPath();
+            int pictureType = XWPFDocument.PICTURE_TYPE_PNG;
+            String ext = ".png";
+            if (StringUtils.isNotBlank(path)) {
+                String lowerPath = path.toLowerCase();
+                if (lowerPath.endsWith(".jpg") || lowerPath.endsWith(".jpeg")) {
+                    pictureType = XWPFDocument.PICTURE_TYPE_JPEG;
+                    ext = ".jpg";
+                } else if (lowerPath.endsWith(".gif")) {
+                    pictureType = XWPFDocument.PICTURE_TYPE_GIF;
+                    ext = ".gif";
+                }
+            } else {
+                String expr = fi.getExpr();
+                if (expr != null && expr.length() >= 4 && expr.startsWith("/9j/")) {
+                    pictureType = XWPFDocument.PICTURE_TYPE_JPEG;
+                    ext = ".jpg";
+                }
+            }
+            String imageName = "float-" + elName;
+            InputStream cachedInput = new java.io.ByteArrayInputStream(imageBytes);
+            try {
+                run.addPicture(cachedInput, pictureType, imageName + ext, emuW, emuH);
+            } finally {
+                IOUtils.closeQuietly(cachedInput);
+            }
+            if (run.getCTR().sizeOfDrawingArray() < 1
+                    || run.getCTR().getDrawingArray(0).sizeOfInlineArray() < 1) {
+                throw new IllegalStateException("addPicture 未生成 inline drawing");
+            }
+            CTDrawing drawing = run.getCTR().getDrawingArray(0);
+            CTGraphicalObject graphic = drawing.getInlineArray(0).getGraphic();
+            CTAnchor anchor = buildFloatImageAnchor(graphic, imageName, emuW, emuH, emuX, emuY,
+                    relativeHeight, docPrId);
+            drawing.setAnchorArray(new CTAnchor[]{anchor});
+            drawing.removeInline(0);
+            run.setFontSize(1);
+            run.setColor("FFFFFF");
+            run.setText(" ", 0);
+        } catch (Exception e) {
+            removeParagraphQuietly(document, para);
+            log.log(Level.WARNING, "导出 Word 悬浮图片 [" + elName + "] 失败", e);
+        }
+    }
+
+    /**
+     * 构造相对 page、wrapNone 的悬浮图片 CTAnchor
+     *
+     * @param graphic         图片 graphic
+     * @param name            图名
+     * @param emuW            宽 EMU
+     * @param emuH            高 EMU
+     * @param emuX            页内 X EMU
+     * @param emuY            页内 Y EMU
+     * @param relativeHeight  叠放高度（layer）
+     * @param docPrId         文档内唯一 id
+     * @return CTAnchor
+     */
+    private CTAnchor buildFloatImageAnchor(CTGraphicalObject graphic, String name,
+                                           int emuW, int emuH, int emuX, int emuY,
+                                           long relativeHeight, long docPrId) {
+        CTAnchor anchor = CTAnchor.Factory.newInstance();
+        anchor.setDistT(0);
+        anchor.setDistB(0);
+        anchor.setDistL(0);
+        anchor.setDistR(0);
+        anchor.setSimplePos2(false);
+        anchor.setRelativeHeight(relativeHeight);
+        anchor.setBehindDoc(false);
+        anchor.setLocked(false);
+        anchor.setLayoutInCell(true);
+        anchor.setAllowOverlap(true);
+
+        CTPoint2D simplePos = anchor.addNewSimplePos();
+        simplePos.setX(0);
+        simplePos.setY(0);
+
+        CTPosH posH = anchor.addNewPositionH();
+        posH.setRelativeFrom(STRelFromH.PAGE);
+        posH.setPosOffset(emuX);
+
+        CTPosV posV = anchor.addNewPositionV();
+        posV.setRelativeFrom(STRelFromV.PAGE);
+        posV.setPosOffset(emuY);
+
+        CTPositiveSize2D extent = anchor.addNewExtent();
+        extent.setCx(emuW);
+        extent.setCy(emuH);
+
+        CTEffectExtent effectExtent = anchor.addNewEffectExtent();
+        effectExtent.setL(0L);
+        effectExtent.setT(0L);
+        effectExtent.setR(0L);
+        effectExtent.setB(0L);
+
+        anchor.addNewWrapNone();
+
+        CTNonVisualDrawingProps docPr = anchor.addNewDocPr();
+        docPr.setId(docPrId);
+        docPr.setName(name);
+        if (StringUtils.isNotBlank(name)) {
+            docPr.setDescr(name);
+        }
+
+        anchor.addNewCNvGraphicFramePr();
+        anchor.setGraphic(graphic);
+        return anchor;
+    }
+
+    /**
+     * 压缩悬浮段落的流式占位
+     *
+     * @param para 段落
+     */
+    private void minimizeFloatParagraph(XWPFParagraph para) {
+        para.setSpacingBefore(0);
+        para.setSpacingAfter(0);
+        try {
+            para.setSpacingBetween(1.0, LineSpacingRule.EXACT);
+        } catch (Exception ignore) {
+            // 旧 POI 无此 API 时忽略
+        }
+        CTPPr pPr = para.getCTP().isSetPPr() ? para.getCTP().getPPr() : para.getCTP().addNewPPr();
+        CTSpacing spacing = pPr.isSetSpacing() ? pPr.getSpacing() : pPr.addNewSpacing();
+        spacing.setBefore(BigInteger.ZERO);
+        spacing.setAfter(BigInteger.ZERO);
+    }
+
+    /**
+     * 移除已创建的段落
+     *
+     * @param document 文档
+     * @param para     段落
+     */
+    private void removeParagraphQuietly(XWPFDocument document, XWPFParagraph para) {
+        try {
+            int pos = document.getPosOfParagraph(para);
+            if (pos >= 0) {
+                document.removeBodyElement(pos);
+            }
+        } catch (Exception e) {
         }
     }
 

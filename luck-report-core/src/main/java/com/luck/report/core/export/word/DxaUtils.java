@@ -38,8 +38,14 @@ public class DxaUtils {
         return dxa / 20;
     }
 
+    /**
+     * 磅转 DXA（缇），1pt = 20 DXA
+     *
+     * @param points 磅
+     * @return DXA
+     */
     public static int points2dxa(int points) {
-        return points * 21;
+        return points * 20;
     }
 
     public static int dxa2points(int dxa) {
