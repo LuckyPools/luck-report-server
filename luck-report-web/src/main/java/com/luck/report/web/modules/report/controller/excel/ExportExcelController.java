@@ -1,5 +1,6 @@
 package com.luck.report.web.modules.report.controller.excel;
 
+import com.luck.report.core.definition.ReportDefinition;
 import com.luck.report.infra.modules.servlet.provider.ApiRequest;
 import com.luck.report.infra.modules.servlet.provider.ApiResponse;
 import com.luck.report.infra.modules.servlet.utils.HttpUtils;
@@ -69,11 +70,12 @@ public class ExportExcelController {
     private void buildExcel(String reportPath, String mode, String excelName,
                             ApiRequest req, ApiResponse resp,
                             boolean withPage, boolean withSheet) throws IOException {
+        ReportDefinition definition = reportExportService.getPreviewDefinition(mode, reportPath);
         String reportName = DownloadUtils.resolveReportName(designerService, reportPath);
         DownloadUtils.buildDownloadHeader(resp, reportName, excelName, ".xlsx");
         OutputStream outputStream = resp.getOutputStream();
         try {
-            reportExportService.buildExcel(reportPath, mode, req, outputStream, withPage, withSheet);
+            reportExportService.buildExcel(reportPath, mode, req, outputStream, withPage, withSheet, definition);
         } finally {
             outputStream.flush();
             outputStream.close();

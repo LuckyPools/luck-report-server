@@ -1,5 +1,6 @@
 package com.luck.report.web.modules.report.controller.pdf;
 
+import com.luck.report.core.definition.ReportDefinition;
 import com.luck.report.infra.modules.servlet.provider.ApiRequest;
 import com.luck.report.infra.modules.servlet.provider.ApiResponse;
 import com.luck.report.infra.modules.servlet.utils.HttpUtils;
@@ -40,11 +41,12 @@ public class ExportPdfController {
                       @RequestParam(value = "_paper", required = false) String paperJson) throws IOException {
         ApiRequest req = HttpUtils.getRequest();
         ApiResponse resp = HttpUtils.getResponse();
+        ReportDefinition definition = reportExportService.getPreviewDefinition(mode, reportPath);
         String reportName = DownloadUtils.resolveReportName(designerService, reportPath);
         DownloadUtils.buildDownloadHeader(resp, reportName, pdfName, ".pdf");
         OutputStream outputStream = resp.getOutputStream();
         try {
-            reportExportService.buildPdf(reportPath, mode, paperJson, req, outputStream);
+            reportExportService.buildPdf(reportPath, mode, paperJson, req, outputStream, definition);
         } finally {
             if (outputStream != null) {
                 outputStream.flush();
@@ -62,10 +64,11 @@ public class ExportPdfController {
                      @RequestParam(value = "_paper", required = false) String paperJson) throws IOException {
         ApiRequest req = HttpUtils.getRequest();
         ApiResponse resp = HttpUtils.getResponse();
+        ReportDefinition definition = reportExportService.getPreviewDefinition(mode, reportPath);
         resp.setContentType("application/pdf");
         OutputStream outputStream = resp.getOutputStream();
         try {
-            reportExportService.buildPdf(reportPath, mode, paperJson, req, outputStream);
+            reportExportService.buildPdf(reportPath, mode, paperJson, req, outputStream, definition);
         } finally {
             if (outputStream != null) {
                 outputStream.flush();

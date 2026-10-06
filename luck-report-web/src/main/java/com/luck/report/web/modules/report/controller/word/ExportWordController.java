@@ -1,5 +1,6 @@
 package com.luck.report.web.modules.report.controller.word;
 
+import com.luck.report.core.definition.ReportDefinition;
 import com.luck.report.infra.modules.servlet.provider.ApiRequest;
 import com.luck.report.infra.modules.servlet.provider.ApiResponse;
 import com.luck.report.infra.modules.servlet.utils.HttpUtils;
@@ -39,11 +40,12 @@ public class ExportWordController {
                       @RequestParam(value = "_n", required = false) String wordName) throws IOException {
         ApiRequest req = HttpUtils.getRequest();
         ApiResponse resp = HttpUtils.getResponse();
+        ReportDefinition definition = reportExportService.getPreviewDefinition(mode, reportPath);
         String reportName = DownloadUtils.resolveReportName(designerService, reportPath);
         DownloadUtils.buildDownloadHeader(resp, reportName, wordName, ".docx");
         OutputStream outputStream = resp.getOutputStream();
         try {
-            reportExportService.buildWord(reportPath, mode, req, outputStream);
+            reportExportService.buildWord(reportPath, mode, req, outputStream, definition);
         } finally {
             outputStream.flush();
             outputStream.close();

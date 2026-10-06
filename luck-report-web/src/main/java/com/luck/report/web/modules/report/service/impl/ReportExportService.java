@@ -61,19 +61,39 @@ public class ReportExportService {
     private final WordProducer wordProducer = new WordProducer();
 
     /**
-     * 构建 Excel (xlsx) 报表。
+     * 预览时从缓存取报表定义，须在写下载头之前调用；其它模式返回 null
+     *
+     * @param mode 导出模式
+     * @param reportPath 报表路径
+     * @return 预览报表定义；非预览为 null
      */
-    public void buildExcel(String reportPath, String mode, ApiRequest req, OutputStream outputStream,
-                           boolean withPage, boolean withSheet) throws IOException {
+    public ReportDefinition getPreviewDefinition(String mode, String reportPath) {
+        if (!ReportConstants.MODE_KEY.equals(mode)) {
+            return null;
+        }
         if (StringUtils.isBlank(reportPath)) {
             throw new ReportComputeException("error.report.fileNull");
         }
-        boolean isPreview = ReportConstants.MODE_KEY.equals(mode);
+        return reportDefinitionService.getReportDefinition(reportPath);
+    }
+
+    /**
+     * 构建 Excel (xlsx) 报表。
+     *
+     * @param definition 预览定义，非预览传 null
+     */
+    public void buildExcel(String reportPath, String mode, ApiRequest req, OutputStream outputStream,
+                           boolean withPage, boolean withSheet, ReportDefinition definition) throws IOException {
+        if (StringUtils.isBlank(reportPath)) {
+            throw new ReportComputeException("error.report.fileNull");
+        }
         try {
             Map<String, Object> parameters = paramService.buildAllParameters(req);
-            if (isPreview) {
-                ReportDefinition reportDefinition = reportDefinitionService.getReportDefinition(reportPath);
-                Report report = reportBuilder.buildReport(reportDefinition, parameters);
+            if (ReportConstants.MODE_KEY.equals(mode)) {
+                if (definition == null) {
+                    throw new ReportComputeException("error.report.dataExpired");
+                }
+                Report report = reportBuilder.buildReport(definition, parameters);
                 if (withPage) {
                     excelProducer.produceWithPaging(report, outputStream);
                 } else if (withSheet) {
@@ -98,14 +118,17 @@ public class ReportExportService {
 
     /**
      * 构建 Excel97 (xls) 报表。
+     *
+     * @param definition 预览定义，非预览传 null
      */
     public void buildExcel97(String reportPath, String mode, ApiRequest req, OutputStream outputStream,
-                             boolean withPage, boolean withSheet) throws IOException {
-        boolean isPreview = ReportConstants.MODE_KEY.equals(mode);
+                             boolean withPage, boolean withSheet, ReportDefinition definition) throws IOException {
         Map<String, Object> parameters = paramService.buildAllParameters(req);
-        if (isPreview) {
-            ReportDefinition reportDefinition = reportDefinitionService.getReportDefinition(reportPath);
-            Report report = reportBuilder.buildReport(reportDefinition, parameters);
+        if (ReportConstants.MODE_KEY.equals(mode)) {
+            if (definition == null) {
+                throw new ReportComputeException("error.report.dataExpired");
+            }
+            Report report = reportBuilder.buildReport(definition, parameters);
             if (withPage) {
                 excel97Producer.produceWithPaging(report, outputStream);
             } else if (withSheet) {
@@ -127,15 +150,19 @@ public class ReportExportService {
 
     /**
      * 构建 PDF 报表。
+     *
+     * @param definition 预览定义，非预览传 null
      */
     public void buildPdf(String reportPath, String mode, String paperJson, ApiRequest req,
-                         OutputStream outputStream) throws IOException {
-        boolean isPreview = ReportConstants.MODE_KEY.equals(mode);
+                         OutputStream outputStream, ReportDefinition definition) throws IOException {
         try {
-            ReportDefinition reportDefinition;
             Map<String, Object> parameters = paramService.buildAllParameters(req);
-            if (isPreview) {
-                reportDefinition = reportDefinitionService.getReportDefinition(reportPath);
+            ReportDefinition reportDefinition;
+            if (ReportConstants.MODE_KEY.equals(mode)) {
+                if (definition == null) {
+                    throw new ReportComputeException("error.report.dataExpired");
+                }
+                reportDefinition = definition;
             } else {
                 reportDefinition = reportRender.getReportDefinition(reportPath);
             }
@@ -155,14 +182,18 @@ public class ReportExportService {
 
     /**
      * 构建 Word 报表。
+     *
+     * @param definition 预览定义，非预览传 null
      */
-    public void buildWord(String reportPath, String mode, ApiRequest req, OutputStream outputStream) throws IOException {
-        boolean isPreview = ReportConstants.MODE_KEY.equals(mode);
+    public void buildWord(String reportPath, String mode, ApiRequest req, OutputStream outputStream,
+                          ReportDefinition definition) throws IOException {
         try {
             Map<String, Object> parameters = paramService.buildAllParameters(req);
-            if (isPreview) {
-                ReportDefinition reportDefinition = reportDefinitionService.getReportDefinition(reportPath);
-                Report report = reportBuilder.buildReport(reportDefinition, parameters);
+            if (ReportConstants.MODE_KEY.equals(mode)) {
+                if (definition == null) {
+                    throw new ReportComputeException("error.report.dataExpired");
+                }
+                Report report = reportBuilder.buildReport(definition, parameters);
                 wordProducer.produce(report, outputStream);
             } else {
                 ExportConfigure configure = new ExportConfigureImpl(reportPath, parameters, outputStream);
