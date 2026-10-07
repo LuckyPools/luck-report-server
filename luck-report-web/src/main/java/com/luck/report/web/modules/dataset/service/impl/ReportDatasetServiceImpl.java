@@ -255,7 +255,7 @@ public class ReportDatasetServiceImpl implements ReportDatasetService {
         entity.setParameters(dto.getParameters());
         entity.setFields(dto.getFields());
         entity.setDescription(dto.getDescription());
-        entity.setEnabled(dto.getEnabled() != null ? dto.getEnabled() : true);
+        entity.setEnabled(dto.getEnabled() != null ? dto.getEnabled() : false);
         return entity;
     }
 

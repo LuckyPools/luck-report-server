@@ -184,6 +184,25 @@ CREATE TABLE IF NOT EXISTS `luck_agent_knowledge` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='智能体知识表';
 
 -- -------------------------------------------
+-- 智能体规则表
+-- -------------------------------------------
+CREATE TABLE IF NOT EXISTS `luck_agent_rule` (
+    `id` varchar(32) NOT NULL COMMENT '主键ID',
+    `create_by` varchar(128) COMMENT '创建人',
+    `create_time` datetime COMMENT '创建时间',
+    `update_by` varchar(128) COMMENT '更新人',
+    `update_time` datetime COMMENT '更新时间',
+    `del_flag` tinyint NOT NULL COMMENT '删除标志：0-未删除，1-已删除',
+    `title` varchar(255) NOT NULL COMMENT '规则标题',
+    `content` mediumtext COMMENT '规则正文',
+    `sort` int COMMENT '排序字段',
+    `is_enabled` tinyint NOT NULL COMMENT '是否生效：0-不生效，1-生效',
+    PRIMARY KEY (`id`),
+    KEY `idx_enabled_del_sort` (`is_enabled`, `del_flag`, `sort`),
+    KEY `idx_del_flag` (`del_flag`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='智能体规则表';
+
+-- -------------------------------------------
 -- 报表文件表
 -- -------------------------------------------
 CREATE TABLE IF NOT EXISTS `luck_report_template` (

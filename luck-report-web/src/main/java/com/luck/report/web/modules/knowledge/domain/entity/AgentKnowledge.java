@@ -38,7 +38,7 @@ public class AgentKnowledge extends DataEntity<AgentKnowledge> {
     /**
      * 是否生效：true-参与检索，false-不参与
      */
-    private Boolean enabled = true;
+    private Boolean enabled = false;
 
     /**
      * 向量化状态：PENDING待处理，PROCESSING处理中，COMPLETED已完成，FAILED失败

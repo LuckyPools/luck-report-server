@@ -93,7 +93,7 @@ public class ReportDatasourceServiceImpl implements ReportDatasourceService {
         }
 
         if (reportDatasource.getEnabled() == null) {
-            reportDatasource.setEnabled(true);
+            reportDatasource.setEnabled(false);
         }
         if (reportDatasource.getTestStatus() == null) {
             reportDatasource.setTestStatus(DatasourceTestStatusEnum.UNKNOWN.getValue());
@@ -535,32 +535,9 @@ public class ReportDatasourceServiceImpl implements ReportDatasourceService {
             }
         }
 
-        List<VectorStoreSearchResult> columnSearchResults = agentVectorStore.search(query,
-            VectorSearchParam.builder()
-                .topK(20).threshold(0.4)
-                .vectorType("COLUMN")
-                .metadataEquals(Collections.singletonMap("datasourceId", datasourceId))
-                .build());
-
-        Map<String, List<VectorDocument>> columnDocMap = new LinkedHashMap<>();
-        for (VectorStoreSearchResult result : columnSearchResults) {
-            VectorDocument doc = result.getDocument();
-            if (doc == null || doc.getMetadata() == null) {
-                continue;
-            }
-            String tableName = (String) doc.getMetadata().get("tableName");
-            if (tableName != null && recalledTableNames.contains(tableName)) {
-                columnDocMap.computeIfAbsent(tableName, k -> new ArrayList<>()).add(doc);
-            }
-        }
-
-        List<TableDTO> tableList = new ArrayList<>();
-        for (String tableName : recalledTableNames) {
-            VectorDocument tableDoc = tableDocMap.get(tableName);
-            List<VectorDocument> columnDocs = columnDocMap.getOrDefault(tableName, new ArrayList<>());
-            TableDTO tableDTO = buildTableDTOFromMetadata(tableDoc, columnDocs);
-            tableList.add(tableDTO);
-        }
+        expandMissingForeignKeyTables(datasourceId, tableDocMap, recalledTableNames);
+        Map<String, List<VectorDocument>> columnDocMap = loadColumnDocsByTableNames(datasourceId, recalledTableNames);
+        List<TableDTO> tableList = buildTableList(recalledTableNames, tableDocMap, columnDocMap);
 
         List<ForeignKeyDTO> foreignKeyList = new ArrayList<>();
         Set<String> foreignKeyKeys = new LinkedHashSet<>();
@@ -633,10 +610,15 @@ public class ReportDatasourceServiceImpl implements ReportDatasourceService {
                 ? Arrays.asList(primaryKeysStr.split(",")) : new ArrayList<>();
 
         List<ColumnDTO> columns = new ArrayList<>();
+        Set<String> seenColumnNames = new LinkedHashSet<>();
         for (VectorDocument colDoc : columnDocs) {
             Map<String, Object> colMeta = colDoc.getMetadata();
+            String colName = (String) colMeta.getOrDefault("name", "");
+            if (StringUtils.isBlank(colName) || !seenColumnNames.add(colName)) {
+                continue;
+            }
             ColumnDTO columnDTO = ColumnDTO.builder()
-                    .name((String) colMeta.getOrDefault("name", ""))
+                    .name(colName)
                     .type((String) colMeta.getOrDefault("type", ""))
                     .description((String) colMeta.getOrDefault("description", ""))
                     .build();
@@ -662,6 +644,105 @@ public class ReportDatasourceServiceImpl implements ReportDatasourceService {
     }
 
     /**
+     * 按数据源列举 COLUMN 文档并按命中表名分组
+     *
+     * @param datasourceId 数据源 ID
+     * @param tableNames 已召回表名
+     * @return 表名到列文档列表
+     */
+    private Map<String, List<VectorDocument>> loadColumnDocsByTableNames(String datasourceId, Set<String> tableNames) {
+        Map<String, List<VectorDocument>> columnDocMap = new LinkedHashMap<>();
+        if (tableNames == null || tableNames.isEmpty()) {
+            return columnDocMap;
+        }
+        List<VectorDocument> columnDocs = agentVectorStore.listByMetadata("COLUMN", "datasourceId", datasourceId);
+        for (VectorDocument doc : columnDocs) {
+            if (doc == null || doc.getMetadata() == null) {
+                continue;
+            }
+            String tableName = (String) doc.getMetadata().get("tableName");
+            if (tableName == null || !tableNames.contains(tableName)) {
+                continue;
+            }
+            columnDocMap.computeIfAbsent(tableName, k -> new ArrayList<>()).add(doc);
+        }
+        return columnDocMap;
+    }
+
+    /**
+     * 按已召回表物理外键补全缺失 TABLE 文档（一跳）
+     *
+     * @param datasourceId 数据源 ID
+     * @param tableDocMap 表文档（方法内写入补全）
+     * @param recalledTableNames 表名集合（方法内写入补全）
+     */
+    private void expandMissingForeignKeyTables(String datasourceId,
+                                               Map<String, VectorDocument> tableDocMap,
+                                               Set<String> recalledTableNames) {
+        Set<String> missing = new LinkedHashSet<>();
+        for (VectorDocument tableDoc : tableDocMap.values()) {
+            if (tableDoc == null || tableDoc.getMetadata() == null) {
+                continue;
+            }
+            String fkStr = (String) tableDoc.getMetadata().getOrDefault("foreignKey", "");
+            if (StringUtils.isBlank(fkStr)) {
+                continue;
+            }
+            for (String fk : fkStr.split("、")) {
+                ForeignKeyDTO parsed = parseForeignKeyString(fk);
+                if (parsed == null) {
+                    continue;
+                }
+                if (StringUtils.isNotBlank(parsed.getSourceTable())
+                        && !recalledTableNames.contains(parsed.getSourceTable())) {
+                    missing.add(parsed.getSourceTable());
+                }
+                if (StringUtils.isNotBlank(parsed.getTargetTable())
+                        && !recalledTableNames.contains(parsed.getTargetTable())) {
+                    missing.add(parsed.getTargetTable());
+                }
+            }
+        }
+        if (missing.isEmpty()) {
+            return;
+        }
+        List<VectorDocument> tableDocs = agentVectorStore.listByMetadata("TABLE", "datasourceId", datasourceId);
+        for (VectorDocument doc : tableDocs) {
+            if (doc == null || doc.getMetadata() == null) {
+                continue;
+            }
+            String tableName = (String) doc.getMetadata().get("name");
+            if (tableName != null && missing.contains(tableName) && !recalledTableNames.contains(tableName)) {
+                recalledTableNames.add(tableName);
+                tableDocMap.put(tableName, doc);
+            }
+        }
+    }
+
+    /**
+     * 按召回表顺序组装 TableDTO
+     *
+     * @param recalledTableNames 表名顺序
+     * @param tableDocMap 表文档
+     * @param columnDocMap 列文档
+     * @return 表 DTO 列表
+     */
+    private List<TableDTO> buildTableList(Set<String> recalledTableNames,
+                                          Map<String, VectorDocument> tableDocMap,
+                                          Map<String, List<VectorDocument>> columnDocMap) {
+        List<TableDTO> tableList = new ArrayList<>();
+        for (String tableName : recalledTableNames) {
+            VectorDocument tableDoc = tableDocMap.get(tableName);
+            if (tableDoc == null) {
+                continue;
+            }
+            tableList.add(buildTableDTOFromMetadata(tableDoc,
+                    columnDocMap.getOrDefault(tableName, new ArrayList<>())));
+        }
+        return tableList;
+    }
+
+    /**
      * 分页条件查询数据源
      *
      * @param queryDTO 查询条件
@@ -682,10 +763,10 @@ public class ReportDatasourceServiceImpl implements ReportDatasourceService {
     }
 
     /**
-     * 跨数据源搜索Schema（优化版）
+     * 跨数据源搜索 Schema：TABLE 向量召回后按表拉全列，并按外键补全缺失表
      *
-     * @param query 用户自然语言查询
-     * @return 搜索结果列表，每项包含数据源信息和Schema提示词
+     * @param query 自然语言查询
+     * @return 命中数据源及 Schema 列表
      */
     @Override
     public List<SchemaSearchResultVO> searchSchema(String query) {
@@ -698,12 +779,6 @@ public class ReportDatasourceServiceImpl implements ReportDatasourceService {
             log.info("跨数据源搜索未命中任何TABLE文档: query={}", query);
             return new ArrayList<>();
         }
-
-        List<VectorStoreSearchResult> columnSearchResults = agentVectorStore.search(query,
-            VectorSearchParam.builder()
-                .topK(50).threshold(0.4)
-                .vectorType("COLUMN")
-                .build());
 
         Map<String, List<VectorStoreSearchResult>> tableResultsByDsId = new LinkedHashMap<>();
         Map<String, Map<String, VectorDocument>> tableDocMapByDsId = new LinkedHashMap<>();
@@ -735,26 +810,6 @@ public class ReportDatasourceServiceImpl implements ReportDatasourceService {
             return new ArrayList<>();
         }
 
-        Map<String, Map<String, List<VectorDocument>>> columnDocMapByDsId = new LinkedHashMap<>();
-        for (VectorStoreSearchResult result : columnSearchResults) {
-            VectorDocument doc = result.getDocument();
-            if (doc == null || doc.getMetadata() == null) {
-                continue;
-            }
-            Object dsIdObj = doc.getMetadata().get("datasourceId");
-            if (dsIdObj == null) {
-                continue;
-            }
-            String dsId = String.valueOf(dsIdObj);
-            String tableName = (String) doc.getMetadata().get("tableName");
-
-            Set<String> recalledTables = recalledTableNamesByDsId.get(dsId);
-            if (recalledTables != null && tableName != null && recalledTables.contains(tableName)) {
-                columnDocMapByDsId.computeIfAbsent(dsId, k -> new LinkedHashMap<>());
-                columnDocMapByDsId.get(dsId).computeIfAbsent(tableName, k -> new ArrayList<>()).add(doc);
-            }
-        }
-
         List<String> hitDsIds = new ArrayList<>(tableResultsByDsId.keySet());
         Map<String, ReportDatasource> datasourceMap = reportDatasourceMapper.selectByIds(hitDsIds).stream()
                 .collect(Collectors.toMap(ReportDatasource::getId, ds -> ds, (a, b) -> a));
@@ -770,14 +825,9 @@ public class ReportDatasourceServiceImpl implements ReportDatasourceService {
 
             Set<String> recalledTableNames = recalledTableNamesByDsId.get(dsId);
             Map<String, VectorDocument> tableDocMap = tableDocMapByDsId.get(dsId);
-            Map<String, List<VectorDocument>> columnDocMap = columnDocMapByDsId.getOrDefault(dsId, new LinkedHashMap<>());
-
-            List<TableDTO> tableList = new ArrayList<>();
-            for (String tableName : recalledTableNames) {
-                VectorDocument tableDoc = tableDocMap.get(tableName);
-                List<VectorDocument> columnDocs = columnDocMap.getOrDefault(tableName, new ArrayList<>());
-                tableList.add(buildTableDTOFromMetadata(tableDoc, columnDocs));
-            }
+            expandMissingForeignKeyTables(dsId, tableDocMap, recalledTableNames);
+            Map<String, List<VectorDocument>> columnDocMap = loadColumnDocsByTableNames(dsId, recalledTableNames);
+            List<TableDTO> tableList = buildTableList(recalledTableNames, tableDocMap, columnDocMap);
 
             List<ForeignKeyDTO> foreignKeyList = new ArrayList<>();
             Set<String> foreignKeyKeys = new LinkedHashSet<>();

@@ -333,6 +333,41 @@ EXEC sp_addextendedproperty 'MS_Description', N'嵌入模型配置ID', 'SCHEMA',
 GO
 
 -- -------------------------------------------
+-- 智能体规则表
+-- -------------------------------------------
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'luck_agent_rule')
+CREATE TABLE luck_agent_rule (
+    id NVARCHAR(32) NOT NULL,
+    create_by NVARCHAR(128),
+    create_time DATETIME2,
+    update_by NVARCHAR(128),
+    update_time DATETIME2,
+    del_flag BIT NOT NULL,
+    title NVARCHAR(255) NOT NULL,
+    content NVARCHAR(MAX),
+    sort INT,
+    is_enabled BIT NOT NULL,
+    CONSTRAINT pk_luck_agent_rule PRIMARY KEY (id)
+);
+
+CREATE INDEX idx_ar_enabled_del_sort ON luck_agent_rule (is_enabled, del_flag, sort);
+CREATE INDEX idx_ar_del_flag ON luck_agent_rule (del_flag);
+
+EXEC sp_addextendedproperty 'MS_Description', N'智能体规则表', 'SCHEMA', 'dbo', 'TABLE', 'luck_agent_rule';
+EXEC sp_addextendedproperty 'MS_Description', N'主键ID', 'SCHEMA', 'dbo', 'TABLE', 'luck_agent_rule', 'COLUMN', 'id';
+EXEC sp_addextendedproperty 'MS_Description', N'创建人', 'SCHEMA', 'dbo', 'TABLE', 'luck_agent_rule', 'COLUMN', 'create_by';
+EXEC sp_addextendedproperty 'MS_Description', N'创建时间', 'SCHEMA', 'dbo', 'TABLE', 'luck_agent_rule', 'COLUMN', 'create_time';
+EXEC sp_addextendedproperty 'MS_Description', N'更新人', 'SCHEMA', 'dbo', 'TABLE', 'luck_agent_rule', 'COLUMN', 'update_by';
+EXEC sp_addextendedproperty 'MS_Description', N'更新时间', 'SCHEMA', 'dbo', 'TABLE', 'luck_agent_rule', 'COLUMN', 'update_time';
+EXEC sp_addextendedproperty 'MS_Description', N'删除标志：0-未删除，1-已删除', 'SCHEMA', 'dbo', 'TABLE', 'luck_agent_rule', 'COLUMN', 'del_flag';
+EXEC sp_addextendedproperty 'MS_Description', N'规则标题', 'SCHEMA', 'dbo', 'TABLE', 'luck_agent_rule', 'COLUMN', 'title';
+EXEC sp_addextendedproperty 'MS_Description', N'规则正文', 'SCHEMA', 'dbo', 'TABLE', 'luck_agent_rule', 'COLUMN', 'content';
+EXEC sp_addextendedproperty 'MS_Description', N'排序字段', 'SCHEMA', 'dbo', 'TABLE', 'luck_agent_rule', 'COLUMN', 'sort';
+EXEC sp_addextendedproperty 'MS_Description', N'是否生效：0-不生效，1-生效', 'SCHEMA', 'dbo', 'TABLE', 'luck_agent_rule', 'COLUMN', 'is_enabled';
+
+GO
+
+-- -------------------------------------------
 -- 报表文件表
 -- -------------------------------------------
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'luck_report_template')

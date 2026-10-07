@@ -57,7 +57,8 @@ public class ViewController {
         "/model_config", "/model_config/**",
         "/role", "/role/**",
         "/business_knowledge", "/business_knowledge/**",
-        "/agent_knowledge", "/agent_knowledge/**"
+        "/agent_knowledge", "/agent_knowledge/**",
+        "/agent_rule", "/agent_rule/**"
     })
     public void manage(NativeWebRequest webRequest) throws IOException {
         viewRenderer.render("index", webRequest, servletPrefix);

@@ -8,6 +8,7 @@ import com.luck.report.web.modules.dataset.mapper.ReportDatasetMapper;
 import com.luck.report.web.modules.datasource.mapper.LogicalRelationMapper;
 import com.luck.report.web.modules.datasource.mapper.ReportDatasourceMapper;
 import com.luck.report.web.modules.file.mapper.ReportTemplateMapper;
+import com.luck.report.web.modules.agentRule.mapper.AgentRuleMapper;
 import com.luck.report.web.modules.knowledge.mapper.AgentKnowledgeMapper;
 import com.luck.report.web.modules.knowledge.mapper.BusinessKnowledgeMapper;
 import com.luck.report.web.modules.modelConfig.mapper.ModelConfigMapper;
@@ -140,5 +141,17 @@ public class ReportJdbcMapperConfiguration {
     public BusinessKnowledgeMapper businessKnowledgeMapper(
             @Qualifier("bean.luckSqlExecutor") LuckSqlExecutor luckSqlExecutor) {
         return LuckMapperProxyFactory.create(BusinessKnowledgeMapper.class, luckSqlExecutor);
+    }
+
+    /**
+     * 注册 AgentRuleMapper 代理 Bean
+     *
+     * @param luckSqlExecutor SQL 执行器
+     * @return Mapper 代理
+     */
+    @Bean("bean.agentRuleMapper")
+    public AgentRuleMapper agentRuleMapper(
+            @Qualifier("bean.luckSqlExecutor") LuckSqlExecutor luckSqlExecutor) {
+        return LuckMapperProxyFactory.create(AgentRuleMapper.class, luckSqlExecutor);
     }
 }

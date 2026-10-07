@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.luck.report.web.modules.agentRule.mapper.AgentRuleMapper">
+
+    <sql id="BaseColumns">
+        id, title, content, sort, is_enabled AS enabled,
+        create_time, update_time, del_flag, create_by, update_by
+    </sql>
+
+    <sql id="listWhere">
+        WHERE del_flag = 0
+        <if test="queryDTO != null and queryDTO.title != null and queryDTO.title != ''">
+            AND title = #{queryDTO.title}
+        </if>
+        <if test="queryDTO != null and queryDTO.enabled != null">
+            AND is_enabled = #{queryDTO.enabled}
+        </if>
+    </sql>
+
+    <sql id="pageWhere">
+        WHERE del_flag = 0
+        <if test="queryDTO.title != null and queryDTO.title != ''">
+            <bind name="titlePattern" value="'%' + queryDTO.title + '%'" />
+            AND title LIKE #{titlePattern}
+        </if>
+        <if test="queryDTO.enabled != null">
+            AND is_enabled = #{queryDTO.enabled}
+        </if>
+    </sql>
+
+    <select id="selectById" resultType="com.luck.report.web.modules.agentRule.domain.entity.AgentRule">
+        SELECT <include refid="BaseColumns"/>
+        FROM luck_agent_rule WHERE id = #{id} AND del_flag = 0
+    </select>
+
+    <insert id="insert">
+        INSERT INTO luck_agent_rule (id, title, content, sort, is_enabled,
+            create_time, update_time, del_flag, create_by, update_by)
+        VALUES (#{id}, #{title}, #{content}, #{sort}, #{enabled},
+            #{createTime}, #{updateTime}, #{delFlag}, #{createBy}, #{updateBy})
+    </insert>
+
+    <update id="updateById">
+        UPDATE luck_agent_rule
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="title != null">title = #{title},</if>
+            <if test="content != null">content = #{content},</if>
+            <if test="sort != null">sort = #{sort},</if>
+            <if test="enabled != null">is_enabled = #{enabled},</if>
+            <if test="delFlag != null">del_flag = #{delFlag},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            update_time = #{updateTime}
+        </trim>
+        WHERE id = #{id}
+    </update>
+
+    <select id="selectPage" resultType="com.luck.report.web.modules.agentRule.domain.entity.AgentRule">
+        SELECT <include refid="BaseColumns"/>
+        FROM luck_agent_rule
+        <include refid="pageWhere"/>
+        ORDER BY sort ASC, update_time DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY
+    </select>
+
+    <select id="selectCount" resultType="long">
+        SELECT COUNT(*) FROM luck_agent_rule
+        <include refid="pageWhere"/>
+    </select>
+
+    <select id="selectList" resultType="com.luck.report.web.modules.agentRule.domain.entity.AgentRule">
+        SELECT <include refid="BaseColumns"/>
+        FROM luck_agent_rule
+        <include refid="listWhere"/>
+        ORDER BY sort ASC, update_time DESC
+    </select>
+
+</mapper>

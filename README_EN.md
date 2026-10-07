@@ -1,5 +1,5 @@
 <p align="center">
-	<img alt="Luck-Report" src="https://i.ibb.co/ns87XbXW/header-01.png" width="64">
+	<img alt="Luck-Report" src="https://www.tinyluck.cn:8088/assets/image/luck-report-v2/git/header-01.png" width="64" data-local-src="/images-plus/git/header-01.png">
 </p>
 <h1 align="center" style="margin: 20px 0; font-weight: bold;">Luck-Report V2.0.7</h1>
 <h4 align="center">Chinese-style complex reporting engine · Built-in AI assistant</h4>
@@ -139,86 +139,68 @@ The default development port is defined in `application-dev.yml` (typically `804
 
 ## 🧩 Features
 
-| Feature                     | Description |
-|-----------------------------|-------------|
-| Report designer             | Web visual designer; drag-and-drop field binding, cell and layout config, instant preview |
-| AI assistant                | Natural-language create / edit / Q&A with deep thinking; e.g. “Build a sales summary grouped by department”, “Add a total row to column A” |
-| RAG Knowledge‑Base          | Report and business knowledge bases; PDF / Word / TXT / Markdown / Q&A vector retrieval; hybrid multi-path recall + optional Reranker for the assistant |
-| Model configuration         | Unified chat, embedding, and rerank model settings |
+| Feature | Description |
+|---------|-------------|
+| Report designer | Web visual designer; drag-and-drop field binding, cell and layout config, instant preview |
+| AI assistant | Natural-language create / edit / Q&A with deep thinking |
+| Agent rules | Centralized global rules for the AI assistant |
+| Knowledge base | Report and business knowledge bases; PDF / Word / TXT / Markdown / Q&A vector retrieval; hybrid multi-path recall + optional Reranker for the assistant |
+| Model configuration | Unified chat, embedding, and rerank model settings |
 | Shared datasources / datasets | Central connections and reusable datasets across reports |
-| Datasources                 | JDBC, built-in datasource, Spring Bean, static JSON |
-| Query parameters            | URL, search form, and built-in params (e.g. user ID) drive queries |
-| Expression engine           | Built-in expressions and functions for complex compute and dynamic SQL |
-| Conditional properties      | Dynamic style, paging, links, and more by condition |
-| Row bands & paging          | Title / repeating header & footer / summary; blank-row fill and fixed rows per page |
-| Charts                      | 10 chart types via ECharts (pie, bar, line, radar, scatter, bubble, etc.) |
-| Images / barcodes           | Path, Base64, expression images; 1D barcodes and QR codes |
+| Datasources | JDBC, built-in datasource, Spring Bean, static JSON |
+| Query parameters | URL, search form, and built-in params (e.g. user ID) drive queries |
+| Expression engine | Built-in expressions and functions for complex compute and dynamic SQL |
+| Conditional properties | Dynamic style, paging, links, and more by condition |
+| Row bands & paging | Title / repeating header & footer / summary; blank-row fill and fixed rows per page |
+| Charts | 10 chart types via ECharts (pie, bar, line, radar, scatter, bubble, etc.) |
+| Images / barcodes | Path, Base64, expression images; 1D barcodes and QR codes |
 | Float elements / form overlay | Floating text/images; overlay background aligned to pre-printed forms |
-| Preview & toolbar           | Preview / paged preview; toolbar buttons configurable per report |
-| Export & print              | PDF, Word, Excel (paged / multi-sheet); PDF and browser print |
-| Permissions                 | Admin/designer role whitelist; preview access by role |
-| Cache                       | Local cache and Redis distributed cache extension |
-| i18n                        | Chinese / English UI (`zh_CN` / `en_US`) |
-| Legacy migration            | Tools to convert **UReport2** and Luck-Report V1 reports |
+| Preview & toolbar | Preview / paged preview; toolbar buttons configurable per report |
+| Export & print | PDF, Word, Excel (paged / multi-sheet); PDF and browser print |
+| Permissions | Admin/designer role whitelist; preview access by role |
+| Cache | Local cache and Redis distributed cache extension |
+| i18n | Chinese / English UI (`zh_CN` / `en_US`) |
+| Legacy migration | Tools to convert UReport2 and Luck-Report V1 reports |
 
 ## 📷 Screenshots
 
 **Report designer**
 
-<!-- local: /images-plus/git/报表设计器-1.png -->
-<!-- <img src="/images-plus/git/报表设计器-1.png" alt="Report designer" style="max-width: 100%; height: auto;" /> -->
-<img src="https://i.ibb.co/j9XX6WZP/1.png" alt="Report designer" style="max-width: 100%; height: auto;" />
+<img src="https://www.tinyluck.cn:8088/assets/image/luck-report-v2/git/报表设计器-1.png" alt="Report designer" style="max-width: 100%; height: auto;" data-local-src="/images-plus/git/报表设计器-1.png" />
 
 **AI assistant**
 
-<!-- local: /images-plus/git/智能助手-1.png -->
-<!-- <img src="/images-plus/git/智能助手-1.png" alt="AI assistant" style="max-width: 100%; height: auto;" /> -->
-<img src="https://i.ibb.co/zh83vTNZ/1.png" alt="AI assistant" style="max-width: 100%; height: auto;" />
+<img src="https://www.tinyluck.cn:8088/assets/image/luck-report-v2/git/智能助手-1.png" alt="AI assistant" style="max-width: 100%; height: auto;" data-local-src="/images-plus/git/智能助手-1.png" />
 
 **Charts**
 
-<!-- local: /images-plus/git/图表-1.png -->
-<!-- <img src="/images-plus/git/图表-1.png" alt="Charts" style="max-width: 100%; height: auto;" /> -->
-<img src="https://i.ibb.co/7dPMvv5J/1.png" alt="Charts" style="max-width: 100%; height: auto;" />
+<img src="https://www.tinyluck.cn:8088/assets/image/luck-report-v2/git/图表-1.png" alt="Charts" style="max-width: 100%; height: auto;" data-local-src="/images-plus/git/图表-1.png" />
 
 **Preview**
 
-<!-- local: /images-plus/git/预览-1.png -->
-<!-- <img src="/images-plus/git/预览-1.png" alt="Preview" style="max-width: 100%; height: auto;" /> -->
-<img src="https://i.ibb.co/2YW9DJ0K/1.png" alt="Preview" style="max-width: 100%; height: auto;" />
+<img src="https://www.tinyluck.cn:8088/assets/image/luck-report-v2/git/预览-1.png" alt="Preview" style="max-width: 100%; height: auto;" data-local-src="/images-plus/git/预览-1.png" />
 
 **Report management**
 
-<!-- local: /images-plus/git/报表管理-1.png -->
-<!-- <img src="/images-plus/git/报表管理-1.png" alt="Report management" style="max-width: 100%; height: auto;" /> -->
-<img src="https://i.ibb.co/TBLLywm1/1.png" alt="Report management" style="max-width: 100%; height: auto;" />
+<img src="https://www.tinyluck.cn:8088/assets/image/luck-report-v2/git/报表管理-1.png" alt="Report management" style="max-width: 100%; height: auto;" data-local-src="/images-plus/git/报表管理-1.png" />
 
 **Knowledge base**
 
-<!-- local: /images-plus/git/报表知识库-1.png -->
-<!-- <img src="/images-plus/git/报表知识库-1.png" alt="Knowledge base" style="max-width: 100%; height: auto;" /> -->
-<img src="https://i.ibb.co/3m3y0Jh2/1.png" alt="Knowledge base" style="max-width: 100%; height: auto;" />
+<img src="https://www.tinyluck.cn:8088/assets/image/luck-report-v2/git/报表知识库-1.png" alt="Knowledge base" style="max-width: 100%; height: auto;" data-local-src="/images-plus/git/报表知识库-1.png" />
 
 **Shared datasources**
 
-<!-- local: /images-plus/git/公共数据源-1.png -->
-<!-- <img src="/images-plus/git/公共数据源-1.png" alt="Shared datasources" style="max-width: 100%; height: auto;" /> -->
-<img src="https://i.ibb.co/dJJ47Rrq/1.png" alt="Shared datasources" style="max-width: 100%; height: auto;" />
+<img src="https://www.tinyluck.cn:8088/assets/image/luck-report-v2/git/公共数据源-1.png" alt="Shared datasources" style="max-width: 100%; height: auto;" data-local-src="/images-plus/git/公共数据源-1.png" />
 
 **Permissions**
 
-<!-- local: /images-plus/git/权限管理-1.png -->
-<!-- <img src="/images-plus/git/权限管理-1.png" alt="Permissions" style="max-width: 100%; height: auto;" /> -->
-<img src="https://i.ibb.co/5g60NS8g/1.png" alt="Permissions" style="max-width: 100%; height: auto;" />
-
+<img src="https://www.tinyluck.cn:8088/assets/image/luck-report-v2/git/权限管理-1.png" alt="Permissions" style="max-width: 100%; height: auto;" data-local-src="/images-plus/git/权限管理-1.png" />
 
 ## ❤️ Sponsorship
 
 If this project helps you, a tip via the QR code below helps keep maintenance going.
 
-<!-- local: /images-plus/git/support-pay.jpg -->
-<!-- <img src="/images-plus/git/support-pay.jpg" alt="Sponsorship QR code" width="200" /> -->
-<img src="https://i.ibb.co/358Hb2jW/support-pay.png" alt="Sponsorship QR code" width="200" />
+<img src="https://www.tinyluck.cn:8088/assets/image/luck-report-v2/git/support-pay.jpg" alt="Sponsorship QR code" width="200" data-local-src="/images-plus/git/support-pay.jpg" />
 
 ## 💬 Contact
 
@@ -226,9 +208,7 @@ For questions or frontend source access, contact the author to join the group.
 
 When adding on WeChat, please note **【Luck Report】**.
 
-<!-- local: /images-plus/contact/weixin.png -->
-<!-- <img src="/images-plus/contact/weixin.png" alt="Author WeChat" width="200" /> -->
-<img src="https://i.ibb.co/9kS8SKyk/weixin.png" alt="Author WeChat" width="200" />
+<img src="https://www.tinyluck.cn:8088/assets/image/luck-report-v2/contact/weixin.png" alt="Author WeChat" width="200" data-local-src="/images-plus/contact/weixin.png" />
 
 | Item | Price (CNY) |
 |------|-------------|

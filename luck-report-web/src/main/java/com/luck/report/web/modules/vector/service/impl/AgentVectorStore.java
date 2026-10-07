@@ -171,6 +171,21 @@ public class AgentVectorStore {
     }
 
     /**
+     * 按向量类型 + metadata 等值列举文档（非近邻检索）
+     *
+     * @param vectorType 知识类型
+     * @param metaKey metadata 字段名
+     * @param metaValue 字段值
+     * @return 匹配文档列表，无命中时为空列表
+     */
+    public List<VectorDocument> listByMetadata(String vectorType, String metaKey, Object metaValue) {
+        Assert.hasText(vectorType, "知识类型不能为空");
+        Assert.hasText(metaKey, "metadata 字段名不能为空");
+        List<VectorDocument> docs = vectorStore.listByVectorTypeAndMetadata(vectorType, metaKey, metaValue);
+        return docs == null ? Collections.emptyList() : docs;
+    }
+
+    /**
      * 向量检索（核心方法）
      *
      * @param query 查询文本

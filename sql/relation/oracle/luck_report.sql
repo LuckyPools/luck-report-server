@@ -1,4 +1,4 @@
-﻿-- =============================================
+-- =============================================
 -- Luck Report 数据库初始化脚本
 -- 数据库类型：Oracle
 -- 约定：列不设 DEFAULT；审计时间 / 开关 / 枚举等一律由应用写入
@@ -310,6 +310,38 @@ COMMENT ON COLUMN luck_agent_knowledge.file_size IS '文件大小';
 COMMENT ON COLUMN luck_agent_knowledge.file_type IS '文件类型';
 COMMENT ON COLUMN luck_agent_knowledge.splitter_type IS '分块策略：token / recursive / sentence / paragraph / semantic';
 COMMENT ON COLUMN luck_agent_knowledge.model_id IS '嵌入模型配置ID';
+
+-- -------------------------------------------
+-- 智能体规则表
+-- -------------------------------------------
+CREATE TABLE luck_agent_rule (
+    id VARCHAR2(32) NOT NULL,
+    create_by VARCHAR2(128),
+    create_time TIMESTAMP,
+    update_by VARCHAR2(128),
+    update_time TIMESTAMP,
+    del_flag NUMBER(1) NOT NULL,
+    title VARCHAR2(255) NOT NULL,
+    content CLOB,
+    sort NUMBER(10),
+    is_enabled NUMBER(1) NOT NULL,
+    CONSTRAINT pk_luck_agent_rule PRIMARY KEY (id)
+);
+
+CREATE INDEX idx_ar_enabled_del_sort ON luck_agent_rule (is_enabled, del_flag, sort);
+CREATE INDEX idx_ar_del_flag ON luck_agent_rule (del_flag);
+
+COMMENT ON TABLE luck_agent_rule IS '智能体规则表';
+COMMENT ON COLUMN luck_agent_rule.id IS '主键ID';
+COMMENT ON COLUMN luck_agent_rule.create_by IS '创建人';
+COMMENT ON COLUMN luck_agent_rule.create_time IS '创建时间';
+COMMENT ON COLUMN luck_agent_rule.update_by IS '更新人';
+COMMENT ON COLUMN luck_agent_rule.update_time IS '更新时间';
+COMMENT ON COLUMN luck_agent_rule.del_flag IS '删除标志：0-未删除，1-已删除';
+COMMENT ON COLUMN luck_agent_rule.title IS '规则标题';
+COMMENT ON COLUMN luck_agent_rule.content IS '规则正文';
+COMMENT ON COLUMN luck_agent_rule.sort IS '排序字段';
+COMMENT ON COLUMN luck_agent_rule.is_enabled IS '是否生效：0-不生效，1-生效';
 
 -- -------------------------------------------
 -- 报表文件表

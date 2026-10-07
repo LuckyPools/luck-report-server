@@ -83,7 +83,7 @@ public class ModelConfigDTO {
     /**
      * 是否启用:true-启用,false-禁用
      */
-    private Boolean enabled = true;
+    private Boolean enabled = false;
 
     /**
      * 是否启用代理,默认关闭(使用直连)

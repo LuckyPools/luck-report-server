@@ -1,5 +1,5 @@
 <p align="center">
-	<img alt="Luck-Report" src="https://i.ibb.co/ns87XbXW/header-01.png" width="64">
+	<img alt="Luck-Report" src="https://www.tinyluck.cn:8088/assets/image/luck-report-v2/git/header-01.png" width="64" data-local-src="/images-plus/git/header-01.png">
 </p>
 <h1 align="center" style="margin: 20px 0; font-weight: bold;">Luck-Report V2.0.7</h1>
 <h4 align="center">中国式复杂报表引擎 · 内置 AI 智能助手</h4>
@@ -139,86 +139,68 @@ java -jar luck-report-pub/target/luck-report-pub.jar
 
 ## 🧩 内置功能
 
-| 功能 | 描述 |
-|------|------|
-| 报表设计器 | 网页端可视化设计器，拖拽绑定字段，配置单元格与版式，设计后可即时预览 |
-| AI 智能助手 | 自然语言对话制表、改表与答疑，支持深度思考；示例：「做一个按部门分组的销售汇总表」「给 A 列加上合计行」 |
+| 功能 | 描述                                                                            |
+|------|-------------------------------------------------------------------------------|
+| 报表设计器 | 网页端可视化设计器，拖拽绑定字段，配置单元格与版式，设计后可即时预览                                            |
+| AI 智能助手 | 自然语言对话制表、改表与答疑，支持深度思考                                                         |
+| 智能体规则 | 统一管理 AI 智能助手的全局规则                                                             |
 | 知识库 | 报表知识库与业务知识库；PDF / Word / TXT / Markdown / 问答向量化检索；混合多路召回 + 可选 Reranker，辅助智能助手 |
-| 大模型配置 | 统一管理对话、嵌入、重排序模型 |
-| 公共数据源 / 数据集 | 统一维护库连接与可复用数据集，可跨报表引用 |
-| 数据源 | JDBC、内置数据源、Spring Bean、静态 JSON |
-| 查询参数 | URL、查询表单与内置参数（如用户 ID）驱动取数 |
-| 表达式引擎 | 内置表达式与函数，支持复杂计算与动态 SQL |
-| 条件属性 | 按条件动态改样式、分页、链接等 |
-| 行类型与分页 | 标题 / 重复表头表尾 / 总结行，补充空白行与固定行数分页 |
-| 图表 | 饼图、柱图、折线、雷达、散点、气泡等 10 种图表（ECharts） |
-| 图片 / 条码 | 路径、Base64、表达式图片；一维条码与二维码 |
-| 悬浮元素 / 套打 | 纸面悬浮图文；套打背景图对齐预印单据 |
-| 预览与工具栏 | 预览 / 分页预览；工具栏按钮可按报表配置显隐 |
-| 导出与打印 | 导出 PDF、Word、Excel（分页 / 分 Sheet）；PDF 与浏览器打印 |
-| 权限 | 管理端 / 设计器角色白名单，预览端按角色授权报表 |
-| 缓存 | 本地缓存与 Redis 分布式缓存扩展 |
-| 国际化 | 中英文界面切换（`zh_CN` / `en_US`） |
-| 旧版迁移 | 提供 UReport2、Luck-Report V1 报表转化工具 |
+| 大模型配置 | 统一管理对话、嵌入、重排序模型                                                               |
+| 公共数据源 / 数据集 | 统一维护库连接与可复用数据集，可跨报表引用                                                         |
+| 数据源 | JDBC、内置数据源、Spring Bean、静态 JSON                                                |
+| 查询参数 | URL、查询表单与内置参数（如用户 ID）驱动取数                                                     |
+| 表达式引擎 | 内置表达式与函数，支持复杂计算与动态 SQL                                                        |
+| 条件属性 | 按条件动态改样式、分页、链接等                                                               |
+| 行类型与分页 | 标题 / 重复表头表尾 / 总结行，补充空白行与固定行数分页                                                |
+| 图表 | 饼图、柱图、折线、雷达、散点、气泡等 10 种图表（ECharts）                                            |
+| 图片 / 条码 | 路径、Base64、表达式图片；一维条码与二维码                                                      |
+| 悬浮元素 / 套打 | 纸面悬浮图文；套打背景图对齐预印单据                                                            |
+| 预览与工具栏 | 预览 / 分页预览；工具栏按钮可按报表配置显隐                                                       |
+| 导出与打印 | 导出 PDF、Word、Excel（分页 / 分 Sheet）；PDF 与浏览器打印                                    |
+| 权限 | 管理端 / 设计器角色白名单，预览端按角色授权报表                                                     |
+| 缓存 | 本地缓存与 Redis 分布式缓存扩展                                                           |
+| 国际化 | 中英文界面切换（`zh_CN` / `en_US`）                                                    |
+| 旧版迁移 | 提供 UReport2、Luck-Report V1 报表转化工具                                             |
 
 ## 📷 演示图
 
 **报表设计器**
 
-<!-- 本地: /images-plus/git/报表设计器-1.png -->
-<!-- <img src="/images-plus/git/报表设计器-1.png" alt="报表设计器" style="max-width: 100%; height: auto;" /> -->
-<img src="https://i.ibb.co/j9XX6WZP/1.png" alt="报表设计器" style="max-width: 100%; height: auto;" />
+<img src="https://www.tinyluck.cn:8088/assets/image/luck-report-v2/git/报表设计器-1.png" alt="报表设计器" style="max-width: 100%; height: auto;"  data-local-src="/images-plus/git/报表设计器-1.png" />
 
 **智能助手**
 
-<!-- 本地: /images-plus/git/智能助手-1.png -->
-<!-- <img src="/images-plus/git/智能助手-1.png" alt="智能助手" style="max-width: 100%; height: auto;" /> -->
-<img src="https://i.ibb.co/zh83vTNZ/1.png" alt="智能助手" style="max-width: 100%; height: auto;" />
+<img src="https://www.tinyluck.cn:8088/assets/image/luck-report-v2/git/智能助手-1.png" alt="智能助手" style="max-width: 100%; height: auto;"  data-local-src="/images-plus/git/智能助手-1.png" />
 
 **图表**
 
-<!-- 本地: /images-plus/git/图表-1.png -->
-<!-- <img src="/images-plus/git/图表-1.png" alt="图表" style="max-width: 100%; height: auto;" /> -->
-<img src="https://i.ibb.co/7dPMvv5J/1.png" alt="图表" style="max-width: 100%; height: auto;" />
+<img src="https://www.tinyluck.cn:8088/assets/image/luck-report-v2/git/图表-1.png" alt="图表" style="max-width: 100%; height: auto;"  data-local-src="/images-plus/git/图表-1.png" />
 
 **预览**
 
-<!-- 本地: /images-plus/git/预览-1.png -->
-<!-- <img src="/images-plus/git/预览-1.png" alt="预览" style="max-width: 100%; height: auto;" /> -->
-<img src="https://i.ibb.co/2YW9DJ0K/1.png" alt="预览" style="max-width: 100%; height: auto;" />
+<img src="https://www.tinyluck.cn:8088/assets/image/luck-report-v2/git/预览-1.png" alt="预览" style="max-width: 100%; height: auto;"  data-local-src="/images-plus/git/预览-1.png" />
 
 **报表管理**
 
-<!-- 本地: /images-plus/git/报表管理-1.png -->
-<!-- <img src="/images-plus/git/报表管理-1.png" alt="报表管理" style="max-width: 100%; height: auto;" /> -->
-<img src="https://i.ibb.co/TBLLywm1/1.png" alt="报表管理" style="max-width: 100%; height: auto;" />
+<img src="https://www.tinyluck.cn:8088/assets/image/luck-report-v2/git/报表管理-1.png" alt="报表管理" style="max-width: 100%; height: auto;"  data-local-src="/images-plus/git/报表管理-1.png" />
 
 **知识库**
 
-<!-- 本地: /images-plus/git/报表知识库-1.png -->
-<!-- <img src="/images-plus/git/报表知识库-1.png" alt="报表知识库" style="max-width: 100%; height: auto;" /> -->
-<img src="https://i.ibb.co/3m3y0Jh2/1.png" alt="报表知识库" style="max-width: 100%; height: auto;" />
+<img src="https://www.tinyluck.cn:8088/assets/image/luck-report-v2/git/报表知识库-1.png" alt="报表知识库" style="max-width: 100%; height: auto;"  data-local-src="/images-plus/git/报表知识库-1.png" />
 
 **公共数据源**
 
-<!-- 本地: /images-plus/git/公共数据源-1.png -->
-<!-- <img src="/images-plus/git/公共数据源-1.png" alt="公共数据源" style="max-width: 100%; height: auto;" /> -->
-<img src="https://i.ibb.co/dJJ47Rrq/1.png" alt="公共数据源" style="max-width: 100%; height: auto;" />
+<img src="https://www.tinyluck.cn:8088/assets/image/luck-report-v2/git/公共数据源-1.png" alt="公共数据源" style="max-width: 100%; height: auto;"  data-local-src="/images-plus/git/公共数据源-1.png" />
 
 **权限管理**
 
-<!-- 本地: /images-plus/git/权限管理-1.png -->
-<!-- <img src="/images-plus/git/权限管理-1.png" alt="权限管理" style="max-width: 100%; height: auto;" /> -->
-<img src="https://i.ibb.co/5g60NS8g/1.png" alt="权限管理" style="max-width: 100%; height: auto;" />
-
+<img src="https://www.tinyluck.cn:8088/assets/image/luck-report-v2/git/权限管理-1.png" alt="权限管理" style="max-width: 100%; height: auto;"  data-local-src="/images-plus/git/权限管理-1.png" />
 
 ## ❤️ 赞助支持
 
 如果觉得本项目对你有帮助，欢迎扫码赞助，你的支持是项目持续维护的动力～
 
-<!-- 本地: /images-plus/git/support-pay.jpg -->
-<!-- <img src="/images-plus/git/support-pay.jpg" alt="赞助二维码" width="200" /> -->
-<img src="https://i.ibb.co/358Hb2jW/support-pay.png" alt="赞助二维码" width="200" />
+<img src="https://www.tinyluck.cn:8088/assets/image/luck-report-v2/git/support-pay.jpg" alt="赞助二维码" width="200"  data-local-src="/images-plus/git/support-pay.jpg" />
 
 ## 💬 沟通交流
 
@@ -226,9 +208,7 @@ java -jar luck-report-pub/target/luck-report-pub.jar
 
 添加微信时请备注 **【Luck Report】**。
 
-<!-- 本地: /images-plus/contact/weixin.png -->
-<!-- <img src="/images-plus/contact/weixin.png" alt="作者微信" width="200" /> -->
-<img src="https://i.ibb.co/9kS8SKyk/weixin.png" alt="作者微信" width="200" />
+<img src="https://www.tinyluck.cn:8088/assets/image/luck-report-v2/contact/weixin.png" alt="作者微信" width="200"  data-local-src="/images-plus/contact/weixin.png" />
 
 | 项目 | 报价（元） |
 |------|------------|

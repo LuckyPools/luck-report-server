@@ -51,7 +51,7 @@ public class BusinessKnowledgeConverter {
         knowledge.setType(KnowledgeType.fromValue(dto.getType()));
         knowledge.setQuestion(dto.getQuestion());
         knowledge.setContent(dto.getContent());
-        knowledge.setEnabled(true);
+        knowledge.setEnabled(false);
         knowledge.setEmbeddingStatus(EmbeddingStatus.PENDING);
         knowledge.setSplitterType(splitterType);
         knowledge.setModelId(dto.getModelId());

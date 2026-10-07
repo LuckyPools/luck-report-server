@@ -26,7 +26,7 @@ public class BusinessKnowledge extends DataEntity<BusinessKnowledge> {
     /**
      * 是否生效：true-参与检索，false-不参与
      */
-    private Boolean enabled = true;
+    private Boolean enabled = false;
 
     private EmbeddingStatus embeddingStatus;
 
