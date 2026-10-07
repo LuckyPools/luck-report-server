@@ -507,6 +507,9 @@ public class ChatServiceImpl implements ChatService {
 
             String toolName = (String) function.get("name");
             String argumentsStr = (String) function.getOrDefault("arguments", "{}");
+            if (argumentsStr == null || argumentsStr.trim().isEmpty()) {
+                argumentsStr = "{}";
+            }
 
             Map<String, Object> input;
             try {
