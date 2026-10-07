@@ -1,7 +1,7 @@
 <p align="center">
 	<img alt="Luck-Report" src="https://www.tinyluck.cn:8088/assets/image/luck-report-v2/git/header-01.png" width="64" data-local-src="/images-plus/git/header-01.png">
 </p>
-<h1 align="center" style="margin: 20px 0; font-weight: bold;">Luck-Report V2.0.7</h1>
+<h1 align="center" style="margin: 20px 0; font-weight: bold;">Luck-Report V2.0.8</h1>
 <h4 align="center">中国式复杂报表引擎 · 内置 AI 智能助手</h4>
 <p align="center">
 	<a href="https://gitee.com/LuckyPools/luck-report-server/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-green.svg"></a>
