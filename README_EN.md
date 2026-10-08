@@ -209,8 +209,3 @@ For questions or frontend source access, contact the author to join the group.
 When adding on WeChat, please note **【Luck Report】**.
 
 <img src="https://www.tinyluck.cn:8088/assets/image/luck-report-v2/contact/weixin.png" alt="Author WeChat" width="200" data-local-src="/images-plus/contact/weixin.png" />
-
-| Item | Price (CNY) |
-|------|-------------|
-| Report development handbook | 200 / year |
-| Report frontend source | 1800 |

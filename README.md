@@ -209,8 +209,3 @@ java -jar luck-report-pub/target/luck-report-pub.jar
 添加微信时请备注 **【Luck Report】**。
 
 <img src="https://www.tinyluck.cn:8088/assets/image/luck-report-v2/contact/weixin.png" alt="作者微信" width="200"  data-local-src="/images-plus/contact/weixin.png" />
-
-| 项目 | 报价（元） |
-|------|------------|
-| 报表开发手册 | 200 / 年 |
-| 报表前端源码 | 1800 |
