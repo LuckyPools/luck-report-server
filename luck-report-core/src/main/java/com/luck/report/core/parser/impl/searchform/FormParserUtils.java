@@ -251,6 +251,30 @@ public class FormParserUtils implements ApplicationContextAware {
         }
     }
 
+    /**
+     * 解析 Double XML 属性；空、非法或非有限值返回 null
+     *
+     * @param value 属性值
+     * @return 有限 Double，否则 null
+     */
+    public static Double parseDoubleAttribute(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return null;
+        }
+        if ("null".equals(value)) {
+            return null;
+        }
+        try {
+            double d = Double.parseDouble(value.trim());
+            if (Double.isNaN(d) || Double.isInfinite(d)) {
+                return null;
+            }
+            return d;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         FormParserUtils.parsers = applicationContext.getBeansOfType(FormParser.class).values();

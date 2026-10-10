@@ -29,6 +29,8 @@ public class InputNumberParser implements FormParser<InputNumberComponent> {
         component.setVModel(FormParserUtils.parseStringAttribute(element.attributeValue("vModel")));
         component.setDefaultValue(FormParserUtils.parseStringAttribute(element.attributeValue("defaultValue")));
         component.setLayout(FormParserUtils.parseStringAttribute(element.attributeValue("layout")));
+        component.setMin(FormParserUtils.parseDoubleAttribute(element.attributeValue("min")));
+        component.setMax(FormParserUtils.parseDoubleAttribute(element.attributeValue("max")));
 
         return component;
     }

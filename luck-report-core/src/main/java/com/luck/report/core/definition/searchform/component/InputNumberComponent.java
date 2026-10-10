@@ -8,6 +8,8 @@ public class InputNumberComponent extends BaseInputComponent {
     private String controlsPosition;
     private boolean disabled;
     private String defaultValue;
+    private Double min;
+    private Double max;
 
     /**
      * 默认无参构造器
@@ -17,6 +19,22 @@ public class InputNumberComponent extends BaseInputComponent {
     @Override
     public String initJs(RenderContext context) {
         return "";
+    }
+
+    public Double getMin() {
+        return min;
+    }
+
+    public void setMin(Double min) {
+        this.min = min;
+    }
+
+    public Double getMax() {
+        return max;
+    }
+
+    public void setMax(Double max) {
+        this.max = max;
     }
 
     public boolean getStepStrictly() {
