@@ -115,11 +115,16 @@ public class DatabaseReportProvider implements ReportProvider {
         content = ReportJdbcPasswordXmlUtils.encryptJdbcPasswords(content);
 
         if (StringUtils.isNotBlank(id)) {
-            ReportTemplate existing = luckReportFileService.getById(id);
+            // 含已软删：同 reportId 再导入/保存时恢复已删数据，避免主键冲突
+            ReportTemplate existing = luckReportFileService.getByIdIgnoreDelFlag(id);
             if (existing != null) {
+                boolean revive = existing.getDelFlag() != null && existing.getDelFlag() != 0;
                 existing.setTemplate(ReportIdXmlUtils.ensureReportId(content, existing.getId()));
                 if (StringUtils.isNotBlank(title)) {
                     existing.setTitle(title);
+                }
+                if (revive) {
+                    existing.setDelFlag(0);
                 }
                 ReportTemplate updated = luckReportFileService.update(existing);
                 return buildReportFile(title, updated, now);

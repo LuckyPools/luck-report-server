@@ -45,6 +45,14 @@ public class ReportTemplateServiceImpl implements ReportTemplateService {
     }
 
     @Override
+    public ReportTemplate getByIdIgnoreDelFlag(String id) {
+        if (id == null) {
+            return null;
+        }
+        return reportTemplateMapper.selectByIdIgnoreDelFlag(id);
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public ReportTemplate save(ReportTemplate reportTemplate) {
         if (reportTemplate == null) {

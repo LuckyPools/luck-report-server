@@ -46,6 +46,14 @@ public interface ReportTemplateMapper {
     ReportTemplate selectById(@Param("id") String id);
 
     /**
+     * 根据ID查询报表文件（忽略 del_flag，含已逻辑删除记录，含 template）
+     *
+     * @param id 报表文件ID
+     * @return 报表文件实体，不存在则 null
+     */
+    ReportTemplate selectByIdIgnoreDelFlag(@Param("id") String id);
+
+    /**
      * 按条件查询报表文件列表（非分页，不含 template）；name 模糊匹配
      *
      * @param queryDTO 查询条件

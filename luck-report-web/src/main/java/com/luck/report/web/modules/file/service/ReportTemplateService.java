@@ -22,6 +22,14 @@ public interface ReportTemplateService {
     ReportTemplate getById(String id);
 
     /**
+     * 根据ID查询报表文件（忽略 del_flag，含已逻辑删除）
+     *
+     * @param id 报表文件ID
+     * @return 报表文件实体，不存在则 null
+     */
+    ReportTemplate getByIdIgnoreDelFlag(String id);
+
+    /**
      * 新增报表文件
      *
      * @param reportFile 报表文件实体

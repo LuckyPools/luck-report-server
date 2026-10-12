@@ -50,6 +50,12 @@
         WHERE id = #{id} AND del_flag = 0
     </select>
 
+    <select id="selectByIdIgnoreDelFlag" resultType="com.luck.report.web.modules.file.domain.entity.ReportTemplate">
+        SELECT <include refid="fullColumns"/>
+        FROM luck_report_template
+        WHERE id = #{id}
+    </select>
+
     <select id="selectList" resultType="com.luck.report.web.modules.file.domain.entity.ReportTemplate">
         SELECT <include refid="listColumns"/>
         FROM luck_report_template
