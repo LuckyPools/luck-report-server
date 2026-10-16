@@ -18,6 +18,7 @@ package com.luck.report.core.export.excel.high;
 import com.luck.report.core.definition.Alignment;
 import com.luck.report.core.definition.Border;
 import com.luck.report.core.definition.CellStyle;
+import com.luck.report.core.export.excel.ExcelBorderStyles;
 import com.luck.report.core.model.Cell;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.BorderStyle;
@@ -243,15 +244,14 @@ public class CellStyleContext {
         return style;
     }
 
+    /**
+     * 报表边框 → POI 线型（按 width 分档为细/中/粗）
+     *
+     * @param border 报表边框
+     * @return POI 边框样式
+     */
     private BorderStyle getBorderStyle(Border border) {
-        if (border.getStyle().equals(com.luck.report.core.definition.BorderStyle.solid)) {
-            return BorderStyle.THIN;
-        } else if (border.getStyle().equals(com.luck.report.core.definition.BorderStyle.dashed)) {
-            return BorderStyle.DASHED;
-        } else if (border.getStyle().equals(com.luck.report.core.definition.BorderStyle.doublesolid)) {
-            return BorderStyle.DOUBLE;
-        }
-        return null;
+        return ExcelBorderStyles.toPoi(border);
     }
 
     private XSSFColor buildXSSFColor(String colorStr) {
