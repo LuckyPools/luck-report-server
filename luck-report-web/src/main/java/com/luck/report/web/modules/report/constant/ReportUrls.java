@@ -13,8 +13,8 @@ public final class ReportUrls {
      */
     private static final String[] MANAGE_URLS = {
             "/manage", "/designer", "/datasource", "/report_dataset", "/report_datasource",
-            "/model_config", "/business_knowledge", "/agent_knowledge", "/vector",
-            "/role", "/chat", "/sessions", "/import"
+            "/model_config", "/business_knowledge", "/agent_knowledge", "/agent_rule",
+            "/agent/trace", "/vector", "/role", "/chat", "/sessions", "/import"
     };
 
     /**
