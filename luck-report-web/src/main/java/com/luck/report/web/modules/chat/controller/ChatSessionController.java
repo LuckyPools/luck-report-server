@@ -1,22 +1,17 @@
 package com.luck.report.web.modules.chat.controller;
 
-import com.luck.report.infra.modules.servlet.provider.ApiRequest;
 import com.luck.report.web.common.domain.vo.PageResultVO;
 import com.luck.report.web.modules.chat.domain.entity.ChatSession;
 import com.luck.report.web.common.domain.vo.ResultVO;
 import com.luck.report.web.modules.chat.service.ChatSessionService;
 import com.luck.report.web.exception.TokenException;
-import com.luck.report.web.security.service.TokenService;
 import com.luck.report.web.security.utils.SecurityUtils;
-import com.luck.report.web.utils.DownloadUtils;
 import com.luck.report.web.utils.ResultVOUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * 聊天会话控制器
@@ -33,29 +28,6 @@ public class ChatSessionController {
     private final ChatSessionService chatSessionService;
 
     /**
-     * 查询所有未删除的会话列表
-     *
-     * @return 会话列表
-     */
-    @GetMapping("/list")
-    public ResultVO<List<ChatSession>> listSessions() {
-        List<ChatSession> sessions = chatSessionService.listAll();
-        return ResultVOUtils.success("success.chat.sessionsLoaded", sessions);
-    }
-
-    /**
-     * 查询当前用户的会话列表
-     *
-     * @return 当前用户的会话列表
-     */
-    @GetMapping("/me/list")
-    public ResultVO<List<ChatSession>> getSessionsOfMe() {
-        String userId = resolveCurrentUserId();
-        List<ChatSession> sessions = chatSessionService.listByUserId(userId);
-        return ResultVOUtils.success("success.chat.sessionsLoaded", sessions);
-    }
-
-    /**
      * 分页查询当前用户的会话列表
      *
      * @param pageNum  页码，从1开始，默认1
@@ -70,21 +42,6 @@ public class ChatSessionController {
         String userId = resolveCurrentUserId();
         PageResultVO<ChatSession> result = chatSessionService.listPage(userId, pageNum, pageSize);
         return ResultVOUtils.success("success.chat.sessionsLoaded", result);
-    }
-
-    /**
-     * 根据会话ID查询会话详情
-     *
-     * @param sessionId 会话ID
-     * @return 会话详情
-     */
-    @GetMapping("/detail/{sessionId}")
-    public ResultVO<ChatSession> getSession(@PathVariable String sessionId) {
-        ChatSession session = chatSessionService.getById(sessionId);
-        if (session == null) {
-            return ResultVOUtils.error("error.chat.sessionNotFound");
-        }
-        return ResultVOUtils.success("success.chat.sessionsLoaded", session);
     }
 
     /**
@@ -147,18 +104,6 @@ public class ChatSessionController {
     public ResultVO<Void> removeById(@PathVariable String sessionId) {
         chatSessionService.removeById(sessionId);
         return ResultVOUtils.<Void>success("success.chat.sessionDeleted", null);
-    }
-
-    /**
-     * 删除当前用户下的所有会话（软删除）
-     *
-     * @return 操作结果
-     */
-    @DeleteMapping("/me/delete")
-    public ResultVO<Void> removeSessionsOfMe() {
-        String userId = resolveCurrentUserId();
-        chatSessionService.removeByUserId(userId);
-        return ResultVOUtils.<Void>success("success.chat.allCleared", null);
     }
 
     /**

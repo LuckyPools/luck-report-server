@@ -44,33 +44,6 @@ public class ChatMessageController {
     }
 
     /**
-     * 保存单条消息
-     *
-     * @param sessionId 会话ID
-     * @param dto       消息请求体
-     * @return 保存后的消息实体
-     */
-    @PostMapping("/{sessionId}/messages/create")
-    public ResultVO<ChatMessage> save(
-            @PathVariable String sessionId,
-            @RequestBody ChatMessageDTO dto) {
-        if (dto == null || dto.getRole() == null) {
-            return ResultVOUtils.error("error.chat.messageRoleEmpty");
-        }
-
-        ChatMessage message = new ChatMessage();
-        message.setSessionId(sessionId);
-        message.setRole(dto.getRole());
-        message.setContent(dto.getContent());
-        message.setMessageType(dto.getMessageType() != null ? dto.getMessageType() : "text");
-        message.setMetadata(dto.getMetadata());
-
-        ChatMessage saved = chatMessageService.save(message);
-        chatSessionService.refreshSessionTime(sessionId);
-        return ResultVOUtils.success("success.chat.messageSaved", saved);
-    }
-
-    /**
      * 批量保存消息
      *
      * @param sessionId 会话ID
