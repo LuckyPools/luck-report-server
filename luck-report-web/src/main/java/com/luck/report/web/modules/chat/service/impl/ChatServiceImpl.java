@@ -102,6 +102,7 @@ public class ChatServiceImpl implements ChatService {
                 final int finalInputTextLength = inputTextLength;
 
                 Call call = ChatUtils.buildStreamCall(askRequest);
+                java.util.concurrent.atomic.AtomicReference<Call> activeCall = new java.util.concurrent.atomic.AtomicReference<>(call);
                 java.util.concurrent.atomic.AtomicBoolean emitterCompleted = new java.util.concurrent.atomic.AtomicBoolean(false);
 
                 call.enqueue(withContext(traceId, new Callback() {
@@ -137,6 +138,7 @@ public class ChatServiceImpl implements ChatService {
                                         .streamOptions(streamOptions)
                                         .deepThink(request.getDeepThink());
                                 Call retryCall = ChatUtils.buildStreamCall(retryRequest);
+                                activeCall.set(retryCall);
                                 retryCall.enqueue(withContext(traceId, new Callback() {
                                     @Override
                                     public void onFailure(Call c, IOException e) {
@@ -186,16 +188,12 @@ public class ChatServiceImpl implements ChatService {
 
                 emitter.onCompletion(() -> {
                     emitterCompleted.set(true);
-                    if (!call.isCanceled()) {
-                        call.cancel();
-                    }
+                    cancelActiveCall(activeCall);
                 });
                 emitter.onTimeout(withContext(traceId, () -> {
                     log.warn("SseEmitter超时，取消LLM请求");
                     emitterCompleted.set(true);
-                    if (!call.isCanceled()) {
-                        call.cancel();
-                    }
+                    cancelActiveCall(activeCall);
                     emitter.complete();
                 }));
 
@@ -476,6 +474,11 @@ public class ChatServiceImpl implements ChatService {
                     }
                 }
             } catch (Exception e) {
+                if (isEmitterClosed(e)) {
+                    emitterCompleted.set(true);
+                    log.info("[ChatService] 下游SSE已关闭，停止读取上游流");
+                    return;
+                }
                 log.warn("解析SSE数据失败: data={}, error={}", data.length() > 200 ? data.substring(0, 200) + "..." : data, e.getMessage());
             }
         }
@@ -881,6 +884,39 @@ public class ChatServiceImpl implements ChatService {
         } finally {
             body.close();
         }
+    }
+
+    /**
+     * 取消当前正在读取的上游调用
+     *
+     * @param activeCall 当前有效的 OkHttp 调用
+     */
+    private void cancelActiveCall(java.util.concurrent.atomic.AtomicReference<Call> activeCall) {
+        Call current = activeCall.get();
+        if (current != null && !current.isCanceled()) {
+            current.cancel();
+        }
+    }
+
+    /**
+     * 判断异常是否表示下游 SseEmitter 已关闭，此类错误应停止读取上游
+     *
+     * @param error 读取或推送过程中的异常
+     * @return 下游已关闭时返回 true
+     */
+    private boolean isEmitterClosed(Throwable error) {
+        Throwable current = error;
+        while (current != null) {
+            if (current instanceof IllegalStateException) {
+                return true;
+            }
+            String message = current.getMessage();
+            if (message != null && message.contains("already completed")) {
+                return true;
+            }
+            current = current.getCause();
+        }
+        return false;
     }
 
     /**
