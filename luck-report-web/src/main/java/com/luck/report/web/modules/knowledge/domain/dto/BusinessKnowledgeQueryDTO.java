@@ -18,17 +18,37 @@ import lombok.NoArgsConstructor;
 @Builder
 public class BusinessKnowledgeQueryDTO {
 
+    /**
+     * 知识标题（模糊查询）
+     */
     private String title;
 
+    /**
+     * 知识类型：DOCUMENT, QA, FAQ
+     */
     private String type;
 
+    /**
+     * 向量化状态：PENDING, PROCESSING, COMPLETED, FAILED
+     */
     private String embeddingStatus;
 
+    /**
+     * 是否生效：true-参与检索，false-不参与
+     */
+    private Boolean enabled;
+
+    /**
+     * 当前页码（默认第1页）
+     */
     @NotNull(message = "pageNum不能为空")
     @Min(value = 1, message = "pageNum不能小于1")
     @Builder.Default
     private Integer pageNum = 1;
 
+    /**
+     * 每页大小（默认10条）
+     */
     @NotNull(message = "pageSize不能为空")
     @Min(value = 1, message = "pageSize不能小于1")
     @Builder.Default

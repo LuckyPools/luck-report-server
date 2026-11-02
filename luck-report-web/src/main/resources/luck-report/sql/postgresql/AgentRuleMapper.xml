@@ -14,7 +14,7 @@
             AND title = #{queryDTO.title}
         </if>
         <if test="queryDTO != null and queryDTO.enabled != null">
-            AND is_enabled = #{queryDTO.enabled}
+            AND is_enabled = CASE WHEN #{queryDTO.enabled} IS TRUE THEN 1 ELSE 0 END
         </if>
     </sql>
 
@@ -25,7 +25,7 @@
             AND title LIKE #{titlePattern}
         </if>
         <if test="queryDTO.enabled != null">
-            AND is_enabled = #{queryDTO.enabled}
+            AND is_enabled = CASE WHEN #{queryDTO.enabled} IS TRUE THEN 1 ELSE 0 END
         </if>
     </sql>
 
@@ -37,7 +37,7 @@
     <insert id="insert">
         INSERT INTO luck_agent_rule (id, title, content, sort, is_enabled,
             create_time, update_time, del_flag, create_by, update_by)
-        VALUES (#{id}, #{title}, #{content}, #{sort}, #{enabled},
+        VALUES (#{id}, #{title}, #{content}, #{sort}, CASE WHEN #{enabled} IS TRUE THEN 1 ELSE 0 END,
             #{createTime}, #{updateTime}, #{delFlag}, #{createBy}, #{updateBy})
     </insert>
 
@@ -47,7 +47,7 @@
             <if test="title != null">title = #{title},</if>
             <if test="content != null">content = #{content},</if>
             <if test="sort != null">sort = #{sort},</if>
-            <if test="enabled != null">is_enabled = #{enabled},</if>
+            <if test="enabled != null">is_enabled = CASE WHEN #{enabled} IS TRUE THEN 1 ELSE 0 END,</if>
             <if test="delFlag != null">del_flag = #{delFlag},</if>
             <if test="updateBy != null">update_by = #{updateBy},</if>
             update_time = #{updateTime}

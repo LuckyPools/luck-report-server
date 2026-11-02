@@ -34,6 +34,11 @@ public class AgentKnowledgeQueryDTO {
     private String embeddingStatus;
 
     /**
+     * 是否生效：true-参与检索，false-不参与
+     */
+    private Boolean enabled;
+
+    /**
      * 当前页码（默认第1页）
      */
     @NotNull(message = "pageNum不能为空")

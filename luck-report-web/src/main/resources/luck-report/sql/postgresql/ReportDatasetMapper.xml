@@ -20,7 +20,7 @@
             AND datasource_id = #{queryDTO.datasourceId}
         </if>
         <if test="queryDTO != null and queryDTO.enabled != null">
-            AND is_enabled = #{queryDTO.enabled}
+            AND is_enabled = CASE WHEN #{queryDTO.enabled} IS TRUE THEN 1 ELSE 0 END
         </if>
     </sql>
 
@@ -37,7 +37,7 @@
             AND datasource_id = #{queryDTO.datasourceId}
         </if>
         <if test="queryDTO.enabled != null">
-            AND is_enabled = #{queryDTO.enabled}
+            AND is_enabled = CASE WHEN #{queryDTO.enabled} IS TRUE THEN 1 ELSE 0 END
         </if>
     </sql>
 
@@ -45,13 +45,13 @@
         INSERT INTO luck_report_dataset (id, name, type, datasource_id, sql_content, json_content,
                 parameters, fields, description, is_enabled, create_by, create_time, update_by, update_time, del_flag)
         VALUES (#{id}, #{name}, #{type}, #{datasourceId}, #{sqlContent}, #{jsonContent},
-                #{parameters}, #{fields}, #{description}, #{enabled}, #{createBy}, #{createTime}, #{updateBy}, #{updateTime}, #{delFlag})
+                #{parameters}, #{fields}, #{description}, CASE WHEN #{enabled} IS TRUE THEN 1 ELSE 0 END, #{createBy}, #{createTime}, #{updateBy}, #{updateTime}, #{delFlag})
     </insert>
 
     <update id="updateById">
         UPDATE luck_report_dataset SET name = #{name}, type = #{type}, datasource_id = #{datasourceId},
                 sql_content = #{sqlContent}, json_content = #{jsonContent}, parameters = #{parameters},
-                fields = #{fields}, description = #{description}, is_enabled = #{enabled}, update_time = #{updateTime}, update_by = #{updateBy}
+                fields = #{fields}, description = #{description}, is_enabled = CASE WHEN #{enabled} IS TRUE THEN 1 ELSE 0 END, update_time = #{updateTime}, update_by = #{updateBy}
         WHERE id = #{id}
     </update>
 
@@ -72,7 +72,7 @@
     </update>
 
     <update id="updateEnabledById">
-        UPDATE luck_report_dataset SET is_enabled = #{enabled}, update_time = #{updateTime} WHERE id = #{id}
+        UPDATE luck_report_dataset SET is_enabled = CASE WHEN #{enabled} IS TRUE THEN 1 ELSE 0 END, update_time = #{updateTime} WHERE id = #{id}
     </update>
 
     <select id="countByDatasourceId" resultType="long">

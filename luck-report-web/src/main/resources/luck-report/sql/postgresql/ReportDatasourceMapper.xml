@@ -17,7 +17,7 @@
             AND type = #{queryDTO.type}
         </if>
         <if test="queryDTO != null and queryDTO.enabled != null">
-            AND is_enabled = #{queryDTO.enabled}
+            AND is_enabled = CASE WHEN #{queryDTO.enabled} IS TRUE THEN 1 ELSE 0 END
         </if>
     </sql>
 
@@ -31,7 +31,7 @@
             AND type = #{queryDTO.type}
         </if>
         <if test="queryDTO.enabled != null">
-            AND is_enabled = #{queryDTO.enabled}
+            AND is_enabled = CASE WHEN #{queryDTO.enabled} IS TRUE THEN 1 ELSE 0 END
         </if>
     </sql>
 
@@ -39,13 +39,13 @@
         INSERT INTO luck_report_datasource (id, name, type, host, port, database_name, username, password,
                 connection_url, is_enabled, test_status, description, initialized_tables, create_by, create_time, update_by, update_time, del_flag)
         VALUES (#{id}, #{name}, #{type}, #{host}, #{port}, #{databaseName}, #{username}, #{password},
-                #{connectionUrl}, #{enabled}, #{testStatus}, #{description}, #{initializedTables}, #{createBy}, #{createTime}, #{updateBy}, #{updateTime}, #{delFlag})
+                #{connectionUrl}, CASE WHEN #{enabled} IS TRUE THEN 1 ELSE 0 END, #{testStatus}, #{description}, #{initializedTables}, #{createBy}, #{createTime}, #{updateBy}, #{updateTime}, #{delFlag})
     </insert>
 
     <update id="updateById">
         UPDATE luck_report_datasource SET name = #{name}, type = #{type}, host = #{host}, port = #{port},
                 database_name = #{databaseName}, username = #{username}, password = #{password},
-                connection_url = #{connectionUrl}, is_enabled = #{enabled}, description = #{description},
+                connection_url = #{connectionUrl}, is_enabled = CASE WHEN #{enabled} IS TRUE THEN 1 ELSE 0 END, description = #{description},
                 initialized_tables = #{initializedTables}, update_time = #{updateTime}, update_by = #{updateBy}
         WHERE id = #{id}
     </update>
@@ -71,7 +71,7 @@
     </update>
 
     <update id="updateEnabledById">
-        UPDATE luck_report_datasource SET is_enabled = #{enabled}, update_time = #{updateTime} WHERE id = #{id}
+        UPDATE luck_report_datasource SET is_enabled = CASE WHEN #{enabled} IS TRUE THEN 1 ELSE 0 END, update_time = #{updateTime} WHERE id = #{id}
     </update>
 
     <select id="selectByIds" resultType="com.luck.report.web.modules.datasource.domain.entity.ReportDatasource">

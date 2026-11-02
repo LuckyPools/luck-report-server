@@ -21,6 +21,9 @@
         <if test="queryDTO.embeddingStatus != null and queryDTO.embeddingStatus != ''">
             AND embedding_status = #{queryDTO.embeddingStatus}
         </if>
+        <if test="queryDTO.enabled != null">
+            AND is_enabled = CASE WHEN #{queryDTO.enabled} IS TRUE THEN 1 ELSE 0 END
+        </if>
     </sql>
 
     <!-- 插入业务知识，ID由Snowflake生成 -->

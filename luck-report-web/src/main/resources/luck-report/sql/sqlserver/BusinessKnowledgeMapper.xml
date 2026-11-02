@@ -21,6 +21,9 @@
         <if test="queryDTO.embeddingStatus != null and queryDTO.embeddingStatus != ''">
             AND embedding_status = #{queryDTO.embeddingStatus}
         </if>
+        <if test="queryDTO.enabled != null">
+            AND is_enabled = #{queryDTO.enabled}
+        </if>
     </sql>
 
     <!-- 插入业务知识 -->
