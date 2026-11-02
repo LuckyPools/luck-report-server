@@ -103,7 +103,7 @@ public class ResourceLoaderService {
     private String readVersion() {
         Package pkg = ResourceLoaderService.class.getPackage();
         String version = (pkg != null) ? pkg.getImplementationVersion() : null;
-        return (version != null) ? version : "2.0.8";
+        return (version != null) ? version : "2.0.9";
     }
 
     /**
