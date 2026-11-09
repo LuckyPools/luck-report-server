@@ -36,15 +36,21 @@ import com.luck.report.core.model.*;
 import com.luck.report.core.model.Image;
 import com.luck.report.core.utils.ImageUtils;
 import com.luck.report.core.utils.UnitUtils;
-import com.itextpdf.text.*;
-import com.itextpdf.text.pdf.ColumnText;
-import com.itextpdf.text.pdf.PdfContentByte;
-import com.itextpdf.text.pdf.PdfPCell;
-import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfWriter;
+import com.lowagie.text.Document;
+import com.lowagie.text.Element;
+import com.lowagie.text.Font;
+import com.lowagie.text.Phrase;
+import com.lowagie.text.Rectangle;
+import com.lowagie.text.RectangleReadOnly;
+import com.lowagie.text.pdf.ColumnText;
+import com.lowagie.text.pdf.PdfContentByte;
+import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfWriter;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.awt.Color;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -148,7 +154,7 @@ public class PdfProducer implements Producer {
                                 childTable.addCell(pdfcell);
                             }
                         }
-                        float childTableHeight = childTable.calculateHeights();
+                        float childTableHeight = childTable.calculateHeights(true);
                         if (tableHeight > childTableHeight) {
                             for (int j = 0; j < colSize; j++) {
                                 PdfPCell lastCell = new PdfPCell();
@@ -331,7 +337,7 @@ public class PdfProducer implements Producer {
         }
         if (StringUtils.isNotEmpty(bgcolor)) {
             String[] colors = bgcolor.split(",");
-            cell.setBackgroundColor(new BaseColor(Integer.valueOf(colors[0]), Integer.valueOf(colors[1]), Integer.valueOf(colors[2])));
+            cell.setBackgroundColor(new Color(Integer.valueOf(colors[0]), Integer.valueOf(colors[1]), Integer.valueOf(colors[2])));
         }
         return cell;
     }
@@ -386,12 +392,12 @@ public class PdfProducer implements Producer {
         return cell;
     }
 
-    private com.itextpdf.text.Image buildPdfImage(String base64Data, int width, int height) throws Exception {
-        com.itextpdf.text.Image pdfImg = null;
+    private com.lowagie.text.Image buildPdfImage(String base64Data, int width, int height) throws Exception {
+        com.lowagie.text.Image pdfImg = null;
         InputStream input = ImageUtils.base64DataToInputStream(base64Data);
         try {
             byte[] bytes = IOUtils.toByteArray(input);
-            pdfImg = com.itextpdf.text.Image.getInstance(bytes);
+            pdfImg = com.lowagie.text.Image.getInstance(bytes);
             float imgWidth = pdfImg.getWidth();
             float imgHeight = pdfImg.getHeight();
             if (width == 0) {
@@ -531,7 +537,7 @@ public class PdfProducer implements Producer {
                         }
                     }
                     try {
-                        com.itextpdf.text.Image pdfImg = com.itextpdf.text.Image.getInstance(bytes);
+                        com.lowagie.text.Image pdfImg = com.lowagie.text.Image.getInstance(bytes);
                         if (widthPt <= 0) {
                             widthPt = pdfImg.getWidth();
                         }
@@ -581,11 +587,11 @@ public class PdfProducer implements Producer {
                         String[] bgColors = bgcolor.split(",");
                         if (bgColors.length >= 3) {
                             cb.saveState();
-                            BaseColor bgBaseColor = new BaseColor(
+                            Color bgColor = new Color(
                                     Integer.valueOf(bgColors[0].trim()),
                                     Integer.valueOf(bgColors[1].trim()),
                                     Integer.valueOf(bgColors[2].trim()));
-                            cb.setColorFill(bgBaseColor);
+                            cb.setColorFill(bgColor);
                             cb.rectangle(x, y, urx - x, ury - y);
                             cb.fill();
                             cb.restoreState();
@@ -646,19 +652,19 @@ public class PdfProducer implements Producer {
         if (border == null || border.getStyle() == null) return;
         int borderWidthPx = border.getWidth();
         float borderWidthPt = UnitUtils.pixelToPoint(borderWidthPx > 0 ? borderWidthPx : 1);
-        BaseColor borderBaseColor = BaseColor.BLACK;
+        Color borderColor = Color.BLACK;
         String borderColorStr = border.getColor();
         if (StringUtils.isNotEmpty(borderColorStr)) {
             String[] bcArr = borderColorStr.split(",");
             if (bcArr.length >= 3) {
-                borderBaseColor = new BaseColor(
+                borderColor = new Color(
                         Integer.valueOf(bcArr[0].trim()),
                         Integer.valueOf(bcArr[1].trim()),
                         Integer.valueOf(bcArr[2].trim()));
             }
         }
         cb.saveState();
-        cb.setColorStroke(borderBaseColor);
+        cb.setColorStroke(borderColor);
         cb.setLineWidth(borderWidthPt);
         String style = border.getStyle().toString();
         if ("dashed".equals(style)) {
