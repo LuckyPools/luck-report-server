@@ -27,6 +27,7 @@ public class SearchForm implements Serializable {
     private String formModel;
     private String size;
     private String labelPosition;
+    private String panelPosition;
     private Integer labelWidth;
     private String formRules;
     private Integer gutter;
@@ -78,6 +79,14 @@ public class SearchForm implements Serializable {
 
     public void setLabelPosition(String labelPosition) {
         this.labelPosition = labelPosition;
+    }
+
+    public String getPanelPosition() {
+        return panelPosition;
+    }
+
+    public void setPanelPosition(String panelPosition) {
+        this.panelPosition = panelPosition;
     }
 
     public Integer getLabelWidth() {

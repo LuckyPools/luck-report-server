@@ -31,6 +31,7 @@ public class SearchFormParser implements Parser<SearchForm> {
         form.setFormModel(FormParserUtils.parseStringAttribute(element.attributeValue("formModel")));
         form.setSize(FormParserUtils.parseStringAttribute(element.attributeValue("size")));
         form.setLabelPosition(FormParserUtils.parseStringAttribute(element.attributeValue("labelPosition")));
+        form.setPanelPosition(FormParserUtils.parseStringAttribute(element.attributeValue("panelPosition")));
         form.setLabelWidth(FormParserUtils.parseIntAttribute(element.attributeValue("labelWidth")));
         form.setFormRules(FormParserUtils.parseStringAttribute(element.attributeValue("formRules")));
         form.setGutter(FormParserUtils.parseIntAttribute(element.attributeValue("gutter")));

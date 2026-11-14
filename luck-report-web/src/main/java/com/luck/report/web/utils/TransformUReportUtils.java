@@ -166,6 +166,7 @@ public class TransformUReportUtils {
         newForm.addAttribute("formModel", "formData");
         newForm.addAttribute("size", "medium");
         newForm.addAttribute("labelPosition", "right");
+        newForm.addAttribute("panelPosition", "right");
         newForm.addAttribute("labelWidth", "100");
         newForm.addAttribute("formRules", "rules");
         newForm.addAttribute("gutter", "0");
