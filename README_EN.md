@@ -16,7 +16,7 @@
 
 Luck-Report is an open-source reporting engine for **Chinese-style complex reports**. Built on **cell iteration**, it supports designing, previewing, and exporting crosstabs, grouped reports, master-detail layouts, and other advanced formats in the browser.
 
-Luck-Report includes a built-in **AI assistant**. With **LLM configuration** and a **knowledge base**, you can create, edit, and get answers about reports in natural language. The backend is based on **Spring Boot** and can be deployed standalone. The project is a refactor of open-source **UReport2**: it keeps Chinese-style reporting capabilities while adding a modern architecture and AI assistance.
+Luck-Report includes a built-in **AI assistant**. With **LLM configuration** and a **knowledge base**, you can create, edit, and get answers about reports in natural language. The backend is based on **Spring Boot**; it can run standalone or be integrated into an existing business system. The project is a refactor of open-source **UReport2**: it keeps Chinese-style reporting capabilities while adding a modern architecture and AI assistance.
 
 This repository is the backend source of the reporting engine, open-sourced under **Apache-2.0**, **free for commercial use**.
 
