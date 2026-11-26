@@ -27,6 +27,7 @@ import java.io.Serializable;
 public class ChartData implements Serializable {
     private static final long serialVersionUID = 1L;
     private String id;
+    private String reportPath;
     private String json;
     private String base64Data;
     private int width;
@@ -55,7 +56,7 @@ public class ChartData implements Serializable {
         if (base64Data != null) {
             return base64Data;
         }
-        ChartData data = ChartScopeCache.getChartData(id);
+        ChartData data = ChartScopeCache.getChartData(reportPath, id);
         if (data != null && data != this) {
             if (data.base64Data != null) {
                 this.base64Data = data.base64Data;
@@ -89,5 +90,13 @@ public class ChartData implements Serializable {
 
     public String getId() {
         return id;
+    }
+
+    public String getReportPath() {
+        return reportPath;
+    }
+
+    public void setReportPath(String reportPath) {
+        this.reportPath = reportPath;
     }
 }

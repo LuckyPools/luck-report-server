@@ -21,7 +21,7 @@ import com.luck.report.infra.modules.cache.utils.CacheUtils;
 import java.util.Map;
 
 /**
- * 图表缓存：一图一 key（luck-report:chart:{scope}:{chartId}）。
+ * 图表缓存：一图一 key（luck-report:chart:{scope}:{reportPath}:{chartId}）。
  *
  * @author luckyPools
  * @since 2026年05月15日
@@ -34,39 +34,40 @@ public class ChartScopeCache {
         return CACHE_PREFIX + CacheUtils.getCacheScopePrefix() + ":";
     }
 
-    public static String getChartKey(String chartId) {
-        return getScopePrefix() + chartId;
+    public static String getChartKey(String reportPath, String chartId) {
+        return getScopePrefix() + reportPath + ":" + chartId;
     }
 
     /**
-     * 逐条写入（同 id 直接覆盖）。
+     * 逐条写入（同 reportPath+id 直接覆盖）。
      */
-    public static void putChartDataMap(Map<String, ChartData> map) {
+    public static void putChartDataMap(String reportPath, Map<String, ChartData> map) {
         if (map == null || map.isEmpty()) {
             return;
         }
         for (Map.Entry<String, ChartData> entry : map.entrySet()) {
-            putChartData(entry.getKey(), entry.getValue());
+            putChartData(reportPath, entry.getKey(), entry.getValue());
         }
     }
 
     /**
-     * 按图表 ID 获取。
+     * 按报表路径与图表 ID 获取。
      */
-    public static ChartData getChartData(String chartId) {
+    public static ChartData getChartData(String reportPath, String chartId) {
         if (chartId == null) {
             return null;
         }
-        return CacheUtils.get(getChartKey(chartId), ChartData.class);
+        return CacheUtils.get(getChartKey(reportPath, chartId), ChartData.class);
     }
 
     /**
      * 写入单个图表。
      */
-    public static void putChartData(String chartId, ChartData chartData) {
+    public static void putChartData(String reportPath, String chartId, ChartData chartData) {
         if (chartId == null || chartData == null) {
             return;
         }
-        CacheUtils.put(getChartKey(chartId), chartData);
+        chartData.setReportPath(reportPath);
+        CacheUtils.put(getChartKey(reportPath, chartId), chartData);
     }
 }
