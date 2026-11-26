@@ -31,7 +31,7 @@ public class ChartController {
             @RequestParam(value = "reportPath", required = false) String reportPath,
             @RequestParam(value = "mode", required = false) String mode) {
 
-        ChartData chartData = ChartScopeCache.getChartData(chartId);
+        ChartData chartData = ChartScopeCache.getChartData(reportPath, chartId);
         if (chartData == null) {
             logger.warn("[chart-store] 缓存未命中, chartId={}, reportPath={}, base64长度={}", chartId, reportPath, base64Data == null ? 0 : base64Data.length());
             return ResultVO.success();
@@ -43,7 +43,7 @@ public class ChartController {
         chartData.setBase64Data(base64Data);
         chartData.setHeight(UnitUtils.pixelToPoint(height));
         chartData.setWidth(UnitUtils.pixelToPoint(width));
-        ChartScopeCache.putChartData(chartId, chartData);
+        ChartScopeCache.putChartData(reportPath, chartId, chartData);
         logger.info("[chart-store] 回填成功, chartId={}, base64长度={}, width={}, height={}", chartId, base64Data.length(), width, height);
         return ResultVO.success();
     }

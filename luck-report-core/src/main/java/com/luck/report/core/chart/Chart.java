@@ -136,6 +136,7 @@ public class Chart implements Serializable {
         sb.append("}");
         sb.append("}");
         ChartData chartData = new ChartData(sb.toString(), cell);
+        chartData.setReportPath(context.getReport().getReportFullName());
         context.addChartData(chartData);
         return chartData;
     }

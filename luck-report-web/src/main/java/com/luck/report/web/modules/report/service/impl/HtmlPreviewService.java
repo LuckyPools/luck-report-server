@@ -156,7 +156,7 @@ public class HtmlPreviewService {
             if (!CollectionUtils.isEmpty(chartMap)) {
                 logger.info("[chart-cache] 写入预览缓存, chartIds={}, 本次数量={}",
                         chartMap.keySet(), chartMap.size());
-                ChartScopeCache.putChartDataMap(chartMap);
+                ChartScopeCache.putChartDataMap(reportPath, chartMap);
             }
             htmlReport = new HtmlReport();
             String html;
